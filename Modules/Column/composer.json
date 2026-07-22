@@ -1,0 +1,27 @@
+{
+    "name": "nwidart/column",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Column\\Providers\\ColumnServiceProvider"
+            ],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Column\\": "app/",
+            "Modules\\Column\\Database\\Factories\\": "database/factories/",
+            "Modules\\Column\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

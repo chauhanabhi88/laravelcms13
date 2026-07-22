@@ -1,0 +1,19 @@
+{
+    "name": "Banner",
+    "alias": "banner",
+    "description": "",
+    "keywords": [],
+    "priority": 4,
+    "providers": [
+        "Modules\\Banner\\Providers\\BannerServiceProvider"
+    ],
+    "files": [
+        "helper.php"
+    ],
+    "cache": false,
+    "depends": [
+        "attribute",
+        "core",
+        "settings"
+    ]
+}

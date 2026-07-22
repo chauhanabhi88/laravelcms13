@@ -1,0 +1,22 @@
+{
+    "name": "Passport",
+    "alias": "passport",
+    "description": "",
+    "keywords": [],
+    "priority": 11,
+    "providers": [
+        "Modules\\Passport\\Providers\\PassportServiceProvider"
+    ],
+    "aliases": {
+        "League\\OAuth2\\Server\\Grant\\PasswordGrant": "Modules\\Passport\\Grant\\PasswordGrant",
+        "League\\OAuth2\\Server\\Exception\\OAuthServerException": "Modules\\Passport\\Http\\Exception\\OAuthServerException",
+        "Laravel\\Passport\\Bridge\\UserRepository": "Modules\\Passport\\Repositories\\UserRepository",
+        "Laravel\\Passport\\Http\\Controllers\\HandlesOAuthErrors": "Modules\\Passport\\Http\\Controllers\\HandlesOAuthErrors",
+        "Laravel\\Passport\\Guards\\TokenGuard": "Modules\\Passport\\Guards\\TokenGuard",
+        "Laravel\\Passport\\ClientRepository": "Modules\\Passport\\Repositories\\ClientRepository"
+    },
+    "files": [],
+    "depends": [
+        "core"
+    ]
+}

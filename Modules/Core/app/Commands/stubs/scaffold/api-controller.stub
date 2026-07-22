@@ -1,0 +1,51 @@
+<?php
+
+namespace Modules\$STUDLY_NAME$\Http\Controllers\Api\V1;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Modules\$STUDLY_NAME$\Models\$STUDLY_NAME$;
+use Modules\$STUDLY_NAME$\Repositories\$STUDLY_NAME$Repository;
+use Modules\$STUDLY_NAME$\Repositories\Api\V1\$STUDLY_NAME$Repository;
+use Modules\$STUDLY_NAME$\Http\Requests\CreateRequest;
+use Modules\$STUDLY_NAME$\Http\Requests\UpdateRequest;
+use Modules\Core\Http\Controllers\ApiController;
+
+class IndexController extends ApiController
+{
+    /**
+     * @var $STUDLY_NAME$Repository
+     */
+    private $$LOWER_NAME$;
+
+    /**
+      * @var $$LOWER_NAME$Entity
+     */
+    private $$LOWER_NAME$Entity;
+
+    public function __construct($STUDLY_NAME$Repository $$LOWER_NAME$Repo, $STUDLY_NAME$ $$LOWER_NAME$)
+    {
+        parent::__construct();
+
+        $this->$LOWER_NAME$ = $$LOWER_NAME$Repo;
+        $this->$LOWER_NAME$Entity = $$LOWER_NAME$;
+    }
+
+    public function register()
+    {
+        try{
+            $data = [];
+            return $this->getSuccessReturn(["data" => $data]);
+            //return response()->json([]);
+        }catch (\Exception $e) {
+            
+            return $this->getFailureReturn($e->getMessage());
+        }
+        
+    }
+
+   
+
+
+     
+}

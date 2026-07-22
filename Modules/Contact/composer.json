@@ -1,0 +1,27 @@
+{
+    "name": "abhishek/contact",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Maatwebsite\\Excel\\ExcelServiceProvider::class"
+            ],
+            "aliases": {
+                "Excel" : "Maatwebsite\\Excel\\Facades\\Excel::class"
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Contact\\": "app/",
+            "Modules\\Contact\\Database\\Factories\\": "database/factories/",
+            "Modules\\Contact\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "name": "LaravelPWA",
+    "alias": "laravelpwa",
+    "description": "Progressive web app functionality",
+    "keywords": ["laravel", "pwa", "progressive web app"],
+    "priority": 0,
+    "providers": [
+        "Modules\\LaravelPWA\\Providers\\LaravelPWAServiceProvider"
+    ],
+    "files": [],
+    "depends": [
+        "core"
+    ]
+}

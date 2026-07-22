@@ -1,0 +1,11 @@
+{
+    "name": "Column",
+    "alias": "column",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Column\\Providers\\ColumnServiceProvider"
+    ],
+    "files": []
+}

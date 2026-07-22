@@ -1,0 +1,12 @@
+{
+    "name": "ImportReport",
+    "alias": "importreport",
+    "description": "",
+    "keywords": [],
+    "priority": 30,
+    "providers": [
+        "Modules\\ImportReport\\Providers\\ImportReportServiceProvider"
+    ],
+    "files": [],
+    "requires": []
+}

@@ -1,0 +1,189 @@
+/*sticky header for horizontal and vertical sidebar*/
+
+/* Horizontal sticky */
+
+.content-wrapper .page-title-header.sticky-header {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    right: 0;
+    z-index: 999;
+    padding: 10px 30px 10px 30px;
+    height: 55px;
+    border: 1px solid #dee2e6;
+    background: #f7f7f7;
+}
+
+.content-wrapper .page-title-header.sticky-staradmin-header {
+    position: fixed;
+    top: 63px;
+    left: -30px;
+    right: 0;
+    z-index: 11;
+    margin-left: 300px;
+    padding: 10px 10px 10px 0px;
+    height: 55px;
+    border: 1px solid #dee2e6;
+    background: #f7f7f7;
+}
+
+.main-panel .page-title-header.sticky-header {
+    position: fixed;
+    top: 65px;
+    left: 285px;
+    right: 0;
+    z-index: 999;
+    padding: 10px 30px 10px 30px;
+    height: 55px;
+    border: 1px solid #dee2e6;
+    background: #f7f7f7;
+}
+
+.content-wrapper .page-title-header.sticky-vertical-header {
+    position: fixed;
+    top: 63px;
+    left: -48px;
+    right: 0;
+    z-index: 11;
+    margin-left: 148px;
+    padding: 10px 10px 10px 0px;
+    height: 55px;
+    border: 1px solid #dee2e6;
+    background: white;
+}
+
+.main-panel .header-desktop3.sticky-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    padding: 10px 30px 10px 30px;
+    height: 76px;
+}
+
+/* end sticky header */
+
+.tooltip-inner {
+    max-width: 600px;
+}
+
+ul.pagination li {
+    line-height: 0;
+}
+
+/* nav.sidebar {
+    position: fixed;
+    overflow-y: auto;
+    top: 63px;
+    bottom: 0;
+} */
+
+/* .main-panel {
+    margin-left: 270px;
+    position: relative;
+} */
+
+.sidebar>.nav .nav-item:active .nav-link i.menu-arrow:before {
+    content: "\F054";
+    font-family: "Material Design Icons";
+    font-size: 18px;
+    line-height: 1;
+    font-style: normal;
+    vertical-align: middle;
+    color: #bfccda;
+}
+
+/* vertical sidebar */
+
+.logo {
+    width: 100% !important;
+}
+
+.create-plus {
+    position: absolute;
+    right: -2rem;
+    margin-top: -10px !important;
+}
+
+.testimonial-image-center {
+    width: 50%!important;
+    margin-left: auto!important;
+    margin-right: auto!important;
+    display: block!important;
+}
+
+
+@media (min-width: 992px) {
+    .sidebar-icon-only .sidebar {
+        width: 70px;
+    }
+}
+
+@media (min-width: 992px) {
+    .sidebar-icon-only .navbar .navbar-menu-wrapper {
+        width: calc(100% - 70px);
+    }
+}
+
+@media (min-width: 992px) {
+    .sidebar-icon-only .navbar .navbar-brand-wrapper {
+        width: 70px;
+    }
+}
+
+@media (min-width: 992px) {
+    .sidebar-mini.sidebar-icon-only .contain-main, .sidebar-mini.sidebar-icon-only .footer {
+        margin-left: 0px !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .sidebar-mini.sidebar-icon-only .sticky-vertical-header {
+        margin-left: 115px !important;
+    }
+}
+
+.status--process {
+    color: green;
+}
+
+.status--denied {
+    color: red;
+}
+
+.sidebar-clear-cache {
+    text-decoration: underline;
+}
+
+.email-verified-icon {
+    color: green;
+    /* font-size: 20px; */
+}
+
+.email-unverified-icon {
+    color: grey;
+    /* font-size: 20px; */
+}
+/* 
+.custom-select {
+    font-size: 0.75rem !important;
+} */
+
+/* for sticky actions */
+.sticky-action {
+    z-index: 9;
+    right: -1px;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    background: #fff;
+}
+  
+th.sticky-action {
+    background: #fff;
+}
+
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background: #1b2d8f!important;
+}

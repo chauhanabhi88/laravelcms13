@@ -1,0 +1,138 @@
+<?php
+
+namespace $MODULE_NAMESPACE$\$STUDLY_NAME$\Repositories\Eloquent;
+
+use Illuminate\Http\Request;
+use Modules\$STUDLY_NAME$\Repositories\$TABLE_NAME$Repository;
+use Modules\Core\Repositories\Eloquent\EloquentBaseRepository;
+use Modules\$STUDLY_NAME$\Models\$STUDLY_NAME$;
+
+class Eloquent$TABLE_NAME$Repository extends EloquentBaseRepository implements $TABLE_NAME$Repository
+{
+    public function sortColumns()
+    {
+        $columns = [
+            [
+                "title" => trans("core::core.titles.id"),
+                "column" => "id",
+                "default_sort" => true,
+            ],
+$GRID_COLUMNS$
+            [
+                "title" => trans("core::core.titles.created_at"),
+                "column" => "created_at"
+            ]
+        ];
+
+        if($this->getAuthUser()->can("admin.$LOWER_NAME$.mass_delete")) {
+            $massDeleteCheckbox = [
+                "column" => "massDelete",
+                "type" => "massDelete",
+            ];
+            array_unshift($columns, $massDeleteCheckbox);
+        }
+
+        return $columns;
+    }
+
+    public function getFilters($request)
+    {
+        $fields =  [
+            [
+                "type" => "number_range",
+                "name" => ["from", "to"],
+                "row"  => "1",
+                "value" => [
+                    "from" => $request->get("from", getSessionFilter(config("$CACHE_KEY$name"), "from")),
+                    "to"   => $request->get("to", getSessionFilter(config("$CACHE_KEY$name"), "to"))
+                ],
+                "options" => [
+                    'from' => ["label"=> trans('core::core.labels.id'),'placeholder' => trans('core::core.labels.from'), 'class' => 'form-control'],
+                    'to'   => ['placeholder' => trans('core::core.labels.to'), 'class' => 'form-control']
+                ]
+            ],
+$FILTERS_OPTIONS$
+           [
+                'type' => 'date_range',
+                'name' => ["created_at_from", "created_at_to"],
+                "row"  => "1",
+                'value' => [
+                    "created_at_from" => $request->get("created_at_from", getSessionFilter(config("$CACHE_KEY$name"), "created_at_from")),
+                    "created_at_to" => $request->get("created_at_to", getSessionFilter(config("$CACHE_KEY$name"), "created_at_to"))
+                ],
+                'options' => [
+                    "created_at_from" => ["label"=> trans('core::core.labels.created_on'), 'placeholder' => trans('core::core.labels.from'), 'class' => 'form-control'],
+                    "created_at_to" => ['placeholder' => trans('core::core.labels.to'), 'class' => 'form-control']
+                ]
+            ],
+            [
+                "type" => "action",
+                "class" => "col-action",
+                "row"   => "3",
+                "buttons" => [
+                    "submit" => [
+                        "name" => "search",
+                        "type" => "submit",
+                        "onclick" => "searchFilter(); return false;",
+                        "class" => "btn btn-info btn-flat",
+                        "title" => trans('core::core.buttons.search')
+                    ],
+                    "reset" => [
+                        "name" => "reset",
+                        "type" => "button",
+                        "onclick" => "window.location.href= '".route("admin.reset_filter", updateUrlParams([config("$CACHE_KEY$name")]))."'",
+                        "class" => "btn btn-secondary btn-flat",
+                        "title" => trans('core::core.buttons.reset')
+                    ]
+                ]
+            ]
+        ];
+
+
+
+        return $fields;
+    }
+
+    public function pagination($request)
+    {
+        $perPage = $request->get("per_page", settings("core", "default_per_page"));
+        $orderBy = $request->get("order_by", "id");
+        $dir = $request->get("dir", "DESC");
+        $collection = $this->filter($request);
+        $collection->orderBy($orderBy, $dir);
+        updateSessionFilterPage(config("$CACHE_KEY$name"), $collection, $perPage);
+        return $collection->paginate($perPage, ['*'], 'page', getSessionFilter(config("$CACHE_KEY$name"), "page"));
+    }
+
+    public function filter($request)
+    {
+        $$LOWER_NAME$ =  new $STUDLY_NAME$();
+
+        $timezoneOffset = getTimezoneOffset();
+
+        $collection = $this->allWithBuilder();
+
+        $whereCond = $request->get("from", getSessionFilter(config("$CACHE_KEY$name"), "from"));
+        if ($whereCond !== null) {
+            $collection->where($$LOWER_NAME$->getTable() . ".id", ">=", $whereCond);
+        }
+
+        $whereCond = $request->get("to", getSessionFilter(config("$CACHE_KEY$name"), "to"));
+        if($whereCond !== null) {
+            $collection->where($$LOWER_NAME$->getTable() . ".id", "<=", $whereCond);
+        }
+
+        $whereCond = $request->get("created_at_from", getSessionFilter(config("$CACHE_KEY$name"), "created_at_from"));
+        if($whereCond !== null) {
+            $collection->whereRaw("DATE(" . $$LOWER_NAME$->getTable() . ".created_at + INTERVAL {$timezoneOffset} SECOND) >= ?", date_format(date_create_from_format(config('core.encrypt.php_datepicker_format'), $whereCond), 'Y-m-d'));
+        }
+
+        $whereCond = $request->get("created_at_to", getSessionFilter(config("$CACHE_KEY$name"), "created_at_to"));
+        if($whereCond !== null) {
+            $collection->whereRaw("DATE(" . $$LOWER_NAME$->getTable() . ".created_at + INTERVAL {$timezoneOffset} SECOND) <= ?", date_format(date_create_from_format(config('core.encrypt.php_datepicker_format'), $whereCond), 'Y-m-d'));
+        }
+
+
+$PAGINATION$
+    }
+}

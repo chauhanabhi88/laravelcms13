@@ -1,0 +1,73 @@
+@php
+    $langPath = config('$LOWER_NAME$.lang_path');
+@endphp
+{{ formStart(null,"POST" ,'admin.$LOWER_NAME$.filters' ,updateUrlParams(), ['id' => 'search_frm','enctype'=>'multipart/form-data'])}}
+
+    @csrf
+    @include('core::partials.columns')
+    @include('core::partials.filters')
+
+
+    <!-- /.card-header -->
+    <div class="card-header">
+        @include('core::partials.pagination')
+    </div>
+    <div class="card-body table-responsive">
+        <table class="table table-bordered table-striped table-hover text-nowrap">
+            <thead>
+                <tr class="data-heading">
+                    @include('core::partials.sorting')
+                    <th data-sortable="false">{{ trans('core::core.titles.actions') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @forelse ($collection as $$LOWER_NAME$)
+                    <tr>
+                        @can('admin.$LOWER_NAME$.mass_delete')
+                            <td>
+                            {{ normalCheckbox("selectedCategory[]","", $errors,$$LOWER_NAME$->id,['class' => "select-item", 'data-id' => $$LOWER_NAME$->id ,'grid' => true])}}
+                            </td>
+                        @endcan
+                        @foreach ($columns as $column)
+                            @php 
+                                if($column['checkbox_checked'] == 0){
+                                    continue;
+                                }
+                                $columnCode = $column['code'];
+                                $value = $$LOWER_NAME$[$columnCode] ?? null;
+                            @endphp
+                            @if($columnCode == 'created_at')
+                                <td>{{ getFormatedDate($LOWER_NAME$->created_at, getGridDateFormat()) }}</td>
+                            $DATA$
+                            @else
+                                <td>{{$value}}</td>
+                            @endif
+                        @endforeach
+                        <td>
+                            @can('admin.$LOWER_NAME$.edit')
+                                <button type="button" onclick="setLocation('{{ route('admin.$LOWER_NAME$.edit', updateUrlParams([$$LOWER_NAME$->id])) }}');" class="btn"><i class="fas fa-edit"></i></button>
+                            @endcan
+                            @can('admin.$LOWER_NAME$.delete')
+                                <button type="button" class="btn" data-toggle="modal" data-target="#modal-delete-confirmation" data-action-target="{{ route('admin.$LOWER_NAME$.delete', updateUrlParams([$$LOWER_NAME$->id])) }}"><i class="fas fa-trash"></i></button>
+                            @endcan
+                            @can('admin.$LOWER_NAME$.edit')
+                            <span data-placement="right" data-toggle="tooltip"  title="{!! $statusOptions[$$LOWER_NAME$->status] !!}">
+                                <label class="switch">
+                                    <input type="checkbox" class="status" data-id="{{$$LOWER_NAME$->id}}" {{ ($$LOWER_NAME$->status == 1) ? "checked" : ""}}>
+                                    <span class="slider round"></span>
+                                </label>
+                            </span>
+                            @endcan
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td align="center" colspan="$COLUMN_COUNT$"> {{ trans("core::core.messages.no_records") }} </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    <!-- /.card-body -->
+{!! formEnd() !!}

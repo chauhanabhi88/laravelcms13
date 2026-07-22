@@ -1,0 +1,10 @@
+<?php
+
+namespace $MODULE_NAMESPACE$\$STUDLY_NAME$\Repositories;
+
+use Modules\Core\Repositories\BaseRepository;
+
+interface $TABLE_NAME$Repository extends BaseRepository
+{
+
+}

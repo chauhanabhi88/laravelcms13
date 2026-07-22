@@ -1,0 +1,15 @@
+{
+    "name": "Mail",
+    "alias": "mail",
+    "description": "",
+    "keywords": [],
+    "priority": 10,
+    "providers": [
+        "Modules\\Mail\\Providers\\MailServiceProvider"
+    ],
+    "files": [],
+    "cache": false,
+    "depends": [
+        "core"
+    ]
+}

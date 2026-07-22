@@ -1,0 +1,13 @@
+<?php
+
+namespace $MODULE_NAMESPACE$\$STUDLY_NAME$\Repositories\Eloquent;
+
+use Illuminate\Http\Request;
+use Modules\$STUDLY_NAME$\Repositories\$TABLE_NAME$Repository;
+use Modules\Core\Repositories\Eloquent\EloquentBaseRepository;
+use Modules\$STUDLY_NAME$\Repositories\Repository;
+
+class Eloquent$TABLE_NAME$Repository extends EloquentBaseRepository implements $TABLE_NAME$Repository
+{
+    
+}

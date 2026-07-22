@@ -1,0 +1,15 @@
+{
+    "name": "Attribute",
+    "alias": "attribute",
+    "description": "",
+    "keywords": [],
+    "priority": 3,
+    "providers": [
+        "Modules\\Attribute\\Providers\\AttributeServiceProvider"
+    ],
+    "files": [],
+    "cache": false,
+    "depends": [
+        "core"
+    ]
+}

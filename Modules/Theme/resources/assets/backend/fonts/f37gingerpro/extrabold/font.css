@@ -1,0 +1,12 @@
+@font-face {
+  font-family: 'F37GingerPro-ExtraBold';
+  src: url('F37GingerPro-ExtraBold.eot');
+  src: url('F37GingerPro-ExtraBold.eot?#iefix') format('embedded-opentype'),
+       url('F37GingerPro-ExtraBold.svg#F37GingerPro-ExtraBold') format('svg'),
+       url('F37GingerPro-ExtraBold.ttf') format('truetype'),
+       url('F37GingerPro-ExtraBold.woff') format('woff'),
+       url('F37GingerPro-ExtraBold.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+

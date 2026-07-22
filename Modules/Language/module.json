@@ -1,0 +1,16 @@
+{
+    "name": "Language",
+    "alias": "language",
+    "description": "",
+    "keywords": [],
+    "priority": 9,
+    "providers": [
+        "Modules\\Language\\Providers\\LanguageServiceProvider"
+    ],
+    "files": [
+        "helper.php"
+    ],
+    "depends": [
+        "core"
+    ]
+}

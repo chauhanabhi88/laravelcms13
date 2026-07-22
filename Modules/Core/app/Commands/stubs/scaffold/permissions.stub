@@ -1,0 +1,13 @@
+<?php
+
+return [
+    '$LOWER_NAME$::$LOWER_NAME$.titles.$LOWER_NAME$' => [
+        'admin.$LOWER_NAME$.index' => '$LOWER_NAME$::$LOWER_NAME$.labels.list',
+        'admin.$LOWER_NAME$.filters' => '$LOWER_NAME$::$LOWER_NAME$.labels.filters',
+        'admin.$LOWER_NAME$.create' => '$LOWER_NAME$::$LOWER_NAME$.labels.create',
+        'admin.$LOWER_NAME$.edit' => '$LOWER_NAME$::$LOWER_NAME$.labels.edit',
+        'admin.$LOWER_NAME$.delete' => '$LOWER_NAME$::$LOWER_NAME$.labels.delete',
+        'admin.$LOWER_NAME$.mass_delete' => '$LOWER_NAME$::$LOWER_NAME$.labels.mass_delete',
+        'admin.$LOWER_NAME$.update_status' => '$LOWER_NAME$::$LOWER_NAME$.labels.update_status',
+    ],
+];

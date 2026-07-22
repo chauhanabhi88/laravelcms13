@@ -1,0 +1,17 @@
+{
+    "name": "Settings",
+    "alias": "settings",
+    "description": "",
+    "keywords": [],
+    "priority": 12,
+    "providers": [
+        "Modules\\Settings\\Providers\\SettingsServiceProvider"
+    ],
+    "files": [
+        "helpers.php"
+    ],
+    "cache": false,
+    "depends": [
+        "core"
+    ]
+}

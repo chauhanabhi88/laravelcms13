@@ -1,0 +1,37 @@
+<?php
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+use Modules\$MODULE_NAME$\Entities\$ENTITY$;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up(): void
+    { 
+         $module = new $ENTITY$();
+        Schema::table($module->getTable(), function (Blueprint $table) {
+$FIELDS_UP$
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down(): void
+    {
+        $module = new $ENTITY$();
+$FOREIGN$
+
+        Schema::table($module->getTable(), function (Blueprint $table) {
+$FIELDS_DOWN$
+        });
+    }
+};

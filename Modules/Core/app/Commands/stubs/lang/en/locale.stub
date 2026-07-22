@@ -1,0 +1,30 @@
+<?php
+return [
+    'titles' => [
+        'list' => '$STUDLY_NAME$ List',
+        'create_$LOWER_NAME$' => 'Create $STUDLY_NAME$',
+        'edit_$LOWER_NAME$' => 'Edit $STUDLY_NAME$',
+        '$LOWER_NAME$_info' => '$STUDLY_NAME$ Information',
+        '$LOWER_NAME$' => '$STUDLY_NAME$',
+$TITLES$
+    ],
+    'labels' => [
+        'list' => '$STUDLY_NAME$ List',
+        'create' => '$STUDLY_NAME$ Create',
+        'edit' => '$STUDLY_NAME$ Edit',
+        'filters' => '$STUDLY_NAME$ Filters',
+        'delete' => '$STUDLY_NAME$ Delete',
+        'mass_delete' => '$STUDLY_NAME$ Mass Delete',
+        'update_status' => '$STUDLY_NAME$ Update Status',
+$TITLES$
+    ],
+    'buttons' =>[
+    ],
+    'messages' => [
+        'data_invalid' => 'Resource data invalid.',
+        'created_success' => '$STUDLY_NAME$ created successfully.',
+        'updated_success' => '$STUDLY_NAME$ updated successfully.',
+        'deleted_success' => '$STUDLY_NAME$ deleted successfully.',
+$MESSAGE$
+    ]
+];

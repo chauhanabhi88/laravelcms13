@@ -1,0 +1,8 @@
+    /**
+    * relationship with #NameSpace#
+    *
+    */
+    public function #FunctionName#()
+    {
+        return $this->belongsTo(#Arguments#);
+    }

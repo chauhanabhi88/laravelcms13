@@ -1,0 +1,25 @@
+{
+    "name": "abhishek/banner",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Banner\\": "app/",
+            "Modules\\Banner\\Database\\Factories\\": "database/factories/",
+            "Modules\\Banner\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

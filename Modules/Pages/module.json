@@ -1,0 +1,14 @@
+{
+    "name": "Pages",
+    "alias": "pages",
+    "description": "",
+    "keywords": [],
+    "priority": 100,
+    "providers": [
+        "Modules\\Pages\\Providers\\PagesServiceProvider"
+    ],
+    "cache": false,
+    "depends": [
+        "core"
+    ]
+}

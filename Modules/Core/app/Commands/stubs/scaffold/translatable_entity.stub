@@ -1,0 +1,16 @@
+<?php
+
+namespace Modules\$STUDLY_NAME$\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Modules\Core\Repositories\Transaltion\Translatable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class $TABLE_NAME$ extends Model
+{
+    use Translatable$SOFT_DELETE$;
+    protected $table = '$LOWER_NAME$';
+    protected $translationForeignKey = '$FOREIGN_KEY$';
+    protected $fillable = [$TABLE_COLUMNS$];
+    public $translatedAttributes = [$TRANSLATABLE_COLUMNS$];
+}

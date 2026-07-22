@@ -1,0 +1,17 @@
+{
+    "name": "Theme",
+    "alias": "theme",
+    "description": "",
+    "keywords": [],
+    "priority": 13,
+    "providers": [
+        "Modules\\Theme\\Providers\\ThemeServiceProvider"
+    ],
+    "files": [
+        "helper.php"
+    ],
+    "cache": false,
+    "depends": [
+        "core"
+    ]
+}

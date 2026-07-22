@@ -1,0 +1,9 @@
+<?php
+
+return [
+    'name' => '$STUDLY_NAME$',
+    'cache' => [
+        'name' => '$STUDLY_NAME$',
+    ],
+    'lang_path' => '$LOWER_NAME$::$LOWER_NAME$.labels',
+];

@@ -1,0 +1,34 @@
+<?php
+
+namespace Modules\$STUDLY_NAME$\Repositories\Cache;
+
+use Modules\$STUDLY_NAME$\Repositories\$TABLE_NAME$Repository;
+use Modules\Core\Repositories\Cache\BaseCacheDecorator;
+
+class Cache$TABLE_NAME$Decorator extends BaseCacheDecorator implements $TABLE_NAME$Repository
+{
+    public function __construct($TABLE_NAME$Repository $$LOWER_NAME$)
+    {
+        parent::__construct();
+        $this->entityName = \config("$ENTITY$name");
+        $this->repository = $$LOWER_NAME$;
+    }
+
+    public function sortColumns()
+    {
+        return $this->repository->sortColumns();
+
+    }
+
+    public function getFilters($request)
+    {
+        return $this->repository->getFilters($request);
+    }
+
+    public function pagination($request)
+    {
+        return $this->remember(function() use ($request) {
+            return $this->repository->pagination($request);
+        });
+    }
+}

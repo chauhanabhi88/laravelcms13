@@ -1,0 +1,17 @@
+{
+    "name": "Block",
+    "alias": "block",
+    "description": "",
+    "keywords": [],
+    "priority": 5,
+    "providers": [
+        "Modules\\Block\\Providers\\BlockServiceProvider"
+    ],
+    "files": [
+        "helpers.php"
+    ],
+    "cache": false,
+    "depends": [
+        "core"
+    ]
+}

@@ -1,0 +1,44 @@
+<?php
+
+namespace Modules\$STUDLY_NAME$\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Modules\$STUDLY_NAME$\Models\$TABLE_NAME$;
+use Illuminate\Http\Request;
+
+class Update$TABLE_NAME$Request extends FormRequest
+{
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     */
+     public function rules(): array
+    {
+        $module = new $TABLE_NAME$();
+          $rules = [];
+$UPDATE_TRANSLATABLE_RULES$
+            return $rules;
+    }
+
+$REQUEST_FUNCTIONS$
+
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     */
+
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+  public function messages()
+    {
+        $rules = [];
+        foreach (getLanguageOptions() as $locale => $value) {
+            $rules["{$locale}.*.required"] =  trans("core::core.messages.required_field");
+        }
+$REQUEST_TRANSLATABLE_MESSAGES$
+        return $rules;
+    }
+}

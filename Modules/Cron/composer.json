@@ -1,0 +1,25 @@
+{
+    "name": "abhishek/cron",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Cron\\": "app/",
+            "Modules\\Cron\\Database\\Factories\\": "database/factories/",
+            "Modules\\Cron\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

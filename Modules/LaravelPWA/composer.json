@@ -1,0 +1,31 @@
+{
+    "name": "abhishek/laravelpwa",
+    "description": "",
+    "keywords": [
+        "laravel",
+        "php",
+        "pwa",
+        "progressive web apps"
+    ],
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\LaravelPWA\\": "app/",
+            "Modules\\LaravelPWA\\Database\\Factories\\": "database/factories/",
+            "Modules\\LaravelPWA\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

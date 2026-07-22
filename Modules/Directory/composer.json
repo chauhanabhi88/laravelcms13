@@ -1,0 +1,28 @@
+{
+    "name": "abhishek/directory",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Directory\\": "app/",
+            "Modules\\Directory\\Database\\Factories\\": "database/factories/",
+            "Modules\\Directory\\Database\\Seeders\\": "database/seeders/"
+        },
+        "exclude-from-classmap": [
+            "app/vendor/"
+        ]
+    }
+}

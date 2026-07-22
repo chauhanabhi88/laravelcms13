@@ -1,0 +1,25 @@
+{
+    "name": "abhishek/mail",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Mail\\": "app/",
+            "Modules\\Mail\\Database\\Factories\\": "database/factories/",
+            "Modules\\Mail\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

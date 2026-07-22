@@ -1,0 +1,25 @@
+{
+    "name": "abhishek/theme",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Theme\\": "app/",
+            "Modules\\Theme\\Database\\Factories\\": "database/factories/",
+            "Modules\\Theme\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

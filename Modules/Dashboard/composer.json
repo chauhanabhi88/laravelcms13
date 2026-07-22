@@ -1,0 +1,25 @@
+{
+    "name": "abhishek/dashboard",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+                
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Dashboard\\": "app/",
+            "Modules\\Dashboard\\Database\\Factories\\": "database/factories/",
+            "Modules\\Dashboard\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

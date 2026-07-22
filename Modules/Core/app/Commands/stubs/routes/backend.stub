@@ -1,0 +1,68 @@
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Backend Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+Route::prefix('$LOWER_NAME$')->group(function() {
+    Route::get('/', [
+        'as' => 'admin.$LOWER_NAME$.index',
+        'uses' => 'IndexController@index',
+        'middleware' => 'can:admin.$LOWER_NAME$.index'
+    ]);
+
+    Route::post('/filters', [
+        'as' => 'admin.$LOWER_NAME$.filters',
+        'uses' => 'IndexController@filters',
+        'middleware' => 'can:admin.$LOWER_NAME$.filters'
+    ]);
+
+    Route::get('/create', [
+        'as' => 'admin.$LOWER_NAME$.create',
+        'uses' => 'IndexController@create',
+        'middleware' => 'can:admin.$LOWER_NAME$.create'
+    ]);
+
+    Route::post('/', [
+        'as' => 'admin.$LOWER_NAME$.store',
+        'uses' => 'IndexController@store',
+        'middleware' => 'can:admin.$LOWER_NAME$.create'
+    ]); 
+
+    Route::get('/edit/{id}', [
+        'as' => 'admin.$LOWER_NAME$.edit',
+        'uses' => 'IndexController@edit',
+        'middleware' => 'can:admin.$LOWER_NAME$.edit'
+    ]);
+
+    Route::put('/{id}', [
+        'as' => 'admin.$LOWER_NAME$.update',
+        'uses' => 'IndexController@update',
+        'middleware' => 'can:admin.$LOWER_NAME$.edit'
+    ]);
+
+    Route::post('/update_status', [
+        'as' => 'admin.$LOWER_NAME$.update_status',
+        'uses' => 'IndexController@updateStatus',
+        'middleware' => 'can:admin.$LOWER_NAME$.edit'
+    ]);
+
+    Route::delete('/delete/{id}', [
+        'as' => 'admin.$LOWER_NAME$.delete',
+        'uses' => 'IndexController@delete',
+        'middleware' => 'can:admin.$LOWER_NAME$.delete'
+    ]);
+
+    Route::delete('/massDelete', [
+        'as' => 'admin.$LOWER_NAME$.mass_delete',
+        'uses' => 'IndexController@massDelete',
+        'middleware' => 'can:admin.$LOWER_NAME$.mass_delete'
+    ]);
+});

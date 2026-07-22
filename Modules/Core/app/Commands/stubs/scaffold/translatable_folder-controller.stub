@@ -1,0 +1,233 @@
+<?php
+
+namespace Modules\$STUDLY_NAME$\Http\Controllers\Backend;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Modules\$STUDLY_NAME$\Models\$TABLE_NAME$;
+use Modules\$STUDLY_NAME$\Repositories\$TABLE_NAME$Repository;
+use Modules\$STUDLY_NAME$\Http\Requests\Create$TABLE_NAME$Request;
+use Modules\$STUDLY_NAME$\Http\Requests\Update$TABLE_NAME$Request;
+use Modules\Core\Http\Controllers\BackendController;
+
+class $TABLE_NAME$Controller extends BackendController
+{
+    /**
+     * @var $TABLE_NAME$Repository
+     */
+    private $$LOWER_NAME$;
+
+    /**
+      * @var UserEntity
+     */
+    private $$LOWER_NAME$Entity;
+
+    public function __construct($TABLE_NAME$Repository $$LOWER_NAME$Repo, $TABLE_NAME$ $$LOWER_NAME$)
+    {
+        parent::__construct();
+
+        $this->$LOWER_NAME$ = $$LOWER_NAME$Repo;
+        $this->$LOWER_NAME$Entity = $$LOWER_NAME$;
+    }
+    /**
+     * Display a listing of the resource.
+      * @return Response
+     */
+    public function index(Request $request)
+    {
+        try
+        {
+            if (function_exists('getPerPageForModule')) {
+                $perPage = getPerPageForModule(config("$MODULE_LOWER_NAME$.cache.$LOWER_NAME$_name"), $request->get("per_page"));
+                $request->merge(['per_page' => $perPage]);
+            }
+            $columns = $this->$LOWER_NAME$->sortColumns();
+             $statusOptions = $this->$LOWER_NAME$->getStatusOptions(true);
+            $collection = $this->$LOWER_NAME$->pagination($request);
+            $filters = $this->$LOWER_NAME$->getFilters($request);
+            $CONTROLLER_INDEX$
+            return view('$MODULE_LOWER_NAME$::backend.$LOWER_NAME$.index', compact('request', 'collection', 'columns', 'filters','statusOptions'));
+        }
+       catch (\Throwable $e) {
+            return redirect()->route('admin.dashboard.index',updateUrlParams())->with("error", $e->getMessage());
+        }
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @return Response
+     */
+    public function filters(Request $request)
+    {
+        try {
+            if (function_exists('getPerPageForModule')) {
+                $perPage = getPerPageForModule(config("$MODULE_LOWER_NAME$.cache.$LOWER_NAME$_name"), $request->get("per_page"));
+                $request->merge(['per_page' => $perPage]);
+            }
+            setFilterSession(config("$MODULE_LOWER_NAME$.cache.$LOWER_NAME$_name"), $request);
+            $columns = $this->$LOWER_NAME$->sortColumns();
+             $statusOptions = $this->$LOWER_NAME$->getStatusOptions(true);
+            $filters = $this->$LOWER_NAME$->getFilters($request);
+            $collection = $this->$LOWER_NAME$->pagination($request);
+            $CONTROLLER_INDEX$
+            $content = view('$MODULE_LOWER_NAME$::backend.$LOWER_NAME$.partials.grid', compact('request', 'collection', 'columns', 'filters','statusOptions'));
+            return response()->json([
+                'type' => 'success',
+                'content' => [
+                    'element' => 'collection',
+                    'html' => $content->__toString()
+                ],
+                'message' => $request->get('message')
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'type' => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     * @return Response
+     */
+    public function create()
+    {
+        try
+        {
+$CONTROLLER_DATA$
+            $languageOptions = getLanguageOptions();
+            return view('$MODULE_LOWER_NAME$::backend.$LOWER_NAME$.create' $CONTROLLER_VARIABLE$);
+        }
+         catch (\Throwable $e)
+        {
+            return redirect()->route('admin.$LOWER_NAME$.index',updateUrlParams())->with("error", $e->getMessage());
+        }
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     * @param Request $request
+     * @return Response
+     */
+    public function store(Create$TABLE_NAME$Request $request)
+    {
+        try
+        {
+            $params = $request->all();
+$CONTROLLER_STORE$
+            $$LOWER_NAME$ = $this->$LOWER_NAME$->create($params);
+            if(isset($params['snc']) && $params['snc']) {
+                return redirect()->route('admin.$LOWER_NAME$.edit', updateUrlParams([$$LOWER_NAME$->id]))->with("success", trans("$MODULE_LOWER_NAME$::$LOWER_NAME$.messages.created_success"));
+            }
+            return redirect()->route('admin.$LOWER_NAME$.index',updateUrlParams())->with("success", trans("$MODULE_LOWER_NAME$::$LOWER_NAME$.messages.created_success"));
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.$LOWER_NAME$.create',updateUrlParams())->with("error", $e->getMessage());
+        }
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     * @param int $id
+     * @return Response
+     */
+    public function edit(Request $request)
+    {
+        try {
+                $id = $request->id;
+            if (!$id) {
+                throw new \Exception(trans("$MODULE_LOWER_NAME$::$LOWER_NAME$.messages.data_invalid"));
+            }
+            $$LOWER_NAME$ = $this->$LOWER_NAME$->find($id);
+            if(!$$LOWER_NAME$) {
+                throw new \Exception(trans("$MODULE_LOWER_NAME$::$LOWER_NAME$.messages.data_invalid"));
+            }
+$CONTROLLER_DATA$
+            $languageOptions = getLanguageOptions();
+            return view('$MODULE_LOWER_NAME$::backend.$LOWER_NAME$.edit', compact('$LOWER_NAME$', 'languageOptions' $CONTROLLER_EDIT_VARIABLE$));
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.$LOWER_NAME$.index',updateUrlParams())->with("error", $e->getMessage());
+        }
+    }
+
+    /**
+     * Update the specified resource in storage.
+     * @param Request $request
+     * @param int $id
+     * @return Response
+     */
+    public function update(Update$TABLE_NAME$Request $request)
+    {
+        try
+        {
+              $id = $request->id;
+            if (!$id) {
+                throw new \Exception(trans("$MODULE_LOWER_NAME$::$LOWER_NAME$.messages.data_invalid"));
+            }
+            $params = $request->all();
+            $$LOWER_NAME$ = $this->$LOWER_NAME$->find($id);
+            if(!$$LOWER_NAME$) {
+                throw new \Exception(trans("$MODULE_LOWER_NAME$::$LOWER_NAME$.messages.data_invalid"));
+            }
+$CONTROLLER_UPDATE$
+            $this->$LOWER_NAME$->update($$LOWER_NAME$, $params);
+            if(isset($params['snc']) && $params['snc']) {
+                return redirect()->route('admin.$LOWER_NAME$.edit', updateUrlParams([$id]))->with("success", trans("$MODULE_LOWER_NAME$::$LOWER_NAME$.messages.updated_success"));
+            }
+            return redirect()->route('admin.$LOWER_NAME$.index',updateUrlParams())->with("success", trans("$MODULE_LOWER_NAME$::$LOWER_NAME$.messages.updated_success"));
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.$LOWER_NAME$.edit', updateUrlParams([$id]))->with("error", $e->getMessage());
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     * @param int $id
+     * @return Response
+     */
+    public function delete(Request $request)
+    {
+        try {
+                $id = $request->id;
+                if (!$id) {
+                    throw new \Exception(trans("$MODULE_LOWER_NAME$::$LOWER_NAME$.messages.data_invalid"));
+                }
+            $$LOWER_NAME$ = $this->$LOWER_NAME$->find($id);
+            if(!$$LOWER_NAME$) {
+                throw new \Exception(trans("$MODULE_LOWER_NAME$::$LOWER_NAME$.messages.data_invalid"));
+            }
+
+            $this->$LOWER_NAME$->destroy($$LOWER_NAME$);
+            return redirect()->route('admin.$LOWER_NAME$.index',updateUrlParams())->with("success", trans("$MODULE_LOWER_NAME$::$LOWER_NAME$.messages.deleted_success"));
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.$LOWER_NAME$.index',updateUrlParams())->with("error", $e->getMessage());
+        }
+    }
+
+    /**
+     * Remove Selected / All resource from storage
+     */
+    public function massDelete(Request $request){
+        try {
+            $this->$LOWER_NAME$->destroyMultiple($request);
+            return redirect()->route('admin.$LOWER_NAME$.index',updateUrlParams())->with("success", trans("$MODULE_LOWER_NAME$::$LOWER_NAME$.messages.deleted_success"));
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.$LOWER_NAME$.index',updateUrlParams())->with("error", $e->getMessage());
+        }
+    }
+
+     public function updateStatus(Request $request){
+        if($request->get('id')){
+            $id = $request->get('id');
+            $status = $request->get('status');
+            $$LOWER_NAME$Row = $this->$LOWER_NAME$->find($id);
+           $status = ($status == 1)? config('core.enabled') : config('core.disabled');
+            $params = array('status'=>$status);
+            $this->$LOWER_NAME$->update($$LOWER_NAME$Row, $params);
+        }
+        $request = new Request();
+        $request->merge(['message' => trans("core::core.messages.status_change_success")]);
+        return $this->filters($request);
+    }
+}

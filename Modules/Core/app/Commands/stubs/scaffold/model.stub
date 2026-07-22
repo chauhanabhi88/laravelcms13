@@ -1,0 +1,16 @@
+<?php
+
+namespace Modules\$STUDLY_NAME$\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class $TABLE_NAME$ extends Model
+{
+    $SOFT_DELETE$
+    
+    protected $table = '$LOWER_NAME$';
+
+    protected $fillable = [$TABLE_COLUMNS$];
+
+}

@@ -1,0 +1,14 @@
+{
+    "name": "Directory",
+    "alias": "directory",
+    "description": "",
+    "keywords": [],
+    "priority": 10,
+    "providers": [
+        "Modules\\Directory\\Providers\\DirectoryServiceProvider"
+    ],
+    "files": [
+        "helpers.php"
+    ],
+    "cache": false
+}
