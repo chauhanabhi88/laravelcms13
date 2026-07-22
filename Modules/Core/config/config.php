@@ -14,7 +14,7 @@ return [
     | Location where your themes are located
     |--------------------------------------------------------------------------
     */
-    'themes_path' => base_path() . '/themes',
+    'themes_path' => base_path().'/themes',
 
     /*
     |--------------------------------------------------------------------------
@@ -30,14 +30,13 @@ return [
     /*
     | common config options
     */
-    'yes'               => 1,
-    'no'                => 2,
-    'enabled'           => 1,
-    'disabled'          => 2,
-    'defaultPerPage'    => 20,
-    'on'                => 1,
-    'off'               => 2,
-
+    'yes' => 1,
+    'no' => 2,
+    'enabled' => 1,
+    'disabled' => 2,
+    'defaultPerPage' => 20,
+    'on' => 1,
+    'off' => 2,
 
     /*
     | common input type maxlength
@@ -65,9 +64,9 @@ return [
     'isBaseCurrency' => 1,
     'isDisplayCurrency' => 1,
     'encrypt' => [
-        'password'  => 'sc3R7469',
-        'method'    => 'bf-cbc',
-        'iv'        => '95724836',
+        'password' => 'sc3R7469',
+        'method' => 'bf-cbc',
+        'iv' => '95724836',
         'datepicker_format' => 'dd-mm-yy',
         'php_datepicker_format' => 'd-m-Y',
     ],
@@ -75,17 +74,17 @@ return [
     /*
     | flag for backend url language perams
     */
-    "translation" => 0,
+    'translation' => 0,
 
     /*
     | flag for frontend url language perams
     */
-    "translation_front" => 0,
+    'translation_front' => 0,
 
     /*
     | flag for api language perams
     */
-    "translation_api" => 0,
+    'translation_api' => 0,
 
     /*
     | flag for define route type
@@ -97,22 +96,41 @@ return [
     */
     'is_filelog_enabled' => 1,
 
-    'summernote_temp_folder_name'  => 'summernote_temp',
+    'summernote_temp_folder_name' => 'summernote_temp',
 
     'special_character_regex_server' => '/[@$\"!%*#?&.{|}()+,:;\\[\\]<\\\=>^_`~\'-\\/]/',
 
     'cache' => [
-        "notification_log" => "NotificationLog"
+        'notification_log' => 'NotificationLog',
     ],
 
-    "api_versions" => [
-        "v1"
+    'api_versions' => [
+        'v1',
     ],
 
     'cache_file_log' => [
         'file_name' => 'cache_file_log',
         'is_enabled' => 1,
-        'module' => 'core'
+        'module' => 'core',
     ],
-    
+
+    /*
+    | HTTP status codes used by ApiController response helpers.
+    */
+    'http_success' => [
+        'http_ok' => 200,
+    ],
+
+    'http_fail' => [
+        'bad_request' => 400,
+        'internal_server_error' => 500,
+        'unauthorized' => 401,
+        'forbidden' => 403,
+        'not_found' => 404,
+        'method_not_allowed' => 405,
+        'not_acceptable' => 406,
+        'exceptional_fail' => 417,
+        'failed_dependancy' => 424,
+    ],
+
 ];

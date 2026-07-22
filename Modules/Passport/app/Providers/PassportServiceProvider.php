@@ -2,105 +2,77 @@
 
 namespace Modules\Passport\Providers;
 
-use Laravel\Passport\Passport;
-use Modules\Passport\Models\Token;
+use DateInterval;
 use Illuminate\Support\ServiceProvider;
-use Modules\Passport\Grant\PasswordGrant;
+use Laravel\Passport\Passport;
 use League\OAuth2\Server\AuthorizationServer;
-use Modules\Passport\Repositories\ClientRepository;
-use Laravel\Passport\Bridge\ClientRepository as PassportClientRepository;
+use Modules\Passport\Grant\PasswordGrant;
 
 class PassportServiceProvider extends ServiceProvider
 {
     /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
+     * Register the service provider.
      */
-    protected $defer = false;
-
-    /**
-     * Boot the application events.
-     *
-     * @return void
-     */
-    public function boot()
+    public function register(): void
     {
-        /* Passport::enablePasswordGrant();
-        Passport::useTokenModel(Token::class);
-        
-        if($scopes = config('passport.scopes')) {
-            Passport::tokensCan(
-                $scopes
-            );
-        } */
-
-        // Register our custom grant
-        $this->app->afterResolving(AuthorizationServer::class, function (AuthorizationServer $server) {
-            $grant = app(PasswordGrant::class);
-            $grant->setRefreshTokenTTL(new \DateInterval('P30D'));
-
-            $server->enableGrantType(
-                $grant,
-                new \DateInterval('P7D')
-            );
-        });
-
-        $this->registerTranslations();
-        $this->registerConfig();
-        $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
+        // Merged during register() so the values are available to anything
+        // resolving Passport during boot().
+        $this->mergeConfigFrom(__DIR__.'/../../config/config.php', 'passport');
     }
 
     /**
-     * Register the service provider.
-     *
-     * @return void
+     * Boot the application events.
      */
-    public function register()
+    public function boot(): void
     {
-        $this->app->bind(PassportClientRepository::class, function($app) {
-            return app(ClientRepository::class);
-        });        
+        $this->registerPasswordGrant();
+        $this->registerTranslations();
+        $this->registerConfig();
+        $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
+    }
+
+    /**
+     * Enable the module's password grant in place of the stock one.
+     *
+     * Passport::enablePasswordGrant() is deliberately not called: it would
+     * register the league grant, which does not report CMS error messages.
+     */
+    protected function registerPasswordGrant(): void
+    {
+        // Defaults are repeated here so a stale cached config cannot take the
+        // application down with a malformed interval.
+        Passport::tokensExpireIn(new DateInterval(config('passport.tokens_expire_in') ?: 'P7D'));
+        Passport::refreshTokensExpireIn(new DateInterval(config('passport.refresh_tokens_expire_in') ?: 'P30D'));
+
+        $this->app->afterResolving(AuthorizationServer::class, function (AuthorizationServer $server): void {
+            $grant = $this->app->make(PasswordGrant::class);
+            $grant->setRefreshTokenTTL(Passport::refreshTokensExpireIn());
+
+            $server->enableGrantType($grant, Passport::tokensExpireIn());
+        });
     }
 
     /**
      * Register config.
-     *
-     * @return void
      */
-    protected function registerConfig()
+    protected function registerConfig(): void
     {
         $this->publishes([
             __DIR__.'/../../config/config.php' => config_path('modules/passport.php'),
         ], 'config');
-        $this->mergeConfigFrom(
-            __DIR__.'/../../config/config.php', 'passport'
-        );
     }
 
     /**
      * Register translations.
-     *
-     * @return void
      */
-    public function registerTranslations()
+    public function registerTranslations(): void
     {
         $langPath = resource_path('lang/modules/passport');
 
         if (is_dir($langPath)) {
             $this->loadTranslationsFrom($langPath, 'passport');
         } else {
-            $this->loadTranslationsFrom(__DIR__ .'/../../resources/lang', 'passport');
+            $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'passport');
         }
-    }
-    
-    /**
-     * Get the services provided by the provider.
-     *
-     * @return array
-     */
-    public function provides()
-    {
-        return [];
     }
 }

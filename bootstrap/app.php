@@ -1,15 +1,14 @@
 <?php
 
-use Illuminate\Foundation\Application;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use \Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Modules\Passport\Http\Exception\OAuthServerException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -23,58 +22,41 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->report(function (OAuthServerException $e) {
-
-            if (
-                $e->getErrorType() === 'refresh_token_expired'
-            ) {
-                return response()->json([
-                    'error' => 'refresh_token_expired',
-                    'message' => trans("core::core.messages.logged_out"),
-                    'code' => 4012
-                ], 401)->header('Cache-Control', 'no-store, no-cache, must- revalidate, max-age=0');
-            }
-            exit;
-        });
-
-        $exceptions->report(function (NotFoundHttpException $e, $request) {
+        // Callbacks run in registration order, and the first non-null return
+        // wins — so the specific HttpException subclasses must be registered
+        // before the generic HttpException handler at the bottom.
+        $exceptions->render(function (NotFoundHttpException $e, $request) {
             if ($request->wantsJson()) {
-                return response()->json(["message" => trans("core::core.messages.route_not_found"), "code" => "404"], 404);
-                exit;
+                return response()->json(['message' => trans('core::core.messages.route_not_found'), 'code' => '404'], 404);
             }
-            return response()->view('pages::errors.404')->header('Cache-Control', 'no-store, no-cache, must- revalidate, max-age=0');
+
+            return response()->view('pages::errors.404')->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
         });
 
-        $exceptions->report(function (MethodNotAllowedHttpException $e, $request) {
+        $exceptions->render(function (MethodNotAllowedHttpException $e, $request) {
             if ($request->wantsJson()) {
-                return response()->json(["message" => trans("core::core.messages.method_not_allowed", ['method' => $request->method()]), "code" => "405"], 405)->header('Cache-Control', 'no-store, no-cache, must- revalidate, max-age=0');
-                exit;
+                return response()->json(['message' => trans('core::core.messages.method_not_allowed', ['method' => $request->method()]), 'code' => '405'], 405)->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
             }
-            return redirect()->intended(route(config("user.redirect_route_after_login"), updateUrlParams()));
+
+            return redirect()->intended(route(config('user.redirect_route_after_login'), updateUrlParams()));
         });
 
-        $exceptions->report(function (AuthenticationException $e, $request) {
+        $exceptions->render(function (ThrottleRequestsException $e) {
+            return response()->view('pages::errors.400', [], 429);
+        });
+
+        $exceptions->render(function (AuthenticationException $e, $request) {
             if ($request->expectsJson()) {
-                return response()->json(['error' => 'token_expired_or_invalid', 'message' => trans("core::core.messages.logged_out"), "code" => 4011], 401)->header('Cache-Control', 'no-store, no-cache, must- revalidate, max-age=0');
-                exit;
+                return response()->json(['error' => 'token_expired_or_invalid', 'message' => trans('core::core.messages.logged_out'), 'code' => 4011], 401)->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
             }
 
-            return redirect(route("backend_login", updateUrlParams()));
+            return redirect(route('backend_login', updateUrlParams()));
         });
 
-        $exceptions->report(function (HttpException $e) {
-            switch($e->getStatusCode()) {
-                case 401:
-                    return redirect(route("backend_login", updateUrlParams()));
-                    break;
-                case 419:
-                    return redirect(route("backend_login", updateUrlParams()));
-                    break;
-            }
-        });
-
-        $exceptions->report(function (ThrottleRequestsException $e) {
-            return response()->view('pages::errors.400');
-            exit;
+        $exceptions->render(function (HttpException $e) {
+            return match ($e->getStatusCode()) {
+                401, 419 => redirect(route('backend_login', updateUrlParams())),
+                default => null,
+            };
         });
     })->create();

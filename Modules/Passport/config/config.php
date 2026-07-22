@@ -1,24 +1,19 @@
 <?php
 
+/*
+| Merged into Laravel Passport's own "passport" config namespace by
+| PassportServiceProvider. Keep keys in the Passport domain and check
+| vendor/laravel/passport/config/passport.php before adding one.
+|
+| Token scopes are NOT declared here: Modules\Core\Providers\AuthServiceProvider
+| is the single source of truth for Passport::tokensCan().
+*/
+
 return [
-    'name' => 'Passport',
-    'scopes' => [
-        'customer' => 'Customer',
-        'guest' => 'Guest Users',
-        'users' => 'Admin Users',
-    ],
-    'http_success' => [
-        'http_ok' => 200
-    ],
-    'http_fail' => [
-        'bad_request' => 400,
-        'internal_server_error' => 500,
-        'unauthorized' => 401,
-        'forbidden' => 403,
-        'not_found' => 404,
-        'method_not_allowed' => 405,
-        'not_acceptable' => 406,
-        'exceptional_fail' => 417,
-        'failed_dependancy' => 424
-    ],
+    /*
+    | Access / refresh token lifetimes, as ISO-8601 durations.
+    */
+    'tokens_expire_in' => env('PASSPORT_TOKENS_EXPIRE_IN', 'P7D'),
+
+    'refresh_tokens_expire_in' => env('PASSPORT_REFRESH_TOKENS_EXPIRE_IN', 'P30D'),
 ];
