@@ -12,6 +12,7 @@
         </div>
         <div class="col-sm-6 btn-right">
             <div class="float-right">
+                @include('core::partials.grid-panel-toggles')
                 <button class="btn btn-secondary btn-fw" onclick="setLocation('{{ route('admin.cron.index', updateUrlParams()) }}')">{{ trans("core::core.buttons.cancel") }}</button>
                 @can('admin.cron.delete')
                 <button class="btn btn-danger btn-fw" data-form-id="main_form" data-toggle="modal" data-target="#modal-delete-confirmation" data-action-target="{{ route('admin.cron.delete', updateUrlParams([$cron->id])) }}">{{ trans('core::core.buttons.delete') }}</button>

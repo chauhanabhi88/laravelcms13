@@ -16,6 +16,7 @@
         </div>
         <div class="col-sm-6">
           <div class="float-right">
+              @include('core::partials.grid-panel-toggles')
             @can('admin.customerLog.index')
             <button type="button" class="btn btn-danger btn-sm au-btn-icon" id="refresh-grid" onclick="setLocation('{{ route('admin.customerLog.index', updateUrlParams()) }}')"><i class="fa fa-ban"></i>{{ trans('customer::customer_online_offline.buttons.refresh') }}</button>
             @endcan

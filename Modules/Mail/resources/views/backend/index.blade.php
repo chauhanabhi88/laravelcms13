@@ -14,6 +14,7 @@
                 </div>
                 <div class="col-sm-6 btn-right">
                     <div class="float-right">
+                        @include('core::partials.grid-panel-toggles')
                         @can('admin.mail.mass_delete')
                         <button type="button" id="mass-delete" class="btn btn-danger btn-fw" data-toggle="modal" data-target="#modal-delete-confirmation" data-action-target="{{ route('admin.mail.mass_delete', updateUrlParams()) }}">{{ trans('core::core.buttons.delete') }}</i></button>
                         @endcan
