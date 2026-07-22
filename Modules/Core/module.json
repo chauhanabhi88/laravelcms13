@@ -7,16 +7,6 @@
     "providers": [
         "Modules\\Core\\Providers\\CoreServiceProvider"
     ],
-    "aliases": {
-        "Nwidart\\Modules\\Support\\Migrations\\SchemaParser": "Modules\\Core\\Support\\Migrations\\SchemaParser",
-        "Nwidart\\Modules\\Commands\\Make\\MigrationMakeCommand": "Modules\\Core\\Commands\\Make\\MigrationMakeCommand",
-        "Nwidart\\Modules\\Generators\\ModuleGenerator": "Modules\\Core\\Generators\\ModuleGenerator",
-        "Nwidart\\Modules\\Commands\\Make\\ModuleMakeCommand": "Modules\\Core\\Commands\\Make\\ModuleMakeCommand",
-        "Nwidart\\Modules\\Commands\\Database\\SeedCommand": "Modules\\Core\\Commands\\Database\\SeedCommand",
-        "Nwidart\\Modules\\Commands\\Actions\\EnableCommand": "Modules\\Core\\Commands\\Actions\\EnableCommand",
-        "Nwidart\\Modules\\Commands\\Actions\\DisableCommand": "Modules\\Core\\Commands\\Actions\\DisableCommand",
-        "Illuminate\\Cache\\FileStore": "Modules\\Core\\Cache\\FileStore"
-    },
     "files": [
         "composers.php",
         "helpers.php",

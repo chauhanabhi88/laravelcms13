@@ -21,11 +21,14 @@ trait FlushesEntityCache
      * Flush all cached entries for the given entity.
      *
      * @param  string  $entityName
-     * @return bool
      */
     protected function flushCacheFor($entityName): bool
     {
         if (empty($entityName)) {
+            return false;
+        }
+
+        if (! app()->bound('cache')) {
             return false;
         }
 
@@ -46,19 +49,12 @@ trait FlushesEntityCache
     /**
      * The cache repository to flush.
      *
-     * Prefers the instance's own repository (the decorator caches reads through
-     * it) so the flush always targets the store the entries were written to,
-     * and only falls back to the container for classes that hold no repository
-     * of their own.
-     *
-     * @return \Illuminate\Cache\Repository
+     * Classes that hold their own repository - the decorator caches reads
+     * through one - override this so the flush always targets the store the
+     * entries were actually written to.
      */
     protected function cacheRepository(): Repository
     {
-        if (isset($this->cache) && $this->cache instanceof Repository) {
-            return $this->cache;
-        }
-
         return app(Repository::class);
     }
 
@@ -70,7 +66,6 @@ trait FlushesEntityCache
      * there and stay first.
      *
      * @param  string  $entityName
-     * @return string
      */
     protected function entityCacheKeyPrefix($entityName): string
     {

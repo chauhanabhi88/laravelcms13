@@ -12,13 +12,20 @@ abstract class BaseCacheDecorator implements BaseRepository
     use FlushesEntityCache;
 
     /**
-     * @var \Modules\Core\Repositories\BaseRepository
+     * Container binding memoising the per-request guard identities.
+     */
+    private const IDENTITIES_KEY = 'core.cache.guard-identities';
+
+    /**
+     * @var BaseRepository
      */
     protected $repository;
+
     /**
      * @var Repository
      */
     protected $cache;
+
     /**
      * @var string The entity name
      */
@@ -29,20 +36,30 @@ abstract class BaseCacheDecorator implements BaseRepository
         $this->cache = app(Repository::class);
     }
 
+    /**
+     * Flush through the same repository the reads were cached with.
+     */
+    protected function cacheRepository(): Repository
+    {
+        return $this->cache;
+    }
+
     public function setModel($model)
     {
         $this->repository->setModel($model);
+
         return $this;
     }
 
     public function setUploadParams($params)
     {
         $this->repository->setUploadParams($params);
+
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function find($id)
     {
@@ -52,7 +69,7 @@ abstract class BaseCacheDecorator implements BaseRepository
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function all()
     {
@@ -62,7 +79,7 @@ abstract class BaseCacheDecorator implements BaseRepository
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function allWithBuilder(): Builder
     {
@@ -73,17 +90,19 @@ abstract class BaseCacheDecorator implements BaseRepository
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function paginate($perPage = 20)
     {
-        return $this->remember(function () use ($perPage) {
-            return $this->repository->paginate($perPage);
-        });
+        // Not cached. The key carries the current user and their session filter
+        // bucket, so a grid entry is only ever reusable by the same user, on the
+        // same filters, on the same page - it is written far more often than it
+        // is read, and every write widens what a flush has to throw away.
+        return $this->repository->paginate($perPage);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function allTranslatedIn($lang)
     {
@@ -93,7 +112,7 @@ abstract class BaseCacheDecorator implements BaseRepository
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function findBySlug($slug)
     {
@@ -103,7 +122,7 @@ abstract class BaseCacheDecorator implements BaseRepository
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function create($data, $ignoreFields = [])
     {
@@ -113,7 +132,7 @@ abstract class BaseCacheDecorator implements BaseRepository
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function update($model, $data, $ignoreFields = [], $orderBy = false)
     {
@@ -123,38 +142,43 @@ abstract class BaseCacheDecorator implements BaseRepository
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function destroy($model)
     {
         $this->flushCacheFor($this->entityName);
+
         return $this->repository->destroy($model);
     }
 
     public function deleteRecord($request, $imageRemoveParams = '')
     {
         $this->flushCacheFor($this->entityName);
+
         return $this->repository->deleteRecord($request, $imageRemoveParams);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function destroyMultiple($request, $removeFile = false)
     {
         $this->flushCacheFor($this->entityName);
+
         return $this->repository->destroyMultiple($request, $removeFile);
     }
 
     public function restoreMultiple($request)
     {
         $this->flushCacheFor($this->entityName);
+
         return $this->repository->restoreMultiple($request);
     }
 
     public function forceDeleteMultiple($request, $removeFile = false)
     {
         $this->flushCacheFor($this->entityName);
+
         return $this->repository->forceDeleteMultiple($request, $removeFile);
     }
 
@@ -166,11 +190,12 @@ abstract class BaseCacheDecorator implements BaseRepository
     public function restoreAndForceDelete($request, $restore = false, $forceDelete = false)
     {
         $this->flushCacheFor($this->entityName);
+
         return $this->repository->restoreAndForceDelete($request, $restore, $forceDelete);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function findByAttributes(array $attributes)
     {
@@ -180,7 +205,7 @@ abstract class BaseCacheDecorator implements BaseRepository
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getByAttributes(array $attributes, $orderBy = null, $sortOrder = 'asc')
     {
@@ -190,7 +215,7 @@ abstract class BaseCacheDecorator implements BaseRepository
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function findByMany(array $ids)
     {
@@ -200,7 +225,7 @@ abstract class BaseCacheDecorator implements BaseRepository
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function clearCache()
     {
@@ -210,9 +235,8 @@ abstract class BaseCacheDecorator implements BaseRepository
     }
 
     /**
-     * @param \Closure $callback
-     * @param null|string $key
-     * @param null|int    $time
+     * @param  null|string  $key
+     * @param  null|int  $time
      * @return mixed
      */
     protected function remember(\Closure $callback, $key = null, $time = null)
@@ -232,8 +256,8 @@ abstract class BaseCacheDecorator implements BaseRepository
     /**
      * Generate a cache key with the called method name and its arguments
      * If a key is provided, use that instead
-     * @param null|string $key
-     * @return string
+     *
+     * @param  null|string  $key
      */
     private function makeCacheKey($key = null): string
     {
@@ -245,8 +269,9 @@ abstract class BaseCacheDecorator implements BaseRepository
 
         // Depth 3 is the public repository method that called remember().
         // Limiting the depth keeps this off the hot path; anything deeper is
-        // irrelevant to the key anyway.
-        $backtrace = debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 3)[2] ?? [];
+        // irrelevant to the key anyway. Flag 0 keeps the args (which the key is
+        // built from) while dropping the "object" entry, which is unused.
+        $backtrace = debug_backtrace(0, 3)[2] ?? [];
 
         $arg = [];
         if (isset($backtrace['args']) && $backtrace['args']) {
@@ -270,7 +295,7 @@ abstract class BaseCacheDecorator implements BaseRepository
      * two different calls collapse onto the same entry and return each other's
      * data.
      *
-     * @param  mixed $argument
+     * @param  mixed  $argument
      * @return mixed
      */
     private function normaliseArgument($argument)
@@ -304,12 +329,10 @@ abstract class BaseCacheDecorator implements BaseRepository
      * FileStore::path() matches the segment between the first two colons to
      * pick the entity's directory, so the entity name stays first and the
      * context fingerprint is appended after it.
-     *
-     * @return string
      */
     protected function getBaseKey(): string
     {
-        return $this->entityCacheKeyPrefix($this->entityName) . $this->contextFingerprint();
+        return $this->entityCacheKeyPrefix($this->entityName).$this->contextFingerprint();
     }
 
     /**
@@ -321,11 +344,37 @@ abstract class BaseCacheDecorator implements BaseRepository
      * app()->getLocale(). None of that is visible in the method arguments, so
      * without it two different users - or the same user in another language -
      * share a cache entry and are served each other's results.
-     *
-     * @return string
      */
     protected function contextFingerprint(): string
     {
+        return sha1(\serialize([
+            app()->getLocale(),
+            $this->guardIdentities(),
+            $this->filterSessionState(),
+        ]));
+    }
+
+    /**
+     * The authenticated id for every configured guard.
+     *
+     * Resolving a guard is not free - the Passport "api" guard parses the
+     * bearer token and hits the database - and this runs on every cached read,
+     * so the result is memoised in the container. That binding lives and dies
+     * with the application instance, which makes it per-request without a
+     * static that would leak between queue jobs or tests.
+     *
+     * Caveat: a login or logout later in the same request will not be
+     * reflected. Cached reads taken after an explicit auth change in the same
+     * request keep the pre-change key.
+     *
+     * @return array<string, mixed>
+     */
+    protected function guardIdentities(): array
+    {
+        if (app()->bound(self::IDENTITIES_KEY)) {
+            return app(self::IDENTITIES_KEY);
+        }
+
         $identities = [];
         foreach (array_keys((array) config('auth.guards', [])) as $guard) {
             try {
@@ -335,11 +384,9 @@ abstract class BaseCacheDecorator implements BaseRepository
             }
         }
 
-        return sha1(\serialize([
-            app()->getLocale(),
-            $identities,
-            $this->filterSessionState(),
-        ]));
+        app()->instance(self::IDENTITIES_KEY, $identities);
+
+        return $identities;
     }
 
     /**
@@ -360,7 +407,7 @@ abstract class BaseCacheDecorator implements BaseRepository
                 return null;
             }
 
-            return $session->get(strtolower((string) $this->entityName) . '_filter');
+            return $session->get(strtolower((string) $this->entityName).'_filter');
         } catch (\Throwable) {
             // No usable session (console, queue worker) - nothing to fingerprint.
             return null;
@@ -368,7 +415,7 @@ abstract class BaseCacheDecorator implements BaseRepository
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function with($relationships)
     {
@@ -423,6 +470,7 @@ abstract class BaseCacheDecorator implements BaseRepository
     public function insert($action)
     {
         $this->flushCacheFor($this->entityName);
+
         return $this->repository->insert($action);
     }
 
@@ -432,11 +480,13 @@ abstract class BaseCacheDecorator implements BaseRepository
 
         return $this->repository->updateOrCreate($data, $updatedData);
     }
+
     public function exportData($columnArray, $collectionArray, $fileName, $columnType = [])
     {
         return $this->repository->exportData($columnArray, $collectionArray, $fileName, $columnType);
     }
-    public function where(string $field, $value, string $operator = null)
+
+    public function where(string $field, $value, ?string $operator = null)
     {
         return $this->repository->where($field, $value, $operator);
     }
@@ -446,8 +496,8 @@ abstract class BaseCacheDecorator implements BaseRepository
         return $this->repository->exportCsv($columnArray, $collectionArray, $fileName);
     }
 
-    public function defaultSort($columns,$orderBy,$dir)
+    public function defaultSort($columns, $orderBy, $dir)
     {
-        return $this->repository->defaultSort($columns,$orderBy,$dir);
+        return $this->repository->defaultSort($columns, $orderBy, $dir);
     }
 }

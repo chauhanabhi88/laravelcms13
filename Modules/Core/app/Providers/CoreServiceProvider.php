@@ -3,20 +3,46 @@
 namespace Modules\Core\Providers;
 
 use Illuminate\Routing\Router;
-use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
+use Modules\Core\Cache\FileStore;
+use Modules\Core\Commands\Database\SeedCommand;
+use Modules\Core\Commands\Make\MigrationMakeCommand;
+use Modules\Core\Commands\Make\ModuleMakeCommand;
+use Modules\Core\Console\CronMakeCommand;
+use Modules\Core\Console\CustomBladeCreateCommand;
+use Modules\Core\Console\CustomBladeEditCommand;
+use Modules\Core\Console\CustomBladeGridCommand;
+use Modules\Core\Console\CustomBladeIndexCommand;
+use Modules\Core\Console\CustomCacheCommand;
+use Modules\Core\Console\CustomControllerCommand;
+use Modules\Core\Console\CustomCreateRequestCommand;
+use Modules\Core\Console\CustomEloquentCommand;
+use Modules\Core\Console\CustomEmptyCacheCommand;
+use Modules\Core\Console\CustomEmptyEloquentCommand;
+use Modules\Core\Console\CustomEntityCommand;
+use Modules\Core\Console\CustomFolderTranslatableBladeCreateCommand;
+use Modules\Core\Console\CustomFolderTranslatableBladeCreateTranslatableCommand;
+use Modules\Core\Console\CustomFolderTranslatableBladeEditCommand;
+use Modules\Core\Console\CustomFolderTranslatableBladeEditTranslatableCommand;
+use Modules\Core\Console\CustomFolderTranslatableControllerCommand;
+use Modules\Core\Console\CustomFolderTranslatableCreateRequestCommand;
+use Modules\Core\Console\CustomFolderTranslatableUpdateRequestCommand;
+use Modules\Core\Console\CustomLangCommand;
+use Modules\Core\Console\CustomRepositoryCommand;
+use Modules\Core\Console\CustomTranslatableBladeCreateCommand;
+use Modules\Core\Console\CustomTranslatableBladeCreateTranslatableCommand;
+use Modules\Core\Console\CustomTranslatableBladeEditCommand;
+use Modules\Core\Console\CustomTranslatableBladeEditTranslatableCommand;
+use Modules\Core\Console\CustomTranslatableControllerCommand;
+use Modules\Core\Console\CustomTranslatableCreateRequestCommand;
+use Modules\Core\Console\CustomTranslatableEntityCommand;
+use Modules\Core\Console\CustomTranslatableUpdateRequestCommand;
+use Modules\Core\Console\CustomUpdateRequestCommand;
 use Modules\Core\Foundations\AssetsManager as AssetsManagerInterFace;
 use Modules\Core\Foundations\Modules\AssetsManager;
 
 class CoreServiceProvider extends ServiceProvider
 {
-    /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = false;
-
     /**
      * The filters base class name.
      *
@@ -26,7 +52,7 @@ class CoreServiceProvider extends ServiceProvider
         'Core' => [
             'can' => 'Authorization',
             'locale' => 'Localization',
-            'auth' => 'Authenticate'
+            'auth' => 'Authenticate',
         ],
     ];
 
@@ -41,55 +67,62 @@ class CoreServiceProvider extends ServiceProvider
         $this->registerTranslations();
         $this->registerConfig();
         $this->registerViews();
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->warnOnUnflushableCacheStore();
+        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         $this->commands([
-            \Modules\Core\Console\CronMakeCommand::class,
-            \Modules\Core\Console\CustomEntityCommand::class,
-            \Modules\Core\Console\CustomRepositoryCommand::class,
-            \Modules\Core\Console\CustomEloquentCommand::class,
-            \Modules\Core\Console\CustomCacheCommand::class,
-            \Modules\Core\Console\CustomLangCommand::class,
-            \Modules\Core\Console\CustomCreateRequestCommand::class,
-            \Modules\Core\Console\CustomUpdateRequestCommand::class,
-            \Modules\Core\Console\CustomControllerCommand::class,
-            \Modules\Core\Console\CustomBladeIndexCommand::class,
-            \Modules\Core\Console\CustomBladeCreateCommand::class,
-            \Modules\Core\Console\CustomBladeEditCommand::class,
-            \Modules\Core\Console\CustomFolderTranslatableBladeCreateCommand::class,
-            \Modules\Core\Console\CustomFolderTranslatableBladeEditCommand::class,
-            \Modules\Core\Console\CustomFolderTranslatableBladeCreateTranslatableCommand::class,
-            \Modules\Core\Console\CustomFolderTranslatableBladeEditTranslatableCommand::class,
-            \Modules\Core\Console\CustomBladeGridCommand::class,
-            \Modules\Core\Console\CustomEmptyEloquentCommand::class,
-            \Modules\Core\Console\CustomEmptyCacheCommand::class,
-            \Modules\Core\Console\CustomTranslatableEntityCommand::class,
-            \Modules\Core\Console\CustomFolderTranslatableControllerCommand::class,
-            \Modules\Core\Console\CustomTranslatableControllerCommand::class,
-            \Modules\Core\Console\CustomTranslatableCreateRequestCommand::class,
-            \Modules\Core\Console\CustomTranslatableUpdateRequestCommand::class,
-            \Modules\Core\Console\CustomFolderTranslatableCreateRequestCommand::class,
-            \Modules\Core\Console\CustomFolderTranslatableUpdateRequestCommand::class,
-            \Modules\Core\Console\CustomTranslatableBladeCreateCommand::class,
-            \Modules\Core\Console\CustomTranslatableBladeCreateTranslatableCommand::class,
-            \Modules\Core\Console\CustomTranslatableBladeEditCommand::class,
-            \Modules\Core\Console\CustomTranslatableBladeEditTranslatableCommand::class,
-            \Modules\Core\Commands\Make\MigrationMakeCommand::class,
-            \Modules\Core\Commands\Make\ModuleMakeCommand::class,
+            CronMakeCommand::class,
+            CustomEntityCommand::class,
+            CustomRepositoryCommand::class,
+            CustomEloquentCommand::class,
+            CustomCacheCommand::class,
+            CustomLangCommand::class,
+            CustomCreateRequestCommand::class,
+            CustomUpdateRequestCommand::class,
+            CustomControllerCommand::class,
+            CustomBladeIndexCommand::class,
+            CustomBladeCreateCommand::class,
+            CustomBladeEditCommand::class,
+            CustomFolderTranslatableBladeCreateCommand::class,
+            CustomFolderTranslatableBladeEditCommand::class,
+            CustomFolderTranslatableBladeCreateTranslatableCommand::class,
+            CustomFolderTranslatableBladeEditTranslatableCommand::class,
+            CustomBladeGridCommand::class,
+            CustomEmptyEloquentCommand::class,
+            CustomEmptyCacheCommand::class,
+            CustomTranslatableEntityCommand::class,
+            CustomFolderTranslatableControllerCommand::class,
+            CustomTranslatableControllerCommand::class,
+            CustomTranslatableCreateRequestCommand::class,
+            CustomTranslatableUpdateRequestCommand::class,
+            CustomFolderTranslatableCreateRequestCommand::class,
+            CustomFolderTranslatableUpdateRequestCommand::class,
+            CustomTranslatableBladeCreateCommand::class,
+            CustomTranslatableBladeCreateTranslatableCommand::class,
+            CustomTranslatableBladeEditCommand::class,
+            CustomTranslatableBladeEditTranslatableCommand::class,
+            MigrationMakeCommand::class,
+            ModuleMakeCommand::class,
+            // Registering last wins in Artisan's registry, and that - not the
+            // module.json "aliases" block - is what actually replaces nwidart's
+            // commands. nwidart registers its own commands before it registers
+            // module aliases, so the vendor class is already loaded by then and
+            // class_alias() is silently skipped. module:seed ran the vendor
+            // implementation until this line was added.
+            SeedCommand::class,
         ]);
     }
 
     /**
      * Register the filters.
      *
-     * @param  Router $router
      * @return void
      */
     public function registerMiddleware(Router $router)
     {
-        if ((!config('core.translation')) && (!config('core.translation_front')) && (!config('core.translation_api'))) {
+        if ((! config('core.translation')) && (! config('core.translation_front')) && (! config('core.translation_api'))) {
             unset($this->middleware['Core']['locale']);
         }
-        
+
         foreach ($this->middleware as $module => $middlewares) {
             foreach ($middlewares as $name => $middleware) {
                 $class = "Modules\\{$module}\\Http\\Middleware\\{$middleware}";
@@ -97,7 +130,7 @@ class CoreServiceProvider extends ServiceProvider
                 $router->aliasMiddleware($name, $class);
             }
         }
-        
+
     }
 
     /**
@@ -109,18 +142,66 @@ class CoreServiceProvider extends ServiceProvider
     {
         $this->app->register(AuthServiceProvider::class);
         $this->app->singleton(AssetsManagerInterFace::class, function () {
-            return new AssetsManager();
+            return new AssetsManager;
         });
         $this->app->register(RouteServiceProvider::class);
-        $loader = AliasLoader::getInstance();
-        $loader->alias('Illuminate\Cache\FileStore', 'Modules\Core\Cache\FileStore');
-        $loader->alias("Nwidart\Modules\Support\Migrations\SchemaParser", 'Modules\Core\Support\Migrations\SchemaParser');
-        $loader->alias("Nwidart\Modules\Commands\Make\MigrationMakeCommand", "Modules\Core\Commands\Make\MigrationMakeCommand");
-        $loader->alias("Nwidart\Modules\Generators\ModuleGenerator", "Modules\Core\Generators\ModuleGenerator");
-        $loader->alias("Nwidart\Modules\Commands\Make\ModuleMakeCommand", "Modules\Core\Commands\Make\ModuleMakeCommand");
-        $loader->alias("Nwidart\Modules\Commands\Database\SeedCommand", "Modules\Core\Commands\Database\SeedCommand");
-        $loader->alias("Nwidart\Modules\Commands\Actions\EnableCommand", "Modules\Core\Commands\Actions\EnableCommand");
-        $loader->alias("Nwidart\Modules\Commands\Actions\DisableCommand", "Modules\Core\Commands\Actions\DisableCommand");
+        // The nwidart aliases live in module.json's "aliases" block, which
+        // nwidart applies in Module::register() - before this provider runs.
+        // Duplicating them here only gave two places to keep in sync.
+        $this->registerCacheStore();
+    }
+
+    /**
+     * Bind Core's FileStore as the "file" cache driver.
+     *
+     * This used to be a class_alias over Illuminate\Cache\FileStore, which only
+     * took effect if Core registered before anything autoloaded the real class.
+     * When it lost that race the framework store was used instead and every
+     * flushCacheFor() silently became a no-op. Cache::extend has no such race.
+     *
+     * @return void
+     */
+    protected function registerCacheStore()
+    {
+        $this->app->booting(function ($app) {
+            $app['cache']->extend('file', function ($app, $config) {
+                return $app['cache']->repository(
+                    (new FileStore(
+                        $app['files'],
+                        $config['path'],
+                        $config['permission'] ?? null,
+                        $app['config']['cache.serializable_classes'] ?? null,
+                    ))->setLockDirectory($config['lock_path'] ?? null),
+                    $config
+                );
+            });
+        });
+    }
+
+    /**
+     * Warn when the active cache store cannot flush a single entity.
+     *
+     * Per-entity invalidation needs either tag support or Core's FileStore.
+     * config/cache.php defaults to the database driver, which has neither, so
+     * an environment that forgets CACHE_STORE=file would serve stale reads
+     * until their TTL expired with nothing in the logs to explain it.
+     *
+     * @return void
+     */
+    protected function warnOnUnflushableCacheStore()
+    {
+        $store = $this->app['cache']->store()->getStore();
+
+        if (method_exists($store, 'tags') || $store instanceof FileStore) {
+            return;
+        }
+
+        logger()->warning(sprintf(
+            'Cache store [%s] supports neither tags nor per-entity flushing, so Modules\\Core '
+            .'cannot invalidate an entity on write - cached reads will be stale until they expire. '
+            .'Use a tag-aware store (redis, memcached, array) or set CACHE_STORE=file.',
+            $store::class
+        ));
     }
 
     /**
@@ -131,18 +212,18 @@ class CoreServiceProvider extends ServiceProvider
     protected function registerConfig()
     {
         $this->publishes([
-            __DIR__ . '/../../config/config.php' => config_path('modules/core.php'),
+            __DIR__.'/../../config/config.php' => config_path('modules/core.php'),
         ], 'config');
         $this->mergeConfigFrom(
-            __DIR__ . '/../../config/config.php',
+            __DIR__.'/../../config/config.php',
             'core'
         );
 
         $this->publishes([
-            __DIR__ . '/../../config/translatable.php' => config_path('translatable.php'),
+            __DIR__.'/../../config/translatable.php' => config_path('translatable.php'),
         ], 'translatable');
         $this->mergeConfigFrom(
-            __DIR__ . '/../../config/translatable.php',
+            __DIR__.'/../../config/translatable.php',
             'translatable'
         );
     }
@@ -156,10 +237,10 @@ class CoreServiceProvider extends ServiceProvider
     {
         $viewPath = resource_path('views/modules/core');
 
-        $sourcePath = __DIR__ . '/../../resources/views';
+        $sourcePath = __DIR__.'/../../resources/views';
 
         $this->publishes([
-            $sourcePath => $viewPath
+            $sourcePath => $viewPath,
         ], 'views');
 
         $this->loadViewsFrom(array_map(function ($path) {
@@ -179,19 +260,7 @@ class CoreServiceProvider extends ServiceProvider
         if (is_dir($langPath)) {
             $this->loadTranslationsFrom($langPath, 'core');
         } else {
-            $this->loadTranslationsFrom(__DIR__ . '/../../resources/lang', 'core');
+            $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'core');
         }
-    }
-
-    /**
-     * Get the services provided by the provider.
-     *
-     * @return array
-     */
-    public function provides()
-    {
-        return [
-            AuthServiceProvider::class
-        ];
     }
 }

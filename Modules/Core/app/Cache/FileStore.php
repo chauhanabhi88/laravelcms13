@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Cache\FileLock;
 use Illuminate\Cache\RetrievesMultipleKeys;
 use Illuminate\Contracts\Cache\CanFlushLocks;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Contracts\Filesystem\LockTimeoutException;
@@ -21,7 +22,7 @@ class FileStore implements CanFlushLocks, LockProvider, Store
     /**
      * The Illuminate Filesystem instance.
      *
-     * @var \Illuminate\Filesystem\Filesystem
+     * @var Filesystem
      */
     protected $files;
 
@@ -45,7 +46,7 @@ class FileStore implements CanFlushLocks, LockProvider, Store
      * @var int|null
      */
     protected $filePermission;
-    
+
     /**
      * The classes that should be allowed during unserialization.
      *
@@ -54,16 +55,8 @@ class FileStore implements CanFlushLocks, LockProvider, Store
     protected $serializableClasses;
 
     /**
-     * The module cache directory resolved by modulePath().
-     *
-     * @var string|null
-     */
-    protected $cacheModuleDir;
-
-    /**
      * Create a new file cache store instance.
      *
-     * @param  \Illuminate\Filesystem\Filesystem  $files
      * @param  string  $directory
      * @param  int|null  $filePermission
      * @param  array|bool|null  $serializableClasses
@@ -232,7 +225,7 @@ class FileStore implements CanFlushLocks, LockProvider, Store
      * @param  string  $name
      * @param  int  $seconds
      * @param  string|null  $owner
-     * @return \Illuminate\Contracts\Cache\Lock
+     * @return Lock
      */
     public function lock($name, $seconds = 0, $owner = null)
     {
@@ -240,7 +233,7 @@ class FileStore implements CanFlushLocks, LockProvider, Store
 
         return new FileLock(
             new static($this->files, $this->lockDirectory ?? $this->directory, $this->filePermission),
-            "file-store-lock:{$name}", //$name,
+            "file-store-lock:{$name}", // $name,
             $seconds,
             $owner
         );
@@ -251,7 +244,7 @@ class FileStore implements CanFlushLocks, LockProvider, Store
      *
      * @param  string  $name
      * @param  string  $owner
-     * @return \Illuminate\Contracts\Cache\Lock
+     * @return Lock
      */
     public function restoreLock($name, $owner)
     {
@@ -303,8 +296,8 @@ class FileStore implements CanFlushLocks, LockProvider, Store
     public function flush()
     {
         try {
- 
-            if (!$this->files->isDirectory($this->directory)) {
+
+            if (! $this->files->isDirectory($this->directory)) {
                 return false;
             }
 
@@ -315,21 +308,20 @@ class FileStore implements CanFlushLocks, LockProvider, Store
                     return false;
                 }
             }
-    
+
             return true;
 
         } catch (Exception) {
             return false;
         }
-        
+
     }
 
     /**
      * Remove all locks from the store.
      *
-     * @return bool
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function flushLocks(): bool
     {
@@ -351,41 +343,28 @@ class FileStore implements CanFlushLocks, LockProvider, Store
 
         return true;
     }
- 
+
     /**
-     * Remove specific module cache.
+     * Remove every cache entry belonging to one entity.
      *
-     * Pass the cache key to resolve the module directory in one call. Omitting it
-     * falls back to the directory left behind by a previous modulePath() call.
-     *
-     * @param  string|null  $key
+     * @param  string  $key  Any cache key for the entity - only the ":entity:"
+     *                       segment is used to locate the directory.
      * @return bool
      */
-    public function flushModuleCache($key = null)
+    public function flushModuleCache($key)
     {
         try {
-            if ($key !== null) {
-                $this->modulePath($key);
-            }
+            $directory = $this->moduleDirectory($key);
 
-            if (is_null($this->cacheModuleDir) || ! $this->files->isDirectory($this->cacheModuleDir)) {
+            if (is_null($directory) || ! $this->files->isDirectory($directory)) {
                 return false;
             }
 
-            foreach ($this->files->directories($this->cacheModuleDir) as $directory) {
-
-                $deleted = $this->files->deleteDirectory($directory);
-                if (! $deleted || $this->files->exists($directory)) {
-                    return false;
-                }
-            }
-    
-            return true;
-
+            return $this->files->deleteDirectory($directory)
+                && ! $this->files->exists($directory);
         } catch (Exception) {
             return false;
         }
-        
     }
 
     /**
@@ -469,38 +448,59 @@ class FileStore implements CanFlushLocks, LockProvider, Store
      */
     public function path($key)
     {
-        preg_match('#\:(.*?)\:#', $key, $match);
         $hash = sha1($key);
-        $moduleName = $hash;
+        $entity = $this->entitySegment($key);
 
-        if (isset($match[1])) {
-            $moduleName = sha1($match[1]);
-        }
-        $parts = array_slice(str_split($moduleName, 4), 0, 2);
-
-        return $this->directory . '/' . implode('/', $parts) . '/' . $hash;
+        // Keys with no entity segment bucket under their own hash, which is
+        // already a sha1 - do not hash it a second time or every existing
+        // entry on disk is orphaned.
+        return $this->bucketFor(is_null($entity) ? $hash : sha1($entity)).'/'.$hash;
     }
 
     /**
-     * Get the full path for the given cache key.
+     * The directory holding every entry for the entity named in the given key.
+     *
+     * Null when the key carries no entity segment, which means there is no
+     * subset to address and the caller must not fall back to a wider path.
      *
      * @param  string  $key
+     * @return string|null
+     */
+    public function moduleDirectory($key)
+    {
+        $entity = $this->entitySegment($key);
+
+        return is_null($entity) ? null : $this->bucketFor(sha1($entity));
+    }
+
+    /**
+     * The entity name embedded between the first two colons of a cache key.
+     *
+     * @param  string  $key
+     * @return string|null
+     */
+    protected function entitySegment($key)
+    {
+        preg_match('#\:(.*?)\:#', (string) $key, $match);
+
+        return $match[1] ?? null;
+    }
+
+    /**
+     * The two-level directory a hash buckets into.
+     *
+     * path() and moduleDirectory() must derive this identically - if the flush
+     * path is shallower than the write path it takes neighbouring entities'
+     * entries with it.
+     *
+     * @param  string  $hash
      * @return string
      */
-    public function modulePath($key)
+    protected function bucketFor($hash)
     {
-        // Reset first so a failed match can never reuse (and flush) the
-        // directory resolved by a previous call on this shared store.
-        $this->cacheModuleDir = null;
+        $parts = array_slice(str_split($hash, 4), 0, 2);
 
-        preg_match('#\:(.*?)\:#', $key, $match);
-        if (isset($match[1])) {
-            $moduleName = sha1($match[1]);
-            $parts = array_slice(str_split($moduleName, 4), 0, 1);
-
-            $this->cacheModuleDir = $this->directory . '/' . implode('/', $parts) . '/';
-        }
-        return $this;
+        return $this->directory.'/'.implode('/', $parts);
     }
 
     /**
@@ -519,7 +519,7 @@ class FileStore implements CanFlushLocks, LockProvider, Store
     /**
      * Get the Filesystem instance.
      *
-     * @return \Illuminate\Filesystem\Filesystem
+     * @return Filesystem
      */
     public function getFilesystem()
     {
@@ -574,8 +574,6 @@ class FileStore implements CanFlushLocks, LockProvider, Store
 
     /**
      * Determine if the lock store is separate from the cache store.
-     *
-     * @return bool
      */
     public function hasSeparateLockStore(): bool
     {
