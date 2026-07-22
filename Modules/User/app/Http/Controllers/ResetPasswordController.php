@@ -2,12 +2,12 @@
 
 namespace Modules\User\Http\Controllers;
 
-use Illuminate\Support\Str;
+use App\Http\Controllers\Controller;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Support\Str;
 
 class ResetPasswordController extends Controller
 {
@@ -38,11 +38,10 @@ class ResetPasswordController extends Controller
      */
     public function __construct()
     {
-        $this->redirectTo = route(config("user.redirect_route_after_login"), updateUrlParams());
-        $this->middleware('guest');
+        $this->redirectTo = route(config('user.redirect_route_after_login'), updateUrlParams());
     }
 
-    public function showResetForm(Request $request, $token = null, $email)
+    public function showResetForm(Request $request, $token, $email)
     {
         return view('user::auth.reset-password')->with(
             ['token' => $token, 'email' => $email]
@@ -72,9 +71,9 @@ class ResetPasswordController extends Controller
         // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
         return $status == Password::PASSWORD_RESET
-                    ? redirect()->route(config("user.redirect_route_after_login"), updateUrlParams())->with('status', __($status))
+                    ? redirect()->route(config('user.redirect_route_after_login'), updateUrlParams())->with('status', __($status))
                     : back()->withInput($request->only('email'))
-                            ->withErrors(['email' => __($status)]);
+                        ->withErrors(['email' => __($status)]);
     }
 
     public function broker()
@@ -95,10 +94,11 @@ class ResetPasswordController extends Controller
                 'regex:/[A-Z]/',      // must contain at least one uppercase letter
                 'regex:/[0-9]/',      // must contain at least one digit
                 'regex:/[@$!%*#?&]/', // must contain a special character
-            ]
+            ],
         ];
 
     }
+
     public function validationErrorMessages()
     {
         return [

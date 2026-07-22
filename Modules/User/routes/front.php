@@ -12,43 +12,42 @@
 */
 
 Route::get('/login', [
-    'as'   => 'backend_login',
+    'as' => 'backend_login',
     'uses' => 'AuthController@index',
-    'middleware' => 'auth.guest'
+    'middleware' => 'auth.guest',
 ]);
 Route::post('/loginPost', [
-    'as'   => 'backend_post_login',
+    'as' => 'backend_post_login',
     'uses' => 'AuthController@postLogin',
-    'middleware' => 'throttle:adminauth'
 ]);
 
 Route::get('/logout', [
-    'as'   => 'backend_logout',
-    'uses' => 'AuthController@logout'
+    'as' => 'backend_logout',
+    'uses' => 'AuthController@logout',
 ]);
-
-
-
 
 /**
  * Reset Password routes
  */
 Route::get('/reset', [
-    'as'   => 'reset',
-    'uses' => 'ForgotPasswordController@showLinkRequestForm'
+    'as' => 'reset',
+    'uses' => 'ForgotPasswordController@showLinkRequestForm',
 ]);
 
 Route::post('/reset', [
-    'as'   => 'reset.post',
-    'uses' => 'ForgotPasswordController@sendResetLinkEmail'
+    'as' => 'reset.post',
+    'uses' => 'ForgotPasswordController@sendResetLinkEmail',
+    'middleware' => 'throttle:adminpasswordreset',
 ]);
 
 Route::get('/admin_reset/{token}/{email}', [
-    'as'   => 'password.reset',
-    'uses' => 'ResetPasswordController@showResetForm'
+    'as' => 'password.reset',
+    'uses' => 'ResetPasswordController@showResetForm',
+    'middleware' => 'auth.guest',
 ]);
 
 Route::post('/resetPassword', [
-    'as'   => 'reset.complete.post',
-    'uses' => 'ResetPasswordController@reset'
+    'as' => 'reset.complete.post',
+    'uses' => 'ResetPasswordController@reset',
+    'middleware' => 'auth.guest',
 ]);

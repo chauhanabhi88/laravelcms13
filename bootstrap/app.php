@@ -42,7 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (ThrottleRequestsException $e) {
-            return response()->view('pages::errors.400', [], 429);
+            return response()->view('pages::errors.429', [], 429);
         });
 
         $exceptions->render(function (AuthenticationException $e, $request) {
