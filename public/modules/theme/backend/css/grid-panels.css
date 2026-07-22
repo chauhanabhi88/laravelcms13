@@ -1,0 +1,436 @@
+/* ==========================================================================
+   Grid panels — Columns & Filters accordions above every backend grid.
+   Rendered by Modules/Core/resources/views/partials/{columns,filters}.blade.php
+
+   Everything here is scoped under .gp-panel so the legacy .accordion .card
+   styling used by Role / Settings / Customer address stays untouched.
+   ========================================================================== */
+
+:root {
+    --gp-brand: #1b2d8f;
+    --gp-brand-hover: #394bad;
+    --gp-brand-tint: #ecefff;
+    --gp-surface: #ffffff;
+    --gp-surface-2: #f7f8fc;
+    --gp-line: #e3e6f0;
+    --gp-line-strong: #cdd2e4;
+    --gp-ink: #171b2c;
+    --gp-ink-2: #4b5271;
+    --gp-muted: #7e849e;
+    --gp-danger: #c0392f;
+    --gp-primary: #1b2d8f;
+    --gp-primary-hover: #394bad;
+}
+
+/* --- header buttons that show / hide the panels -------------------------- */
+
+.gp-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--gp-primary);
+    border-radius: 3px;
+    background: var(--gp-primary);
+    color: var(--gp-surface);
+    font-size: 13.5px;
+    font-weight: 400;
+    transition: background .14s ease, border-color .14s ease, color .14s ease;
+}
+
+.gp-toggle svg {
+    width: 15px;
+    height: 15px;
+}
+
+.gp-toggle:hover {
+    border-color: var(--gp-primary-hover);
+    background-color: var(--gp-primary-hover);
+    color: var(--gp-surface);
+}
+
+.gp-toggle:focus,
+.gp-toggle:active {
+    box-shadow: none;
+}
+
+.gp-toggle:focus-visible {
+    outline: 2px solid var(--gp-primary-hover);
+    outline-offset: 2px;
+}
+
+.gp-toggle[aria-pressed="true"] {
+    background: var(--gp-primary-hover);
+    border-color: var(--gp-primary-hover);
+    color: var(--gp-primary-hover);
+}
+
+.gp-toggle .gp-toggle-badge {
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--gp-primary-hover);
+    color: var(--gp-surface);
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.gp-panel {
+    background: var(--gp-surface);
+    border: 1px solid var(--gp-line);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(23, 27, 44, .05), 0 8px 24px -14px rgba(23, 27, 44, .22);
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+/* --- header / trigger ---------------------------------------------------- */
+
+.gp-panel .gp-panel-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    background: transparent;
+    border: 0;
+    text-align: left;
+    color: var(--gp-ink);
+    cursor: pointer;
+    transition: background .14s ease;
+}
+
+.gp-panel .gp-panel-trigger:hover {
+    background: var(--gp-surface-2);
+}
+
+.gp-panel .gp-panel-trigger:focus {
+    outline: 0;
+}
+
+.gp-panel .gp-panel-trigger:focus-visible {
+    outline: 2px solid var(--gp-brand);
+    outline-offset: -2px;
+}
+
+/* Bootstrap toggles .collapsed off while the body is open */
+.gp-panel .gp-panel-trigger:not(.collapsed) {
+    border-bottom: 1px solid var(--gp-line);
+}
+
+.gp-panel .gp-panel-icon {
+    width: 30px;
+    height: 30px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--gp-brand-tint);
+    color: var(--gp-brand);
+}
+
+.gp-panel .gp-panel-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.gp-panel .gp-panel-heading {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.35;
+    min-width: 0;
+}
+
+.gp-panel .gp-panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gp-ink);
+}
+
+.gp-panel .gp-panel-sub {
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--gp-muted);
+}
+
+.gp-panel .gp-panel-spacer {
+    flex: 1 1 auto;
+}
+
+.gp-panel .gp-count {
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--gp-brand-tint);
+    color: var(--gp-brand);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.gp-panel .gp-chevron {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    color: var(--gp-muted);
+    transition: transform .2s ease;
+}
+
+.gp-panel .gp-panel-trigger:not(.collapsed) .gp-chevron {
+    transform: rotate(180deg);
+}
+
+/* --- active filter chips on the collapsed header ------------------------- */
+
+.gp-panel .gp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0 16px 12px;
+}
+
+.gp-panel .gp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    padding: 3px 4px 3px 10px;
+    border: 1px solid var(--gp-line);
+    border-radius: 999px;
+    background: var(--gp-surface-2);
+    color: var(--gp-ink-2);
+}
+
+.gp-panel .gp-chip b {
+    font-weight: 600;
+    color: var(--gp-ink);
+}
+
+.gp-panel .gp-chip button {
+    border: 0;
+    background: transparent;
+    color: var(--gp-muted);
+    font-size: 14px;
+    line-height: 1;
+    padding: 2px 5px;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.gp-panel .gp-chip button:hover {
+    color: var(--gp-danger);
+    background: rgba(192, 57, 47, .1);
+}
+
+/* --- body ---------------------------------------------------------------- */
+
+.gp-panel .gp-panel-body {
+    padding: 18px 16px 16px;
+}
+
+/* --- columns: checkboxes rendered as toggle chips ------------------------ */
+
+.gp-panel .gp-col-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.gp-panel .gp-col-toggle {
+    position: relative;
+    margin: 0;
+}
+
+.gp-panel .gp-col-toggle input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.gp-panel .gp-col-toggle span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    padding: 6px 13px 6px 10px;
+    border: 1px solid var(--gp-line-strong);
+    border-radius: 999px;
+    background: var(--gp-surface);
+    color: var(--gp-ink-2);
+    cursor: pointer;
+    user-select: none;
+    transition: border-color .14s ease, background .14s ease, color .14s ease;
+}
+
+.gp-panel .gp-col-toggle span::before {
+    content: "";
+    width: 15px;
+    height: 15px;
+    flex: none;
+    border: 1.5px solid var(--gp-line-strong);
+    border-radius: 5px;
+    background: var(--gp-surface) center no-repeat;
+    background-size: 10px;
+}
+
+.gp-panel .gp-col-toggle span:hover {
+    border-color: var(--gp-brand);
+}
+
+.gp-panel .gp-col-toggle input:checked + span {
+    border-color: var(--gp-brand);
+    background: var(--gp-brand-tint);
+    color: var(--gp-brand);
+    font-weight: 600;
+}
+
+.gp-panel .gp-col-toggle input:checked + span::before {
+    background-color: var(--gp-brand);
+    border-color: var(--gp-brand);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 8.5l3.2 3.2L13 5'/%3E%3C/svg%3E");
+}
+
+.gp-panel .gp-col-toggle input:focus-visible + span {
+    outline: 2px solid var(--gp-brand);
+    outline-offset: 2px;
+}
+
+/* --- filters: form fields ------------------------------------------------ */
+
+.gp-panel .filter-main {
+    margin-top: 0;
+    padding: 0;
+}
+
+/* Bootstrap rows/columns inside the panel use a tighter 16px gutter */
+.gp-panel .filter-main .row {
+    margin-left: -8px;
+    margin-right: -8px;
+}
+
+.gp-panel .filter-main .row > [class*="col-"],
+.gp-panel .filter-main .row > .col {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.gp-panel .filter-main .form-group {
+    margin-bottom: 14px;
+}
+
+.gp-panel .filter-main label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--gp-muted);
+}
+
+.gp-panel .filter-main .form-control,
+.gp-panel .filter-main .custom-select,
+.gp-panel .filter-main select {
+    height: auto;
+    padding: 8px 11px;
+    font-size: 13.5px;
+    color: var(--gp-ink);
+    border: 1px solid var(--gp-line-strong);
+    border-radius: 8px;
+    background-color: var(--gp-surface);
+    box-shadow: none;
+    transition: border-color .14s ease, box-shadow .14s ease;
+}
+
+.gp-panel .filter-main .form-control::placeholder {
+    color: var(--gp-muted);
+}
+
+.gp-panel .filter-main .form-control:focus,
+.gp-panel .filter-main .custom-select:focus,
+.gp-panel .filter-main select:focus {
+    border-color: var(--gp-brand);
+    box-shadow: 0 0 0 3px rgba(27, 45, 143, .18);
+}
+
+/* --- footer action bar --------------------------------------------------- */
+
+.gp-panel .gp-panel-foot {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+    padding-top: 14px;
+    border-top: 1px solid var(--gp-line);
+}
+
+.gp-panel .gp-panel-foot .gp-foot-hint {
+    font-size: 12.5px;
+    color: var(--gp-muted);
+}
+
+.gp-panel .gp-foot-spacer {
+    flex: 1 1 auto;
+}
+
+.gp-panel .gp-panel-foot .btn {
+    border-radius: 8px;
+    padding: 7px 16px;
+    font-size: 13.5px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.gp-panel .gp-linkbtn {
+    padding: 4px 2px;
+    border: 0;
+    background: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gp-brand);
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.gp-panel .gp-linkbtn:hover {
+    color: var(--gp-brand-hover);
+    text-decoration: underline;
+}
+
+.gp-panel .gp-linkbtn:focus-visible {
+    outline: 2px solid var(--gp-brand);
+    outline-offset: 2px;
+}
+
+.gp-panel .gp-dot {
+    color: var(--gp-line-strong);
+}
+
+.gp-panel .gp-saved-note {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1f8a5b;
+    opacity: 0;
+    transition: opacity .2s ease;
+}
+
+.gp-panel .gp-saved-note.is-visible {
+    opacity: 1;
+}
+
+@media (max-width: 575.98px) {
+    .gp-panel .gp-panel-sub {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gp-panel .gp-chevron,
+    .gp-panel .gp-col-toggle span,
+    .gp-panel .gp-saved-note {
+        transition: none;
+    }
+}

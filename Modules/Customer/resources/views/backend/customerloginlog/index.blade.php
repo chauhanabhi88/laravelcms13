@@ -14,6 +14,7 @@
           </div>
           <div class="col-sm-6 btn-right">
             <div class="float-right">
+                @include('core::partials.grid-panel-toggles')
               @can('admin.customerloginlog.export')
               <button type="button" class="btn btn-primary btn-sm au-btn-icon" id="export"><i class="fas fa-file-export"></i>{{ trans("core::core.buttons.export") }}</button>
               @endcan

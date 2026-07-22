@@ -1,4 +1,5 @@
 <?php
+
 return [
     'titles' => [
         'home' => 'Home',
@@ -18,7 +19,7 @@ return [
         'module_seed' => 'Module Seed',
         'create_module' => 'Create Module',
         'module_info' => 'Module Information',
-        'folder_info' => 'Folder Information'
+        'folder_info' => 'Folder Information',
 
     ],
     'labels' => [
@@ -105,6 +106,10 @@ return [
         'preview' => 'Preview',
         'note' => 'Note',
         'columns' => 'Columns',
+        'columns_hint' => 'Choose what the grid shows',
+        'filter_hint' => 'Narrow down the records below',
+        'filters_active' => ':count active',
+        'saved' => 'Saved',
     ],
     'menu' => [
         'single' => 'Single',
@@ -157,7 +162,7 @@ return [
         'continue' => 'Continue',
         'maintenance' => 'Maintenance',
         'maintenance_up' => 'Up',
-        'maintenance_down' => 'Down'
+        'maintenance_down' => 'Down',
     ],
     'settings' => [
         'general' => 'General',
@@ -183,31 +188,31 @@ return [
         'mail_communication_enable' => 'Mail Communication Enabled ?',
         'import_file_type' => [
             'import_label' => 'Import File Types',
-            'import_comment' => 'Enter value comma seperated'
+            'import_comment' => 'Enter value comma seperated',
         ],
         'escape_html_ignore_column' => 'EscapeHTML Ignore Column Names',
         'max_delete_limit' => 'Max delete limit',
         'maintenance_mode_message' => 'Maintenance Mode Message',
         'maintenance_mode_secret' => 'Maintenance Mode Secret',
-        'view_password' => 'View Password'
+        'view_password' => 'View Password',
     ],
     'comment' => [
         'per_page' => 'Comma separated. E.g. 20,30,50',
-        "comma_separated" => "Enter value comma-separated.",
-        'escape_html_ignore_column' => 'Enter value comma-separated'
+        'comma_separated' => 'Enter value comma-separated.',
+        'escape_html_ignore_column' => 'Enter value comma-separated',
     ],
     'options' => [
         'yesno' => [
             'yes' => 'Yes',
-            'no' => 'No'
+            'no' => 'No',
         ],
         'status' => [
             'enable' => 'Enabled',
-            'disable' => 'Disabled'
+            'disable' => 'Disabled',
         ],
         'boolean' => [
             'true' => 'True',
-            'false' => 'False'
+            'false' => 'False',
         ],
         'eloquantRelationship' => [
             'hasOne' => 'Has one',
@@ -217,17 +222,17 @@ return [
             'oneToOne' => 'One to One',
             'oneToMany' => 'One to Many',
             'manyToOne' => 'Many to One',
-            'ManyToMany' => 'Many to Many'
+            'ManyToMany' => 'Many to Many',
         ],
         'onoff' => [
             'on' => 'On',
-            'off' => 'Off'
-        ]
+            'off' => 'Off',
+        ],
     ],
     'modal' => [
         'title' => 'Confirmation',
         'confirmation-message' => 'Are you sure you want to delete this record?',
-        'mass-delete-confirmation-message' => 'Are you sure you want to delete selected record(s)?'
+        'mass-delete-confirmation-message' => 'Are you sure you want to delete selected record(s)?',
     ],
     'messages' => [
         'select_record' => 'No record(s) selected.',
@@ -261,9 +266,9 @@ return [
         'notify_maintenance_mode' => 'Application is now in maintenance mode.',
         'permission_denied' => 'Permission Denied.',
         'folder_create' => 'Folder created succesfully.',
-        'csrf_expired'  =>  'Security token has expired. Please try again.',
-        'default_column_saved' => "Default columns saved successfully.",
-        'invalid_column_data' => "Invalid columns data."
+        'csrf_expired' => 'Security token has expired. Please try again.',
+        'default_column_saved' => 'Default columns saved successfully.',
+        'invalid_column_data' => 'Invalid columns data.',
     ],
     'image-note' => [
         'label' => 'Note',
@@ -293,15 +298,15 @@ return [
         'choose_file' => 'Choose File',
         'close' => 'Close',
         'skip_row_no' => ' Skipped due to empty/duplicate values in row(s) are : ',
-        'no_insert_data' => 'Nothing to import.'
+        'no_insert_data' => 'Nothing to import.',
     ],
-    "import_csv_modal" => [
-        "csv_only" => "Please upload CSV file only.",
-        "mentioned_headers" => "Xlsx file must have mentioned headers.",
-        "imported" => "Data imported successfully.",
-        "import" => "Import",
-        "choose_file" => "Choose File",
-        "close" => "Close",
-        "imported_skip_duplicated" => "Data imported successfully. Skip duplicated data."
+    'import_csv_modal' => [
+        'csv_only' => 'Please upload CSV file only.',
+        'mentioned_headers' => 'Xlsx file must have mentioned headers.',
+        'imported' => 'Data imported successfully.',
+        'import' => 'Import',
+        'choose_file' => 'Choose File',
+        'close' => 'Close',
+        'imported_skip_duplicated' => 'Data imported successfully. Skip duplicated data.',
     ],
 ];

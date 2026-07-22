@@ -1,57 +1,54 @@
 @if ($columns)
-    <div class="accordion md-accordion" id="accordionColumn" role="tablist" aria-multiselectable="true">
+    <div class="accordion" id="accordionColumn" role="tablist" aria-multiselectable="true">
         <input type="hidden" name="active_menu_id" value = "{{ $activeMenuId ?? '' }}" id = "active_menu_id">
-        <div class="card">
-            <div class="card-header change-pointer collapsed d-flex justify-content-between align-items-center" role="tab"
-                id="columnsHeader" data-toggle="collapse" data-target="#columnCollapse" aria-expanded="false">
+        <div class="gp-panel" id="gp-panel-columns" style="display:none;">
+            <button type="button" class="gp-panel-trigger collapsed" role="tab" id="columnsHeader"
+                data-toggle="collapse" data-target="#columnCollapse" aria-expanded="false"
+                aria-controls="columnCollapse">
+                <span class="gp-panel-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg>
+                </span>
+                <span class="gp-panel-heading">
+                    <span class="gp-panel-title">{{ trans('core::core.labels.columns') }}</span>
+                    <span class="gp-panel-sub">{{ trans('core::core.labels.columns_hint') }}</span>
+                </span>
+                <span class="gp-panel-spacer"></span>
+                <span class="gp-count" id="columns-count"></span>
+                <svg class="gp-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
 
-                <a class="btn-tool mb-0">
-                    <h5 class="mb-0">{{ trans('core::core.labels.columns') }}</h5>
-                </a>
-
-                <div class="card-tools">
-                    <button type="button" class="btn btn-tool filterAccordian collapsed filterCard" aria-expanded="false"
-                        aria-controls="columnCollapse" data-toggle="collapse" data-target="#columnCollapse">
-                    </button>
-                </div>
-            </div>
-
-            <div id="columnCollapse" class="collapse collapseFilter" role="tabpanel" aria-labelledby="columnsHeader"
+            <div id="columnCollapse" class="collapse" role="tabpanel" aria-labelledby="columnsHeader"
                 data-parent="#accordionColumn">
-                <div class="card-body">
-                    <div class="row">
+                <div class="gp-panel-body">
+                    <div class="gp-col-grid">
                         @foreach ($columns as $column)
-                            <div class="col-md-3 col-sm-6 mb-3">
-                                <div class="form-check">
-                                    <input class="form-check-input columns-checkbox" 
-                                        type="checkbox"
-                                        id="checkbox_{{ $column['code'] }}" 
-                                        value="{{ $column['code'] }}"
-                                        name="columns[]" {{ $column['checkbox_checked'] ? 'checked' : ''}}
-                                        column-id={{ $column['id'] }}
-                                        onclick="selectCheckbox(this)" 
-                                    >
-                                    <label class="{{$column['checkbox_checked'] ? 'font-weight-bold' : ''}}" for="checkbox_{{ $column['code'] }}" style="vertical-align: -webkit-baseline-middle;">
-                                        <!-- {{ ($langPath . '.' . $column['code'] == trans($langPath . '.' . $column['code'])) ? $column['name'] : trans($langPath . '.' . $column['code']) }} -->
-                                          {{ trans($langPath . '.' . $column['code']) }}
-                                    </label>
-                                </div>
-                            </div>
+                            <label class="gp-col-toggle">
+                                <input class="columns-checkbox"
+                                    type="checkbox"
+                                    id="checkbox_{{ $column['code'] }}"
+                                    value="{{ $column['code'] }}"
+                                    name="columns[]" {{ $column['checkbox_checked'] ? 'checked' : ''}}
+                                    column-id={{ $column['id'] }}
+                                    onclick="selectCheckbox(this)"
+                                >
+                                <span>{{ trans($langPath . '.' . $column['code']) }}</span>
+                            </label>
                         @endforeach
                     </div>
-                    <div class="row">
-                        <div class="form-group col-md-5">
-                            <button type="button" class="btn btn-primary btn-fw"
-                                title="{{trans('core::core.buttons.save')}}" onclick="saveDefaultColumns(); return false;"
-                                fdprocessedid="b7xbe">{{trans('core::core.buttons.save')}}</button>
-                            <a href="#" class="ml-2"
-                                title="{{trans('core::core.labels.select_all')}}" onclick="selectAllColumns();"
-                                fdprocessedid="b7xbe">{{trans('core::core.labels.select_all')}}</a>
-                            <span class="ml-2">|</span>
-                            <a href="#"class="ml-2"
-                                title="{{trans('core::core.labels.deselect_all')}}" onclick="unSelectAllColumns();"
-                                fdprocessedid="b7xbe">{{trans('core::core.labels.deselect_all')}}</a>
-                        </div>
+
+                    <div class="gp-panel-foot">
+                        <button type="button" class="gp-linkbtn"
+                            title="{{trans('core::core.labels.select_all')}}"
+                            onclick="selectAllColumns(); return false;">{{trans('core::core.labels.select_all')}}</button>
+                        <span class="gp-dot">&middot;</span>
+                        <button type="button" class="gp-linkbtn"
+                            title="{{trans('core::core.labels.deselect_all')}}"
+                            onclick="unSelectAllColumns(); return false;">{{trans('core::core.labels.deselect_all')}}</button>
+                        <span class="gp-foot-spacer"></span>
+                        <span class="gp-saved-note" id="columns-saved-note">{{trans('core::core.labels.saved')}}</span>
+                        <button type="button" class="btn btn-primary"
+                            title="{{trans('core::core.buttons.save')}}"
+                            onclick="saveDefaultColumns(); return false;">{{trans('core::core.buttons.save')}}</button>
                     </div>
                 </div>
             </div>
@@ -61,7 +58,6 @@
     function saveDefaultColumns() {
         let columns = {};
          jQuery(".columns-checkbox").each(function () {
-            console.log(jQuery(this))
             let columnId = jQuery(this).attr('column-id');
             columns[columnId] = jQuery(this).is(':checked')
         })
@@ -70,6 +66,10 @@
             .setUrl('{{ route('admin.column.save') }}')
             .setParams({ 'columns': columns ,"_token": csrfToken,'active_menu_id': activeMenuId })
             .save();
+
+        let note = jQuery("#columns-saved-note");
+        note.addClass('is-visible');
+        setTimeout(function () { note.removeClass('is-visible'); }, 1600);
     }
 
     function selectAllColumns(){
@@ -83,13 +83,21 @@
     function selectCheckbox(ele){
 
         if(jQuery(ele).is(':checked')){
-            jQuery(ele).siblings('label').addClass('font-weight-bold')
             jQuery(ele).attr('checked',true)
         }else{
-            jQuery(ele).siblings('label').removeClass('font-weight-bold')
             jQuery(ele).attr('checked',false)
         }
+        updateColumnsCount();
     }
+
+    function updateColumnsCount(){
+        let total = jQuery(".columns-checkbox").length;
+        let selected = jQuery(".columns-checkbox:checked").length;
+        jQuery("#columns-count").text(selected + ' / ' + total);
+    }
+
+    jQuery(function () {
+        updateColumnsCount();
+    });
 </script>
 @endif
-

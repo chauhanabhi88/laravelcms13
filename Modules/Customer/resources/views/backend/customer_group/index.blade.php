@@ -13,6 +13,7 @@
                 </div>
                 <div class="col-sm-6">
                     <div class="float-right">
+                        @include('core::partials.grid-panel-toggles')
                         @can('admin.customer.group.mass_delete')
                         <button type="button" class="btn btn-danger btn-fw" id="mass-delete" data-message="{{ trans('core::core.modal.mass-delete-confirmation-message') }}" data-action-target="{{ route('admin.customer.group.mass_delete', updateUrlParams()) }}">{{ trans('core::core.buttons.delete') }}</i></button>
                         @endcan

@@ -14,6 +14,7 @@
                 </div>
                 <div class="col-sm-6 btn-right">
                     <div class="float-right">
+                        @include('core::partials.grid-panel-toggles')
                     </div>
                 </div>
             </div>

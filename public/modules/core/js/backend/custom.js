@@ -73,6 +73,7 @@ var custom = function (options) {
                     window.location.href = n.redirect;
                 }
             });
+            syncGridPanelToggles();
         }
     };
 
@@ -390,6 +391,7 @@ function sumbmitForm(elementId, value, formId, openSearchAccordion = false) {
                 if (value.value !== "") {
                     jQuery(".filterAccordian").removeClass('collapsed');
                     jQuery(".collapseFilter").addClass('show');
+                    toggleGridPanel('filters', true);
                     return false;
                 }
             }
@@ -418,6 +420,56 @@ function getDateOption() {
         }
     });
 }
+
+/**
+ * Visibility of the Columns / Filters grid panels. Kept in memory only, so a full page
+ * load always starts with both hidden while the state survives an AJAX grid refresh.
+ */
+var gridPanelVisibility = { columns: false, filters: false };
+
+/**
+ * Shows or hides a grid panel together with its accordion body, and keeps the header
+ * button, the Bootstrap collapse classes and the aria state in sync.
+ */
+function toggleGridPanel(key, show) {
+    var panel = jQuery('#gp-panel-' + key);
+
+    if (!panel.length) {
+        return;
+    }
+
+    gridPanelVisibility[key] = show;
+    panel.toggle(show);
+    panel.find('.collapse').toggleClass('show', show);
+    panel.find('.gp-panel-trigger').toggleClass('collapsed', !show).attr('aria-expanded', show);
+    jQuery('.gp-toggle[data-gp-panel="' + key + '"]').attr('aria-pressed', show);
+}
+
+/**
+ * Reveals a header toggle button only when its panel is on the page, then re-applies the
+ * remembered visibility. Runs on load and after every AJAX grid re-render.
+ */
+function syncGridPanelToggles() {
+    jQuery.each(['columns', 'filters'], function (index, key) {
+        var exists = jQuery('#gp-panel-' + key).length > 0;
+
+        jQuery('.gp-toggle[data-gp-panel="' + key + '"]').toggle(exists);
+
+        if (exists) {
+            toggleGridPanel(key, gridPanelVisibility[key]);
+        }
+    });
+}
+
+jQuery('body').on('click', '.gp-toggle', function () {
+    var key = jQuery(this).data('gp-panel');
+
+    toggleGridPanel(key, !gridPanelVisibility[key]);
+});
+
+jQuery(function () {
+    syncGridPanelToggles();
+});
 
 function searchFilter(page = 1) {
     var formId = jQuery("#collection").find("form").attr("id");

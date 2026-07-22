@@ -5,22 +5,29 @@
         $flag = true;
     @endphp
 
-    <div class="accordion md-accordion" id="accordionEx" role="tablist" aria-multiselectable="true">
-        <div class="card">
-            <div class="card-header change-pointer collapsed" role="tab" id="headingOne1" data-toggle="collapse"
-                data-target="#collapseOne1" aria-expanded="false">
-                <a class="btn-tool">
-                    <h5 class="mb-0">{{trans('core::core.labels.filter')}}</h5>
-                </a>
-                <div class="card-tools">
-                    <button type="button" class="btn btn-tool filterAccordian collapsed filterCard" aria-expanded="false"
-                        aria-controls="collapseOne1" data-toggle="collapse" data-target="#collapseOne1"></button>
-                </div>
-            </div>
+    <div class="accordion" id="accordionEx" role="tablist" aria-multiselectable="true">
+        <div class="gp-panel" id="gp-panel-filters" style="display:none;">
+            <button type="button" class="gp-panel-trigger collapsed" role="tab" id="headingOne1"
+                data-toggle="collapse" data-target="#collapseOne1" aria-expanded="false"
+                aria-controls="collapseOne1">
+                <span class="gp-panel-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>
+                </span>
+                <span class="gp-panel-heading">
+                    <span class="gp-panel-title">{{trans('core::core.labels.filter')}}</span>
+                    <span class="gp-panel-sub">{{trans('core::core.labels.filter_hint')}}</span>
+                </span>
+                <span class="gp-panel-spacer"></span>
+                <span class="gp-count" id="filters-count" style="display:none;"></span>
+                <svg class="gp-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+
+            <div class="gp-chips" id="filter-chips" style="display:none;"></div>
+
             <div id="collapseOne1" class="collapse collapseFilter" role="tabpanel" aria-labelledby="headingOne1"
                 data-parent="#accordionEx">
-                <div class="card-body table-responsive">
-                    <div class="col-md-12 filter-main">
+                <div class="gp-panel-body table-responsive">
+                    <div class="filter-main">
                         @foreach ($filters as $item)
 
                             @if($row != $item['row'] && $flag == true)
@@ -124,7 +131,9 @@
                                 @endif
                                 @if ($item['type'] == 'action')
                                     @if (isset($item['buttons']) && $item['buttons'])
-                                        <div class="form-group col-md-5">
+                                        <div class="col-12 gp-panel-foot">
+                                            <span class="gp-foot-hint">{{ trans('core::core.labels.filter_hint') }}</span>
+                                            <span class="gp-foot-spacer"></span>
                                             @foreach ($item['buttons'] as $item)
                                                 <button type="{{ $item['type'] }}" class="{{ $item['class'] }}" title="{{ $item['title'] }}"
                                                     onclick="{{ $item['onclick'] }}">{{ $item['title'] }}</button>
@@ -163,10 +172,11 @@
                     filterHasValue = true;
                 }
             });
-            if (filterHasValue) {
-                $("#collapseOne1").addClass("show");
-                $("#headingOne1 .filterCard").removeClass("collapsed");
+            if (filterHasValue && typeof toggleGridPanel === 'function') {
+                toggleGridPanel('filters', true);
             }
+
+            renderFilterChips();
 
             // // Handle Columns accordion only
             // let columnHasValue = false;
@@ -178,6 +188,113 @@
             //     $("#columnsHeader .filterCard").removeClass("collapsed");
             // }
         }
+
+        function escapeChipHtml(value) {
+            return jQuery('<div/>').text(value).html();
+        }
+
+        /**
+         * Human readable name for a filter field: the form-group label, plus the
+         * field placeholder for the "From / To" halves of a range filter.
+         */
+        function filterFieldLabel(field) {
+            var groupLabel = jQuery.trim(field.closest('.form-group').find('label').first().text());
+            var placeholder = jQuery.trim(field.attr('placeholder') || '');
+
+            if (groupLabel && placeholder && groupLabel.toLowerCase() !== placeholder.toLowerCase()) {
+                return groupLabel + ' ' + placeholder;
+            }
+            return groupLabel || placeholder || field.attr('name');
+        }
+
+        /**
+         * Renders every applied filter as a removable chip on the collapsed panel header
+         * and updates the "N active" badge.
+         */
+        function renderFilterChips() {
+            var chipContainer = jQuery('#filter-chips');
+            var badge = jQuery('#filters-count');
+
+            if (!chipContainer.length) {
+                return;
+            }
+
+            chipContainer.empty();
+            var chipCount = 0;
+
+            jQuery('#collapseOne1 .filter-main').find('input, select').each(function (index) {
+                var field = jQuery(this);
+                var type = (field.attr('type') || '').toLowerCase();
+                var name = field.attr('name');
+
+                if (!name || name === '_token' || type === 'hidden' || type === 'submit' || type === 'button') {
+                    return;
+                }
+
+                var value = field.val();
+                var display;
+
+                if (jQuery.isArray(value)) {
+                    value = value.join(',');
+                }
+
+                if (this.tagName === 'SELECT') {
+                    display = jQuery.map(field.find('option:selected'), function (option) {
+                        return jQuery.trim(jQuery(option).text());
+                    }).join(', ');
+                } else if (type === 'checkbox' || type === 'radio') {
+                    if (!this.checked) {
+                        return;
+                    }
+                    display = filterFieldLabel(field);
+                } else {
+                    display = value;
+                }
+
+                if (value === null || typeof value === 'undefined' || jQuery.trim(value) === '' || display === '') {
+                    return;
+                }
+
+                field.attr('data-gp-chip', index);
+                chipCount++;
+
+                chipContainer.append(
+                    '<span class="gp-chip">' + escapeChipHtml(filterFieldLabel(field)) +
+                    ' <b>' + escapeChipHtml(display) + '</b>' +
+                    '<button type="button" class="gp-chip-remove" data-gp-chip="' + index + '" ' +
+                    'title="{{ trans('core::core.buttons.reset') }}" aria-label="{{ trans('core::core.buttons.reset') }}">&times;</button></span>'
+                );
+            });
+
+            chipContainer.toggle(chipCount > 0);
+            badge.text("{{ trans('core::core.labels.filters_active', ['count' => ':n']) }}".replace(':n', chipCount))
+                .toggle(chipCount > 0);
+
+            // mirror the count onto the header button so applied filters stay visible while hidden
+            jQuery('.gp-toggle[data-gp-panel="filters"] .gp-toggle-badge')
+                .text(chipCount)
+                .toggle(chipCount > 0);
+        }
+
+        jQuery('body').on('click', '.gp-chip-remove', function () {
+            var field = jQuery('#collapseOne1 .filter-main').find('[data-gp-chip="' + jQuery(this).data('gp-chip') + '"]').first();
+
+            if (!field.length) {
+                return;
+            }
+
+            var type = (field.attr('type') || '').toLowerCase();
+
+            if (type === 'checkbox' || type === 'radio') {
+                field.prop('checked', false);
+            } else if (field.is('select')) {
+                field.val(field.find('option').first().val());
+            } else {
+                field.val('');
+            }
+
+            searchFilter();
+        });
 
 
         //datepicker changes

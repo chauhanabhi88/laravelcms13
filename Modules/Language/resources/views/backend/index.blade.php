@@ -14,6 +14,7 @@
                 </div>
                 <div class="col-sm-6 btn-right">
                     <div class="float-right">
+                        @include('core::partials.grid-panel-toggles')
                         @can('admin.language.import')
                         <button type="button" class="btn btn-primary btn-fw" id="import">{{ trans("core::core.buttons.import_translations") }}</button>
                         @endcan
