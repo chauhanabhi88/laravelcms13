@@ -86,13 +86,8 @@
 @push('js-stack')
 <script type="text/javascript">
   jQuery(document).ready(function() {
-    jQuery(".countrylist").hide();
     $.validator.setDefaults({
       ignore: []
-    });
-    $('sort_order').keyup(function() {
-      alert(this.value);
-
     });
     jQuery("#main_form").validate({
       rules: {
@@ -155,20 +150,7 @@
   jQuery('input[type="file"]').change(function(e) {
     var fileName = e.target.files[0].name;
     jQuery(".custom-file-label").html(fileName);
-    $('input[type="file"').addClass('valid_image');
-  });
-  var countryCodes = <?php echo json_encode($countryCodes); ?>;
-  jQuery("#banner_group").change(function() {
-    var selectedGroup = $(this).children("option:selected").text();
-    if ($.inArray(selectedGroup, countryCodes) >= 0) {
-      jQuery("#country").addClass('required');
-      jQuery(".countrylist").show();
-    } else {
-      jQuery("#country").val('');
-      jQuery(".countrylist").hide();
-      jQuery("#country").removeClass('required');
-    }
-
+    $('input[type="file"]').addClass('valid_image');
   });
   var msg;
   var dynamicmsg = function() {
