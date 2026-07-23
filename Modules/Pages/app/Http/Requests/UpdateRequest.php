@@ -2,8 +2,8 @@
 
 namespace Modules\Pages\Http\Requests;
 
-use Modules\Pages\Models\Pages;
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\Pages\Models\Pages;
 
 class UpdateRequest extends FormRequest
 {
@@ -14,13 +14,13 @@ class UpdateRequest extends FormRequest
      */
     public function rules()
     {
-        $pages = new Pages();
+        $pages = new Pages;
         $rules = [];
         foreach (getLanguageOptions() as $locale => $value) {
             $rules["{$locale}.title"] = 'required';
         }
         $rules['slug'] = 'required|unique:'.$pages->getTable().',slug,'.$this->id;
-        // $rules['status'] = 'required';
+
         return $rules;
     }
 
@@ -37,7 +37,7 @@ class UpdateRequest extends FormRequest
     public function messages()
     {
         return [
-            //'page.*.unique' => 'The slug has already been taken.', 
+            // 'page.*.unique' => 'The slug has already been taken.',
         ];
     }
 }

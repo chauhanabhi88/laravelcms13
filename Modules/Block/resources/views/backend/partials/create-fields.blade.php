@@ -10,7 +10,7 @@
 </div>
 <div class="form-group">
     <label>{{ trans('block::block.labels.status') }}</label>
-    <span data-placement="right" data-toggle="tooltip" title="{!! trans('core::core.options.status.disable') !!}">
+    <span data-placement="right" data-toggle="tooltip" title="{{ trans('core::core.options.status.disable') }}">
         <label class="switch">
             <input type="checkbox" name="is_enabled" class="status">
             <span class="slider round"></span>

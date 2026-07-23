@@ -13,7 +13,7 @@
     <div class="col-sm-6 btn-right">
       <div class="float-right">
         @can('admin.dashboard.clear_all_cache')
-        <a href="{{ route('admin.dashboard.clear_all_cache', updateUrlParams()) }}" class="btn btn-outline-secondary btn-fw">
+        <a href="{{ route('admin.dashboard.clear_all_cache', updateUrlParams()) }}" class="btn btn-primary btn-fw">
           <i class="mdi mdi-broom"></i> {{ trans('dashboard::dashboard.labels.clear_all_cache') }}
         </a>
         @endcan

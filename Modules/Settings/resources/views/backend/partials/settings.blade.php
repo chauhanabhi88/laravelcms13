@@ -46,9 +46,9 @@ $moduleName = str_replace(" ", "_", $group);
                             $fieldName = ($item['storage'] == 'db') ? $fieldName : $item['env_key'];
                             @endphp
                             @if ($item['type'] == "text")
-                            
-                            
-                            {{ normalText(sprintf("%s[%s][%s]", $storage, $module->getLowerName(), $fieldName),"contact::contact.labels.name", $errors,$value,["class" => "form-control","placeholder" => isset($item['placeholder']) ? trans($item['placeholder']) : null,
+
+
+                            {{ normalText(sprintf("%s[%s][%s]", $storage, $module->getLowerName(), $fieldName),$item['label'], $errors,$value,["class" => "form-control","placeholder" => isset($item['placeholder']) ? trans($item['placeholder']) : null,
                             "hide_label" => true,
                             "append" => (isset($item['comment']) && $item['comment']) ? '<span class="setting_comment">'.trans($item['comment']).'</span>' : ""
                             ])}}
@@ -106,22 +106,3 @@ $i++;
 @empty
 <p> {{ trans("core::core.messages.no_records") }} </p>
 @endforelse
-
-@push('js-stack')
-<script type="text/javascript">
-    var error = '<?php echo trans('travel::package.messages.prefix_error'); ?>';
-    jQuery(document).ready(function() {
-        jQuery.validator.addMethod("unique", function(value, element) {
-            return $("input[name='db[travel][package-prefix]']").val() != $("input[name='db[travel][travel-prefix]']").val();
-        }, error);
-        /*$(document).on('blur', "input[name='db[travel][package-prefix]']","input[name='db[travel][travel-prefix]']" , function(){
-            $('.prefix-error').remove();
-            if( $("input[name='db[travel][package-prefix]']").val() !='' && $("input[name='db[travel][travel-prefix]']").val() !='' ) {
-                if ($("input[name='db[travel][package-prefix]']").val() == $("input[name='db[travel][travel-prefix]']").val()) {
-                    $('<p class="prefix-error">'+error+'</p>').insertBefore("input[name='db[travel][travel-prefix]']");
-                } else { return true; }
-            }
-        });*/
-    });
-</script>
-@endpush

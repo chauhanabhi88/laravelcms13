@@ -3,6 +3,7 @@
 namespace Modules\Block\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Modules\Block\Models\Block;
 
 class CreateRequest extends FormRequest
@@ -14,12 +15,13 @@ class CreateRequest extends FormRequest
      */
     public function rules()
     {
-        $block = new Block();
+        $block = new Block;
         $rules = [];
         foreach (getLanguageOptions() as $locale => $value) {
             $rules["{$locale}.title"] = 'required';
         }
-        $rules['slug'] = 'required|unique:'.$block->getTable().',slug';
+        $rules['slug'] = ['required', Rule::unique($block->getTable(), 'slug')->whereNull('deleted_at')];
+
         // $rules['is_enabled'] = 'required';
         return $rules;
     }
@@ -38,4 +40,4 @@ class CreateRequest extends FormRequest
     {
         return [];
     }
-}   
+}

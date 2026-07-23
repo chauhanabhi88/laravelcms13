@@ -10,13 +10,8 @@ class CacheMailLogDecorator extends BaseCacheDecorator implements MailLogReposit
     public function __construct(MailLogRepository $mailLog)
     {
         parent::__construct();
-        $this->entityName = config("mail.cache.mail_log");
+        $this->entityName = config('mail.cache.mail_log');
         $this->repository = $mailLog;
-    }
-
-    public function sortColumns($request)
-    {
-        return $this->repository->sortColumns($request);
     }
 
     public function getFilters($request)

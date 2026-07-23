@@ -736,38 +736,35 @@ if (! function_exists('wordWrapper')) {
     function wordWrapper($str, $quote = false, $length = 50, $symbol = '...', $wordbreak = false)
     {
         if ($wordbreak) {
-            echo wordwrap($str, $length, "<br>\n");
+            echo wordwrap(e($str), $length, "<br>\n");
 
             return false;
-            exit();
         }
         if (! empty($str) && strlen($str) >= $length) {
+            $safeTitle = e($str);
+            $visible = e(mb_substr(strip_tags($str), 0, $length)).$symbol;
             if ($quote) {
-                echo "<span class='title' data-placement='bottom' data-toggle='tooltip' title='$str'>".'"'.mb_substr(strip_tags($str), 0, $length).$symbol.'"'.'</span>';
+                echo "<span class='title' data-placement='bottom' data-toggle='tooltip' title='$safeTitle'>".'"'.$visible.'"'.'</span>';
 
                 return false;
-                exit();
             }
-            echo "<span class='title' data-placement='bottom' data-toggle='tooltip' title='$str'>".mb_substr(strip_tags($str), 0, $length).$symbol.'</span>';
+            echo "<span class='title' data-placement='bottom' data-toggle='tooltip' title='$safeTitle'>".$visible.'</span>';
 
             return false;
-            exit();
         } elseif (! empty($str) && strlen($str) < $length) {
+            $visible = e(strip_tags($str));
             if ($quote) {
-                echo '"'.strip_tags($str).'"';
+                echo '"'.$visible.'"';
 
                 return false;
-                exit();
             }
-            echo strip_tags($str);
+            echo $visible;
 
             return false;
-            exit();
         }
         echo '';
 
         return false;
-        exit();
     }
 
     // get primary key value

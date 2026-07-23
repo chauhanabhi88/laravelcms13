@@ -10,7 +10,7 @@ class CacheContactDecorator extends BaseCacheDecorator implements ContactReposit
     public function __construct(ContactRepository $contact)
     {
         parent::__construct();
-        $this->entityName = \config("contact.name");
+        $this->entityName = \config('contact.name');
         $this->repository = $contact;
     }
 
@@ -26,16 +26,16 @@ class CacheContactDecorator extends BaseCacheDecorator implements ContactReposit
 
     public function pagination($request)
     {
-        return $this->remember(function() use ($request) {
-            return $this->repository->pagination($request);
-        });
+        // Not cached: a per-user, per-filter grid result is written far more
+        // often than it is read (see BaseCacheDecorator::paginate()).
+        return $this->repository->pagination($request);
     }
 
     public function filter($request)
     {
-        return $this->remember(function() use ($request) {
-            return $this->repository->filter($request);
-        });
+        // Not cached: returns an unexecuted Builder, which cannot be
+        // serialised (see BaseCacheDecorator::allWithBuilder()).
+        return $this->repository->filter($request);
     }
 
     public function export($request)

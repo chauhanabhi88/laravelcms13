@@ -14,8 +14,11 @@ class UpdateRequest extends FormRequest
     public function rules()
     {
         return [
-            'contact.*' => 'required'
-            ];
+            'contact.name' => 'required|string|max:255',
+            'contact.email' => 'required|email|max:255',
+            'contact.contact_number' => 'nullable|string|max:20',
+            'contact.content' => 'nullable|string',
+        ];
     }
 
     /**
@@ -31,7 +34,8 @@ class UpdateRequest extends FormRequest
     public function messages()
     {
         return [
-            'contact.*.required' => trans("contact::locale.rules.required"),
+            'contact.*.required' => trans('contact::contact.messages.required'),
+            'contact.email.email' => trans('contact::contact.messages.invalid_email'),
         ];
     }
 }

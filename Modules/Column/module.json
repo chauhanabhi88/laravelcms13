@@ -4,6 +4,7 @@
     "description": "",
     "keywords": [],
     "priority": 0,
+    "cache": false,
     "providers": [
         "Modules\\Column\\Providers\\ColumnServiceProvider"
     ],

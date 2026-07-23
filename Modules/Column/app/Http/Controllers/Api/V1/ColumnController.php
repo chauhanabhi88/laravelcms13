@@ -2,13 +2,13 @@
 
 namespace Modules\Column\Http\Controllers\Api\V1;
 
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Modules\Column\Models\Column;
-use Illuminate\Support\Facades\Auth;
 use Modules\Column\Models\ColumnsMapping;
 use Modules\Column\Repositories\ColumnRepository;
 use Modules\Menu\Models\Menu;
+
 class ColumnController extends Controller
 {
     protected $columnRepository;
@@ -19,14 +19,14 @@ class ColumnController extends Controller
         $this->columnRepository = $columnRepository;
     }
 
-    function saveDefaultColumns(Request $request)
+    public function saveDefaultColumns(Request $request)
     {
         try {
             $data = $request->all();
-            if (!isset($data['columns'])) {
+            if (! isset($data['columns'])) {
                 throw new Exception(trans('core::core.messages.invalid_column_data'), 1);
             }
-            $user = auth()->user();
+            $user = auth('users')->user();
             $menuId = $request->get('active_menu_id');
             $columns = $request->get('columns');
             $data = [];
@@ -34,13 +34,14 @@ class ColumnController extends Controller
                 $data[] = [
                     'column_id' => $columnId,
                     'admin_id' => $user->id,
-                    'checkbox_checked' => ($checked == 'true' || $checked == 1) ? 1 : 0
+                    'checkbox_checked' => ($checked == 'true' || $checked == 1) ? 1 : 0,
                 ];
             }
             ColumnsMapping::upsert($data, ['column_id', 'admin_id'], ['checkbox_checked']);
-            
+
             $menu = Menu::find($menuId);
-            return response()->json(['type' => 'success', 'message' => trans('core::core.messages.default_column_saved'), "redirectUrl" => route($menu->link, updateUrlParams())]);
+
+            return response()->json(['type' => 'success', 'message' => trans('core::core.messages.default_column_saved'), 'redirectUrl' => route($menu->link, updateUrlParams())]);
         } catch (\Throwable $th) {
             return response()->json(['type' => 'error', 'message' => $th->getMessage()]);
         }

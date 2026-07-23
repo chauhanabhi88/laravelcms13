@@ -2,17 +2,18 @@
 
 namespace Modules\Column\Http\Controllers\Backend;
 
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Modules\Column\Models\Column;
-use Modules\Column\Repositories\ColumnRepository;
-use Modules\Column\Http\Requests\CreateRequest;
-use Modules\Column\Http\Requests\UpdateRequest;
-use Modules\Core\Http\Controllers\BackendController;
-use Modules\Menu\Models\Menu;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Modules\Column\Http\Requests\CreateRequest;
+use Modules\Column\Http\Requests\UpdateRequest;
+use Modules\Column\Models\Column;
 use Modules\Column\Models\ColumnsMapping;
+use Modules\Column\Repositories\ColumnRepository;
+use Modules\Core\Http\Controllers\BackendController;
+use Modules\Menu\Models\Menu;
 
 class ColumnController extends BackendController
 {
@@ -21,9 +22,6 @@ class ColumnController extends BackendController
      */
     private $column;
 
-    /**
-      * @var $columnEntity
-     */
     private $columnEntity;
 
     public function __construct(ColumnRepository $columnRepo, Column $column)
@@ -33,17 +31,17 @@ class ColumnController extends BackendController
         $this->column = $columnRepo;
         $this->columnEntity = $column;
     }
-    
+
     /**
      * Display a listing of the resource.
-      * @return Response
+     *
+     * @return Response
      */
     public function index(Request $request)
     {
-        try
-        {
+        try {
             if (function_exists('getPerPageForModule')) {
-                $perPage = getPerPageForModule(config("column.cache.name"), $request->get("per_page"));
+                $perPage = getPerPageForModule(config('column.cache.name'), $request->get('per_page'));
                 $request->merge(['per_page' => $perPage]);
             }
             // $columns = $this->column->sortColumns();
@@ -52,13 +50,12 @@ class ColumnController extends BackendController
             $collection = $this->column->pagination($request);
             $yesNoOptions = $this->column->getYesNoOptions(true);
             $menuOptions = $this->column->getMenuOptions();
-            $filters = $this->column->getFilters($request,$yesNoOptions,$menuOptions);
+            $filters = $this->column->getFilters($request, $yesNoOptions, $menuOptions);
             $statusOptions = $this->column->getStatusOptions(true);
-            
-            return view('column::backend.index', compact('request', 'collection', 'columns', 'filters','statusOptions','yesNoOptions','activeMenuId'));
-        }
-        catch (\Throwable $e) {
-            return redirect()->route('admin.dashboard.index', updateUrlParams())->with("error", $e->getMessage());
+
+            return view('column::backend.index', compact('request', 'collection', 'columns', 'filters', 'statusOptions', 'yesNoOptions', 'activeMenuId'));
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.dashboard.index', updateUrlParams())->with('error', $e->getMessage());
         }
     }
 
@@ -71,224 +68,241 @@ class ColumnController extends BackendController
     {
         try {
             if (function_exists('getPerPageForModule')) {
-                $perPage = getPerPageForModule(config("column.cache.name"), $request->get("per_page"));
+                $perPage = getPerPageForModule(config('column.cache.name'), $request->get('per_page'));
                 $request->merge(['per_page' => $perPage]);
             }
-            setFilterSession(config("column.cache.name"), $request);
+            setFilterSession(config('column.cache.name'), $request);
             // $columns = $this->column->sortColumns();
             $yesNoOptions = $this->column->getYesNoOptions(true);
             $menuOptions = $this->column->getMenuOptions();
-            $filters = $this->column->getFilters($request,$yesNoOptions,$menuOptions);
+            $filters = $this->column->getFilters($request, $yesNoOptions, $menuOptions);
             $collection = $this->column->pagination($request);
             $statusOptions = $this->column->getStatusOptions(true);
             $activeMenuId = getActiveMenuId($request, 'admin.column.index');
             $columns = getColumnObject()->getColumns($activeMenuId);
-            
-            $content = view('column::backend.partials.grid', compact('request', 'collection', 'columns', 'filters','statusOptions','yesNoOptions','activeMenuId'));
+
+            $content = view('column::backend.partials.grid', compact('request', 'collection', 'columns', 'filters', 'statusOptions', 'yesNoOptions', 'activeMenuId'));
+
             return response()->json([
                 'type' => 'success',
                 'content' => [
                     'element' => 'collection',
-                    'html' => $content->__toString()
+                    'html' => $content->__toString(),
                 ],
-                'message' => $request->get('message')
+                'message' => $request->get('message'),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'type' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
         }
     }
 
     /**
      * Show the form for creating a new resource.
+     *
      * @return Response
      */
     public function create()
     {
-        try
-        {
+        try {
             $yesNoOptions = $this->column->getYesNoOptions(true);
-            $menuOptions = $this->column->getMenuOptions();            
-            return view('column::backend.create',compact('yesNoOptions','menuOptions'));
-        }
-        catch (\Throwable $e)
-        {
-            return redirect()->route('admin.column.index', updateUrlParams())->with("error", $e->getMessage());
+            $menuOptions = $this->column->getMenuOptions();
+
+            return view('column::backend.create', compact('yesNoOptions', 'menuOptions'));
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.column.index', updateUrlParams())->with('error', $e->getMessage());
         }
     }
 
     /**
      * Store a newly created resource in storage.
-     * @param Request $request
+     *
+     * @param  Request  $request
      * @return Response
      */
     public function store(CreateRequest $request)
     {
-        try
-        {
+        try {
             $params = $request->all();
             $rules = [
-                "code" => [
-                    "required",
-                    Rule::unique('columns')->where(function ($query) use ($request) {
-                        return $query->where('menu_id', $request->menu_id);
-                    })
+                'code' => [
+                    'required',
+                    Rule::unique('columns')->where(function ($query) use ($params) {
+                        return $query->where('menu_id', $params['column']['menu_id'] ?? null);
+                    }),
                 ],
-                "menu_id" => "required|exists:menu,id",
-                "name" => "required|min:2",
+                'menu_id' => 'required|exists:menu,id',
+                'name' => 'required|min:2',
             ];
             $validator = Validator::make($params['column'], $rules, [
-                'required' => trans('user::user.messages.required_field'),
-                'min' => trans('user::user.messages.min_message'),
-                'code.unique' => trans('user::user.messages.unique'),
-                'menu_id.unique' => trans('user::user.messages.not_exists'),
+                'required' => trans('column::column.messages.required_field'),
+                'min' => trans('column::column.messages.min_message'),
+                'code.unique' => trans('column::column.messages.code_exists'),
+                'menu_id.exists' => trans('column::column.messages.menu_not_exists'),
             ]);
             if ($validator->fails()) {
-                return redirect()->route('admin.column.create', updateUrlParams())->with("error", $validator->errors()->first());
+                return redirect()->route('admin.column.create', updateUrlParams())->with('error', $validator->errors()->first());
             }
 
             $column = $this->column->create($params['column']);
-            if(isset($params['snc']) && $params['snc']) {
-                return redirect()->route('admin.column.edit', updateUrlParams([$column->id]))->with("success", trans("column::column.messages.created_success"));
+            if (isset($params['snc']) && $params['snc']) {
+                return redirect()->route('admin.column.edit', updateUrlParams([$column->id]))->with('success', trans('column::column.messages.created_success'));
             }
-            return redirect()->route('admin.column.index', updateUrlParams())->with("success", trans("column::column.messages.created_success"));
+
+            return redirect()->route('admin.column.index', updateUrlParams())->with('success', trans('column::column.messages.created_success'));
         } catch (\Throwable $e) {
-            return redirect()->route('admin.column.create', updateUrlParams())->with("error", $e->getMessage());
+            return redirect()->route('admin.column.create', updateUrlParams())->with('error', $e->getMessage());
         }
     }
 
     /**
      * Show the form for editing the specified resource.
-     * @param int $id
+     *
+     * @param  int  $id
      * @return Response
      */
     public function edit(Request $request)
     {
         try {
             $id = $request->id;
-            if (!$id) {
-                throw new \Exception(trans("column::column.messages.data_invalid"));
+            if (! $id) {
+                throw new Exception(trans('column::column.messages.data_invalid'));
             }
             $column = $this->column->find($id);
-            if(!$column) {
-                throw new \Exception(trans("column::column.messages.data_invalid"));
+            if (! $column) {
+                throw new Exception(trans('column::column.messages.data_invalid'));
             }
             $yesNoOptions = $this->column->getYesNoOptions(true);
             $menuOptions = $this->column->getMenuOptions();
-            return view('column::backend.edit', compact('column','yesNoOptions','menuOptions'));
+
+            return view('column::backend.edit', compact('column', 'yesNoOptions', 'menuOptions'));
         } catch (\Throwable $e) {
-            return redirect()->route('admin.column.index', updateUrlParams())->with("error", $e->getMessage());
+            return redirect()->route('admin.column.index', updateUrlParams())->with('error', $e->getMessage());
         }
     }
 
     /**
      * Update the specified resource in storage.
-     * @param Request $request
-     * @param int $id
+     *
+     * @param  Request  $request
+     * @param  int  $id
      * @return Response
      */
     public function update(UpdateRequest $request)
     {
-        try
-        {
+        try {
             $id = $request->id;
-            if (!$id) {
-                throw new \Exception(trans("column::column.messages.data_invalid"));
+            if (! $id) {
+                throw new Exception(trans('column::column.messages.data_invalid'));
             }
             $params = $request->all();
             $column = $this->column->find($id);
-            if(!$column) {
-                throw new \Exception(trans("column::column.messages.data_invalid"));
+            if (! $column) {
+                throw new Exception(trans('column::column.messages.data_invalid'));
             }
             $rules = [
-                "code" => [
-                    "required",
-                    Rule::unique('columns')->where(function ($query) use ($request) {
-                        return $query->where('menu_id', $request->menu_id);
-                    })
+                'code' => [
+                    'required',
+                    Rule::unique('columns')->ignore($id)->where(function ($query) use ($params) {
+                        return $query->where('menu_id', $params['column']['menu_id'] ?? null);
+                    }),
                 ],
-                "menu_id" => "required|exists:menu,id",
-                "name" => "required|min:2",
+                'menu_id' => 'required|exists:menu,id',
+                'name' => 'required|min:2',
             ];
             $validator = Validator::make($params['column'], $rules, [
-                'required' => trans('user::user.messages.required_field'),
-                'min' => trans('user::user.messages.min_message'),
-                'code.unique' => trans('user::user.messages.unique'),
-                'menu_id.unique' => trans('user::user.messages.not_exists'),
+                'required' => trans('column::column.messages.required_field'),
+                'min' => trans('column::column.messages.min_message'),
+                'code.unique' => trans('column::column.messages.code_exists'),
+                'menu_id.exists' => trans('column::column.messages.menu_not_exists'),
             ]);
             if ($validator->fails()) {
-                return redirect()->route('admin.column.edit', updateUrlParams(['id' => $id]))->with("error", $validator->errors()->first());
+                return redirect()->route('admin.column.edit', updateUrlParams(['id' => $id]))->with('error', $validator->errors()->first());
             }
             $this->column->update($column, $params['column']);
-            if(isset($params['snc']) && $params['snc']) {
-                return redirect()->route('admin.column.edit', updateUrlParams([$id]))->with("success", trans("column::column.messages.updated_success"));
+            if (isset($params['snc']) && $params['snc']) {
+                return redirect()->route('admin.column.edit', updateUrlParams([$id]))->with('success', trans('column::column.messages.updated_success'));
             }
-            return redirect()->route('admin.column.index', updateUrlParams())->with("success", trans("column::column.messages.updated_success"));
+
+            return redirect()->route('admin.column.index', updateUrlParams())->with('success', trans('column::column.messages.updated_success'));
         } catch (\Throwable $e) {
-            return redirect()->route('admin.column.edit', updateUrlParams([$id]))->with("error", $e->getMessage());
+            return redirect()->route('admin.column.edit', updateUrlParams([$id]))->with('error', $e->getMessage());
         }
     }
 
     /**
      * Remove the specified resource from storage.
-     * @param int $id
+     *
+     * @param  int  $id
      * @return Response
      */
     public function delete(Request $request)
     {
         try {
             $id = $request->id;
-            if (!$id) {
-                throw new \Exception(trans("column::column.messages.data_invalid"));
+            if (! $id) {
+                throw new Exception(trans('column::column.messages.data_invalid'));
             }
             $column = $this->column->find($id);
-            if(!$column) {
-                throw new \Exception(trans("column::column.messages.data_invalid"));
+            if (! $column) {
+                throw new Exception(trans('column::column.messages.data_invalid'));
             }
 
             $this->column->destroy($column);
-            return redirect()->route('admin.column.index', updateUrlParams())->with("success", trans("column::column.messages.deleted_success"));
+
+            return redirect()->route('admin.column.index', updateUrlParams())->with('success', trans('column::column.messages.deleted_success'));
         } catch (\Throwable $e) {
-            return redirect()->route('admin.column.index', updateUrlParams())->with("error", $e->getMessage());
+            return redirect()->route('admin.column.index', updateUrlParams())->with('error', $e->getMessage());
         }
     }
 
     /**
      * Remove Selected / All resource from storage
      */
-    public function massDelete(Request $request){
+    public function massDelete(Request $request)
+    {
         try {
             $this->column->destroyMultiple($request);
-            return redirect()->route('admin.column.index', updateUrlParams())->with("success", trans("column::column.messages.deleted_success"));
+
+            return redirect()->route('admin.column.index', updateUrlParams())->with('success', trans('column::column.messages.deleted_success'));
         } catch (\Throwable $e) {
-            return redirect()->route('admin.column.index', updateUrlParams())->with("error", $e->getMessage());
+            return redirect()->route('admin.column.index', updateUrlParams())->with('error', $e->getMessage());
         }
     }
 
-     public function updateStatus(Request $request){
-        if($request->get('id')){
-            $id = $request->get('id');
-            $status = $request->get('status');
-            $columnRow = $this->column->find($id);
-            $status = ($status == 1)? config('core.enabled') : config('core.disabled');
-            $params = array('status'=>$status);
-            $this->column->update($columnRow, $params);
+    public function updateStatus(Request $request)
+    {
+        try {
+            if ($request->get('id')) {
+                $id = $request->get('id');
+                $status = $request->get('status');
+                $columnRow = $this->column->find($id);
+                if (! $columnRow) {
+                    throw new Exception(trans('column::column.messages.data_invalid'));
+                }
+                $status = ($status == 1) ? config('core.enabled') : config('core.disabled');
+                $params = ['status' => $status];
+                $this->column->update($columnRow, $params);
+            }
+            $gridRequest = new Request;
+            $gridRequest->merge([
+                'active_menu_id' => $request->get('active_menu_id'),
+                'message' => trans('core::core.messages.status_change_success'),
+            ]);
+
+            return $this->filters($gridRequest);
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.column.index', updateUrlParams())->with('error', $e->getMessage());
         }
-        $gridRequest = new Request();
-        $gridRequest->merge([
-            'active_menu_id' => $request->get('active_menu_id'),
-            'message' => trans("core::core.messages.status_change_success")
-        ]);
-        return $this->filters($gridRequest);
     }
 
-    function saveDefaultColumns(Request $request)
+    public function saveDefaultColumns(Request $request)
     {
         try {
             $data = $request->all();
-            if (!isset($data['columns'])) {
+            if (! isset($data['columns'])) {
                 throw new Exception(trans('core::core.messages.invalid_column_data'), 1);
             }
             $user = auth()->user();
@@ -299,13 +313,14 @@ class ColumnController extends BackendController
                 $data[] = [
                     'column_id' => $columnId,
                     'admin_id' => $user->id,
-                    'checkbox_checked' => ($checked == 'true') ? 1 : 0
+                    'checkbox_checked' => ($checked == 'true') ? 1 : 0,
                 ];
             }
             ColumnsMapping::upsert($data, ['column_id', 'admin_id'], ['checkbox_checked']);
-            
+
             $menu = Menu::find($menuId);
-            return response()->json(['type' => 'success', 'message' => trans('core::core.messages.default_column_saved'), "redirectUrl" => route($menu->link, updateUrlParams())]);
+
+            return response()->json(['type' => 'success', 'message' => trans('core::core.messages.default_column_saved'), 'redirectUrl' => route($menu->link, updateUrlParams())]);
         } catch (\Throwable $th) {
             return response()->json(['type' => 'error', 'message' => $th->getMessage()]);
         }
