@@ -28,11 +28,14 @@ $thumbnail_image_param = [
 ];
 @endphp
 @if(getImageUrl($og_image_param))
-<a href="{{getImageUrl($og_image_param)}}" target="_BLANK">
-    <img src="{{getImageUrl($thumbnail_image_param)}}" height=100 width=150 alt="introduction">
-</a>
-
-{{ normalCheckbox("remove_banner","banner::banner.labels.remove_banner", $errors,null,["class" => "form-control"])}}
+<div class="d-inline-block border rounded p-2 mb-3">
+    <a href="{{getImageUrl($og_image_param)}}" target="_BLANK">
+        <img src="{{getImageUrl($thumbnail_image_param)}}" height=100 width=150 alt="introduction">
+    </a>
+    <div class="mt-2">
+        {{ normalCheckbox("remove_banner","banner::banner.labels.remove_banner", $errors,null,["class" => "form-control"])}}
+    </div>
+</div>
 @endif
 @php
 $maxUploadSize = (!empty(settings('banner', 'max_upload_size')))?settings('banner', 'max_upload_size'):config('asgard.banner.config.defualt_image_max_size');
@@ -57,11 +60,9 @@ $image_extension = config('asgard.banner.config.defualt_image_type') ? (!empty(s
     </div>
     <div class="col-md-6 col-sm-12">
         <div class="form-group">
-            <div>
-                <label>{{ trans('banner::banner.labels.status') }}</label>
-            </div>
-            <span data-placement="right" data-toggle="tooltip" title="{!! $statusOptions[$banner->status] !!}">
-                <label class="switch">
+            <label class="d-block">{{ trans('banner::banner.labels.status') }}</label>
+            <span data-placement="right" data-toggle="tooltip" title="{!! $statusOptions[$banner->status] !!}" class="d-inline-block mt-1">
+                <label class="switch mb-0">
                     <input type="checkbox" name="status" class="status" {{ ($banner->status == 1) ? "checked" : ""}}>
                     <span class="slider round"></span>
                 </label>
