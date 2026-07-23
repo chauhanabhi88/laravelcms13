@@ -4,6 +4,7 @@ namespace Modules\Settings\Http\Controllers\Api\V1;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 use Modules\Core\Http\Controllers\BackendController;
 use Modules\Settings\Models\Settings;
 use Modules\Settings\Repositories\SettingsRepository;
@@ -65,9 +66,11 @@ class SettingsController extends BackendController
                 'settings' => $allSettings,
             ]);
         } catch (\Throwable $e) {
+            Log::error($e);
+
             return response()->json([
                 'type' => 'error',
-                'message' => $e->getMessage(),
+                'message' => trans('core::core.messages.unexpected_error'),
             ]);
         }
     }

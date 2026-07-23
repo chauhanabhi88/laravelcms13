@@ -235,6 +235,7 @@ return [
         'mass-delete-confirmation-message' => 'Are you sure you want to delete selected record(s)?',
     ],
     'messages' => [
+        'unexpected_error' => 'Something went wrong. Please try again later.',
         'select_record' => 'No record(s) selected.',
         'no_records' => 'No records available.',
         'module_create' => 'Module Create',

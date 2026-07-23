@@ -9,7 +9,5 @@ return [
         'admin.language.export' => 'language::language.labels.exporttranslation',
         'admin.language.import' => 'language::language.labels.importtranslation',
         'admin.translation.index' => 'language::language.labels.translation',
-        //'admin.language.delete' => 'language::language.labels.delete',
-        //'admin.language.mass_delete' => 'language::language.labels.mass_delete',
     ],
 ];

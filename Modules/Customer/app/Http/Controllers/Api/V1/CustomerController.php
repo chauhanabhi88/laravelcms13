@@ -8,6 +8,7 @@ use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
@@ -112,7 +113,9 @@ class CustomerController extends Controller
             return response()->json(['success' => true, 'message' => trans('customer::customer_api.messages.signup_success')]);
 
         } catch (\Throwable $th) {
-            return response()->json(['success' => false, 'message' => $th->getMessage()], 500);
+            Log::error($th);
+
+            return response()->json(['success' => false, 'message' => trans('core::core.messages.unexpected_error')], 500);
         }
     }
 
@@ -137,7 +140,9 @@ class CustomerController extends Controller
                 return response()->json(['success' => false, 'message' => $th->getMessage()], 400);
             }
         } catch (\Throwable $th) {
-            return response()->json(['success' => false, 'message' => $th->getMessage()], 500);
+            Log::error($th);
+
+            return response()->json(['success' => false, 'message' => trans('core::core.messages.unexpected_error')], 500);
         }
     }
 
@@ -236,7 +241,9 @@ class CustomerController extends Controller
 
             return response()->json(compact('request', 'collection', 'columns', 'filters', 'statusOptions'));
         } catch (\Throwable $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+            Log::error($e);
+
+            return response()->json(['success' => false, 'message' => trans('core::core.messages.unexpected_error')]);
         }
     }
 
@@ -279,10 +286,12 @@ class CustomerController extends Controller
 
             return response()->json(compact('request', 'collection', 'columns', 'filters', 'statusOptions'));
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error($e);
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => trans('core::core.messages.unexpected_error'),
             ], 500);
         }
     }
@@ -435,9 +444,11 @@ class CustomerController extends Controller
                 'message' => trans('customer::customer.messages.address_save'),
             ]);
         } catch (\Throwable $e) {
+            Log::error($e);
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => trans('core::core.messages.unexpected_error'),
             ], 500);
         }
     }
@@ -509,9 +520,11 @@ class CustomerController extends Controller
 
             return response()->json(['success' => true, 'message' => trans('customer::customer.messages.created_success')]);
         } catch (\Throwable $e) {
+            Log::error($e);
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => trans('core::core.messages.unexpected_error'),
             ], 500);
         }
     }
@@ -531,9 +544,11 @@ class CustomerController extends Controller
 
             return response()->json(['success' => true, 'message' => trans('customer::customer.messages.deleted_success')]);
         } catch (\Throwable $e) {
+            Log::error($e);
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => trans('core::core.messages.unexpected_error'),
             ], 500);
         }
     }
@@ -556,9 +571,11 @@ class CustomerController extends Controller
 
             return response()->json(['success' => true, 'message' => trans('core::core.messages.status_change_success')]);
         } catch (\Throwable $e) {
+            Log::error($e);
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => trans('core::core.messages.unexpected_error'),
             ], 500);
         }
 
@@ -587,13 +604,16 @@ class CustomerController extends Controller
             if (! empty($ids)) {
                 $this->customerRepo->whereIn('id', $ids)->delete();
             }
-            // $collection = $this->customerRepo->pagination($request);
+            $this->customerRepo->flushCache(config('customer.cache.name'));
+            $this->customerRepo->flushCache(config('customer.cache.deleted_customer_name'));
 
             return response()->json(['success' => true, 'message' => trans('core::core.messages.mass_delete_success')]);
         } catch (\Throwable $e) {
+            Log::error($e);
+
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage(),
+                'message' => trans('core::core.messages.unexpected_error'),
             ], 500);
         }
 

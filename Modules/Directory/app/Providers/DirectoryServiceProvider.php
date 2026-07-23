@@ -3,7 +3,21 @@
 namespace Modules\Directory\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Modules\Directory\Sidebar\MenuSidebar;
+use Modules\Directory\Models\DirectoryCountry;
+use Modules\Directory\Models\DirectoryCountryCity;
+use Modules\Directory\Models\DirectoryCountryState;
+use Modules\Directory\Models\DirectoryCurrencyRate;
+use Modules\Directory\Models\DirectoryCurrencySetup;
+use Modules\Directory\Repositories\Cache\CacheDirectoryCountryCityDecorator;
+use Modules\Directory\Repositories\Cache\CacheDirectoryCountryDecorator;
+use Modules\Directory\Repositories\Cache\CacheDirectoryCountryStateDecorator;
+use Modules\Directory\Repositories\Cache\CacheDirectoryCurrencyRateDecorator;
+use Modules\Directory\Repositories\Cache\CacheDirectoryCurrencySetupDecorator;
+use Modules\Directory\Repositories\Eloquent\EloquentDirectoryCountryCityRepository;
+use Modules\Directory\Repositories\Eloquent\EloquentDirectoryCountryRepository;
+use Modules\Directory\Repositories\Eloquent\EloquentDirectoryCountryStateRepository;
+use Modules\Directory\Repositories\Eloquent\EloquentDirectoryCurrencyRateRepository;
+use Modules\Directory\Repositories\Eloquent\EloquentDirectoryCurrencySetupRepository;
 
 class DirectoryServiceProvider extends ServiceProvider
 {
@@ -24,7 +38,7 @@ class DirectoryServiceProvider extends ServiceProvider
         $this->registerTranslations();
         $this->registerConfig();
         $this->registerViews();
-        $this->loadMigrationsFrom(__DIR__ . '/../../database/Migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
         $this->registerBindings();
     }
 
@@ -46,10 +60,10 @@ class DirectoryServiceProvider extends ServiceProvider
     protected function registerConfig()
     {
         $this->publishes([
-            __DIR__ . '/../../config/config.php' => config_path('modules/directory.php'),
+            __DIR__.'/../../config/config.php' => config_path('modules/directory.php'),
         ], 'config');
         $this->mergeConfigFrom(
-            __DIR__ . '/../../config/config.php',
+            __DIR__.'/../../config/config.php',
             'directory'
         );
     }
@@ -63,10 +77,10 @@ class DirectoryServiceProvider extends ServiceProvider
     {
         $viewPath = resource_path('views/modules/directory');
 
-        $sourcePath = __DIR__ . '/../../resources/views';
+        $sourcePath = __DIR__.'/../../resources/views';
 
         $this->publishes([
-            $sourcePath => $viewPath
+            $sourcePath => $viewPath,
         ], 'views');
 
         $this->loadViewsFrom(array_map(function ($path) {
@@ -85,7 +99,7 @@ class DirectoryServiceProvider extends ServiceProvider
         if (is_dir($langPath)) {
             $this->loadTranslationsFrom($langPath, 'directory');
         } else {
-            $this->loadTranslationsFrom(__DIR__ . '/../../resources/lang', 'directory');
+            $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'directory');
         }
     }
 
@@ -104,61 +118,61 @@ class DirectoryServiceProvider extends ServiceProvider
         $this->app->bind(
             'Modules\Directory\Repositories\DirectoryCurrencySetupRepository',
             function () {
-                $repository = new \Modules\Directory\Repositories\Eloquent\EloquentDirectoryCurrencySetupRepository(new \Modules\Directory\Models\DirectoryCurrencySetup());
+                $repository = new EloquentDirectoryCurrencySetupRepository(new DirectoryCurrencySetup);
 
-                if (!getModule("directory", "cache")) {
+                if (! getModule('directory', 'cache')) {
                     return $repository;
                 }
 
-                return new \Modules\Directory\Repositories\Cache\CacheDirectoryCurrencySetupDecorator($repository);
+                return new CacheDirectoryCurrencySetupDecorator($repository);
             }
         );
         $this->app->bind(
             'Modules\Directory\Repositories\DirectoryCurrencyRateRepository',
             function () {
-                $repository = new \Modules\Directory\Repositories\Eloquent\EloquentDirectoryCurrencyRateRepository(new \Modules\Directory\Models\DirectoryCurrencyRate());
+                $repository = new EloquentDirectoryCurrencyRateRepository(new DirectoryCurrencyRate);
 
-                if (!getModule("directory", "cache")) {
+                if (! getModule('directory', 'cache')) {
                     return $repository;
                 }
 
-                return new \Modules\Directory\Repositories\Cache\CacheDirectoryCurrencyRateDecorator($repository);
+                return new CacheDirectoryCurrencyRateDecorator($repository);
             }
         );
         $this->app->bind(
             'Modules\Directory\Repositories\DirectoryCountryRepository',
             function () {
-                $repository = new \Modules\Directory\Repositories\Eloquent\EloquentDirectoryCountryRepository(new \Modules\Directory\Models\DirectoryCountry());
+                $repository = new EloquentDirectoryCountryRepository(new DirectoryCountry);
 
-                if (!getModule("directory", "cache")) {
+                if (! getModule('directory', 'cache')) {
                     return $repository;
                 }
 
-                return new \Modules\Directory\Repositories\Cache\CacheDirectoryCountryDecorator($repository);
+                return new CacheDirectoryCountryDecorator($repository);
             }
         );
         $this->app->bind(
             'Modules\Directory\Repositories\DirectoryCountryCityRepository',
             function () {
-                $repository = new \Modules\Directory\Repositories\Eloquent\EloquentDirectoryCountryCityRepository(new \Modules\Directory\Models\DirectoryCountryCity());
+                $repository = new EloquentDirectoryCountryCityRepository(new DirectoryCountryCity);
 
-                if (!getModule("directory", "cache")) {
+                if (! getModule('directory', 'cache')) {
                     return $repository;
                 }
 
-                return new \Modules\Directory\Repositories\Cache\CacheDirectoryCountryCityDecorator($repository);
+                return new CacheDirectoryCountryCityDecorator($repository);
             }
         );
         $this->app->bind(
             'Modules\Directory\Repositories\DirectoryCountryStateRepository',
             function () {
-                $repository = new \Modules\Directory\Repositories\Eloquent\EloquentDirectoryCountryStateRepository(new \Modules\Directory\Models\DirectoryCountryState());
+                $repository = new EloquentDirectoryCountryStateRepository(new DirectoryCountryState);
 
-                if (!getModule("directory", "cache")) {
+                if (! getModule('directory', 'cache')) {
                     return $repository;
                 }
 
-                return new \Modules\Directory\Repositories\Cache\CacheDirectoryCountryStateDecorator($repository);
+                return new CacheDirectoryCountryStateDecorator($repository);
             }
         );
     }
