@@ -12,8 +12,8 @@
 */
 Route::prefix('contact')->group(function () {
 
-    /* Route::get('/info', [
-        'as'   => 'contact.index',
+    Route::get('/info', [
+        'as' => 'contact.index',
         'uses' => 'ContactController@index',
-    ]); */
+    ]);
 });

@@ -14,8 +14,8 @@ class CreateRequest extends FormRequest
     public function rules()
     {
         return [
-                'contact.*' => 'required'
-             ];
+            'contact.*' => 'required',
+        ];
     }
 
     /**
@@ -31,7 +31,7 @@ class CreateRequest extends FormRequest
     public function messages()
     {
         return [
-            'contact.*.required' => trans("contact::locale.rules.required"),
+            'contact.*.required' => trans('contact::contact.messages.required'),
         ];
     }
 }
