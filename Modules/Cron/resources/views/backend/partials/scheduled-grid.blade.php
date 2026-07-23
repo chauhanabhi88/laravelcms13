@@ -7,7 +7,7 @@
         @include('core::partials.pagination')
     </div>
     @can('admin.schedule.mass_delete')
-        <button type="button" class="btn btn-danger btn-fw float-right" id="mass-delete" data-toggle="modal" data-target="#modal-delete-confirmation" data-action-target="{{ route('admin.schedule.mass_delete', updateUrlParams([$cron->id])) }}">{{ trans('core::core.buttons.delete') }}</i></button>
+        <button type="button" class="btn btn-danger btn-fw float-right" id="mass-delete" data-toggle="modal" data-target="#modal-delete-confirmation" data-action-target="{{ route('admin.schedule.mass_delete', updateUrlParams([$id])) }}">{{ trans('core::core.buttons.delete') }}</i></button>
         @endcan
     <div class="card-body table-responsive">
         <table class="table table-bordered table-striped table-hover text-nowrap">

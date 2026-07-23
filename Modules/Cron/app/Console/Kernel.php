@@ -2,12 +2,17 @@
 
 namespace Modules\Cron\Console;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\DB;
+use Modules\Attribute\Console\TestCommand;
+use Modules\Banner\Console\Make;
+use Modules\Core\Console\Deletetempimage;
+use Modules\Core\Console\Logdelete;
+use Modules\Cron\Models\CronSchedule;
 use Modules\Cron\Repositories\CronRepository;
 use Modules\Cron\Repositories\CronScheduleRepository;
-use Modules\Cron\Models\CronSchedule;
+use Modules\Mail\Console\Clearlogs;
 
 class Kernel extends ConsoleKernel
 {
@@ -16,21 +21,27 @@ class Kernel extends ConsoleKernel
      *
      * @var array
      */
-	
-	
-	protected $commands = [
-		\Modules\Attribute\Console\TestCommand::class,
-		\Modules\Banner\Console\Make::class,
-		\Modules\Mail\Console\Clearlogs::class,
-		\Modules\Core\Console\Logdelete::class,
-		\Modules\Core\Console\Deletetempimage::class,
-		\Modules\Cron\Console\Test::class,
+    protected $commands = [
+        TestCommand::class,
+        Make::class,
+        Clearlogs::class,
+        Logdelete::class,
+        Deletetempimage::class,
     ];
+
+    /**
+     * Pending cron_schedules row id for the current run, keyed by cron id.
+     *
+     * Populated in the scheduled task's before() callback so the matching
+     * onSuccess()/onFailure() callback updates the correct schedule row.
+     *
+     * @var array
+     */
+    protected $pendingScheduleIds = [];
 
     /**
      * Define the application's command schedule.
      *
-     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
     protected function schedule(Schedule $schedule)
@@ -38,59 +49,73 @@ class Kernel extends ConsoleKernel
         try {
             $cronRepository = app(CronRepository::class);
             $attributes = [
-                "status" => config("core.enabled")
+                'status' => config('core.enabled'),
             ];
             $crons = $cronRepository->getByAttributes($attributes);
-            if(count($crons)) {
-                foreach ($crons as $cron) {
-                    \Log::info("Cron command: ".$cron->command);
-                    $cronExpression = "* * * * *";
-                    if($cron->cron_expression) {
-                        $cronExpression = $cron->cron_expression;
-                    }
-                    $schedule->command($cron->command)->cron($cronExpression)->before(function () use ($cron) {
-                        $this->manageJobSchedule($cron);
-                    })->onSuccess(function () use ($cron) {
-                         \Log::info("Cron success: ".json_encode($cron));
-                        $this->manageJobSchedule($cron, config("cron.cron_schedule_status_success"));
-                    })
-                    ->onFailure(function () use ($cron) {
-                         \Log::info("Cron failed: ".json_encode($cron));
-                        $this->manageJobSchedule($cron, config("cron.cron_schedule_status_fail"));
-                    });
-                    
-                }
+            foreach ($crons as $cron) {
+                $cronExpression = $cron->cron_expression ?: '* * * * *';
+                $schedule->command($cron->command)->cron($cronExpression)->before(function () use ($cron) {
+                    $this->manageJobSchedule($cron);
+                })->onSuccess(function () use ($cron) {
+                    $this->manageJobSchedule($cron, config('cron.cron_schedule_status_success'));
+                })->onFailure(function () use ($cron) {
+                    $this->manageJobSchedule($cron, config('cron.cron_schedule_status_fail'));
+                });
             }
         } catch (\Throwable $th) {
-            \Log::info("Cron error : ".$th->getMessage());
-            \Log::info($th->getTraceAsString());
+            \Log::error('Cron schedule error: '.$th->getMessage());
+            \Log::error($th->getTraceAsString());
         }
     }
 
     protected function manageJobSchedule($cron, $status = null)
     {
         $cronScheduleRepository = app(CronScheduleRepository::class);
-        $current = date("Y-m-d H:i:s");
-        $setting = settings("cron", "cron_schedule_delete_time");
-        $cronScheduleEntity = new CronSchedule;
-        $temp = DB::table($cronScheduleEntity->getTable())
-                ->where('status',2)
-                ->whereRaw('ABS(TIMESTAMPDIFF(MINUTE, finished_date, ?)) > '.$setting, [$current])
-                ->delete();
-        if($status) {
-            $cronSchedule = $cronScheduleEntity->latest()->first();
-            $cronScheduleRepository->update($cronSchedule, [
-                'status' => $status,
-                'finished_date' => date("Y-m-d H:i:s")
-            ]);
-        } else {
-            $cronScheduleRepository->create([
-                'cron_id' => $cron->id,
-                'title'   => $cron->title,
-                'command'   => $cron->command,
-                'status'  => config("cron.cron_schedule_status_pending"),
-                'execute_date' => date("Y-m-d H:i:s")
-            ]);
+
+        if ($status) {
+            $scheduleId = $this->pendingScheduleIds[$cron->id] ?? null;
+            $cronSchedule = $scheduleId ? $cronScheduleRepository->find($scheduleId) : null;
+            if ($cronSchedule) {
+                $cronScheduleRepository->update($cronSchedule, [
+                    'status' => $status,
+                    'finished_date' => date('Y-m-d H:i:s'),
+                ]);
+                unset($this->pendingScheduleIds[$cron->id]);
+            }
+
+            return;
         }
+
+        $this->pruneOldSchedules();
+
+        $cronSchedule = $cronScheduleRepository->create([
+            'cron_id' => $cron->id,
+            'title' => $cron->title,
+            'command' => $cron->command,
+            'status' => config('cron.cron_schedule_status_pending'),
+            'execute_date' => date('Y-m-d H:i:s'),
+        ]);
+        $this->pendingScheduleIds[$cron->id] = $cronSchedule->id;
+    }
+
+    /**
+     * Delete finished (success/fail) schedule rows older than the configured retention.
+     *
+     * @return void
+     */
+    protected function pruneOldSchedules()
+    {
+        $current = date('Y-m-d H:i:s');
+        $setting = (int) settings('cron', 'cron_schedule_delete_time');
+        $cronScheduleEntity = new CronSchedule;
+
+        DB::table($cronScheduleEntity->getTable())
+            ->whereIn('status', [
+                config('cron.cron_schedule_status_success'),
+                config('cron.cron_schedule_status_fail'),
+            ])
+            ->whereNotNull('finished_date')
+            ->whereRaw('ABS(TIMESTAMPDIFF(MINUTE, finished_date, ?)) > ?', [$current, $setting])
+            ->delete();
     }
 }
