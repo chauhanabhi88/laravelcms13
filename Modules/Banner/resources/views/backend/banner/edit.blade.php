@@ -149,24 +149,7 @@
     var fileName = e.target.files[0].name;
     var fileSize = e.target.files[0].size;
     jQuery(".custom-file-label").html(fileName);
-    $('input[type="file"').addClass('valid_image');
-  });
-  jQuery(".countrylist").hide();
-  var countryCodes = <?php echo json_encode($countryCodes); ?>;
-
-  if ($.inArray(jQuery("#banner_group option:selected").text(), countryCodes) >= 0) {
-    jQuery(".countrylist").show();
-  }
-  jQuery("#banner_group").change(function() {
-    var selectedGroup = $(this).children("option:selected").text();
-    if ($.inArray(selectedGroup, countryCodes) >= 0) {
-      jQuery("#country").addClass('required');
-      jQuery(".countrylist").show();
-    } else {
-      jQuery("#country").val('');
-      jQuery(".countrylist").hide();
-      jQuery("#country").removeClass('required');
-    }
+    $('input[type="file"]').addClass('valid_image');
   });
   /*This method for apply image validation */
   var msg;
