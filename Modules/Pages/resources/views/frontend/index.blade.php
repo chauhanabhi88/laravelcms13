@@ -9,7 +9,6 @@
 @endsection
 
 @section('meta')
-    {{ $page->meta }}
     <meta name="{{ $page->meta_title }}" content="{{ $page->meta_description }}">
 @endsection
 

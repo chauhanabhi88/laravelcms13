@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -13,17 +11,13 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/pages', function (Request $request) {
-    return $request->user();
-});
-
-if ($apiVersions = config("core.api_versions")) {
+if ($apiVersions = config('core.api_versions')) {
     foreach ($apiVersions as $version) {
         $upperCaseVersion = strtoupper($version);
-        Route::middleware(['auth:customer'])->prefix($version . '/page')->group(function () use ($upperCaseVersion) {
+        Route::middleware(['auth:customer'])->prefix($version.'/page')->group(function () use ($upperCaseVersion) {
             Route::get('/{slug}', [
                 'as' => 'page.index',
-                'uses' => $upperCaseVersion . '\PageController@index'
+                'uses' => $upperCaseVersion.'\PageController@index',
             ]);
         });
     }
