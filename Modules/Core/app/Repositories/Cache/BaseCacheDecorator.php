@@ -457,9 +457,9 @@ abstract class BaseCacheDecorator implements BaseRepository
         return $this->repository->uploadFileParameters($request);
     }
 
-    public function removeFile()
+    public function removeFile($fileName = '', $moduleName = '')
     {
-        return $this->repository->removeFile();
+        return $this->repository->removeFile($fileName, $moduleName);
     }
 
     public function getActivityData($action)

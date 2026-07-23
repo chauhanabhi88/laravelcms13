@@ -2,8 +2,8 @@
 
 namespace Modules\User\Http\Requests;
 
-use Modules\User\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\User\Models\User;
 
 class UpdateRequest extends FormRequest
 {
@@ -14,14 +14,25 @@ class UpdateRequest extends FormRequest
      */
     public function rules()
     {
-        $user = new User();
+        $user = new User;
         $rules = [];
         $rules['user.name'] = 'required';
         $rules['user.email'] = [
             'required',
             'email',
-            'unique:' . $user->getTable() . ',email,' . $this->id . ',id,deleted_at,NULL'
+            'unique:'.$user->getTable().',email,'.$this->id.',id,deleted_at,NULL',
         ];
+        /* the edit and profile forms post the password at the root of the payload, not under user[] */
+        if ($this->input('password')) {
+            $rules['password'] = [
+                'confirmed',
+                'min:6',
+                'regex:/[a-z]/',      // must contain at least one lowercase letter
+                'regex:/[A-Z]/',      // must contain at least one uppercase letter
+                'regex:/[0-9]/',      // must contain at least one digit
+                "regex:/[@$!%*#?&']/", // must contain a special character
+            ];
+        }
         if ($this->input('user.password')) {
             $rules['user.password'] = [
                 'confirmed',
@@ -39,6 +50,7 @@ class UpdateRequest extends FormRequest
         if (array_key_exists('role_id', $this->user) && empty($this->user['role_id'])) {
             $rules['user.role_id'] = 'required|integer';
         }
+
         return $rules;
     }
 
@@ -55,13 +67,15 @@ class UpdateRequest extends FormRequest
     public function messages()
     {
         return [
-            'user.*.required' => trans("user::user.messages.required"),
-            'user.email.email' => trans("user::user.messages.invalid_email"),
-            'user.email.unique' => "Email address is already in use.",
-            'user.status.integer' => trans("user::user.messages.status_invalid"),
-            'user.role_id.integer' => trans("user::user.messages.role_invalid"),
-            'user.password.min' => trans("user::user.messages.password_length"),
-            'user.password.regex' =>  trans("user::user.messages.password_regex"),
+            'user.*.required' => trans('user::user.messages.required'),
+            'user.email.email' => trans('user::user.messages.invalid_email'),
+            'user.email.unique' => 'Email address is already in use.',
+            'user.status.integer' => trans('user::user.messages.status_invalid'),
+            'user.role_id.integer' => trans('user::user.messages.role_invalid'),
+            'user.password.min' => trans('user::user.messages.password_length'),
+            'user.password.regex' => trans('user::user.messages.password_regex'),
+            'password.min' => trans('user::user.messages.password_length'),
+            'password.regex' => trans('user::user.messages.password_regex'),
         ];
     }
 }

@@ -37,14 +37,18 @@ $user_id =  isset($getCustomerInfo->id) && !empty($getCustomerInfo->id) ? $getCu
             </div>
 
             
-            {{ formStart(null,"PUT" ,'customer.profile.update' ,updateUrlParams(), ['type' => config('core.route_type'), encrypt_It([$user_id]) ,'enctype'=>'multipart/form-data','id' => 'profile_form'])}}
+            {{ formStart(null,"PUT" ,'customer.profile.update' ,updateUrlParams(['type' => config('core.route_type'), encrypt_It($user_id)]), ['enctype'=>'multipart/form-data','id' => 'profile_form'])}}
 
             <div class="left-box-wrapper edit-profile-wrapper">
                 <div class="account-profile-image">
                     <div class="img-btn-wrp">
-                        @if($profile_img !=null && file_exists(public_path().'/storage/Customer/thumbnails/'.$profile_img))
-                        <a href="{{ URL::to('/') }}/storage/Customer/{{ $profile_img }}" target="_BLANK">
-                            <img src="{{ URL::to('/') }}/storage/Customer/thumbnails/{{ $profile_img }}">
+                        @php
+                        $originalImageUrl = getImageUrl(['module' => config('customer.name'), 'image' => $profile_img]);
+                        $thumbnailImageUrl = getImageUrl(['image-type' => 'thumbnail', 'module' => config('customer.name'), 'image' => $profile_img]);
+                        @endphp
+                        @if($originalImageUrl && $thumbnailImageUrl)
+                        <a href="{{ $originalImageUrl }}" target="_BLANK">
+                            <img src="{{ $thumbnailImageUrl }}">
                         </a>
                         @else
                         <img src="{{ asset('modules/theme/frontend/images/my-account/profile-image.png') }}">

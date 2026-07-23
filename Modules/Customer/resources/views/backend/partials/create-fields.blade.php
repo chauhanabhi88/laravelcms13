@@ -45,14 +45,10 @@ $viewPassword = !empty(settings('core', 'view_password')) ? settings('core', 'vi
                             </div>
                         </div>
 
-                        @php
-                        $image_extension = (!empty(settings('customer', 'image_type')))?settings('customer', 'image_type'):config('asgard.customer.config.defualt_image_type');
-                        $maxUploadServer = (int)(ini_get('upload_max_filesize')) > (int)(ini_get('post_max_size')) ? (int)(ini_get('post_max_size')) : (int)(ini_get('upload_max_filesize'));
-                        @endphp
                         <div class="image-note">
                             <lh><b>{{trans("core::core.image-note.label")}}</b></lh>
                             <li>{{trans("core::core.image-note.max-size",['size'=>$image_max_size])}}</li>
-                            <li>{{trans("core::core.image-note.file-type",['file_type'=>($image_extension ? $image_extension : 'jpeg,jpg,png')])}}</li>
+                            <li>{{trans("core::core.image-note.file-type",['file_type'=>$image_extension])}}</li>
                         </div>
 
 

@@ -48,7 +48,7 @@
                 },
                 'customer[email]': {
                     required: true,
-                    basicEmail: true
+                    basicEmail: true,
                     maxlength: 255
                 },
                 'customer[contact_number]': {
@@ -119,6 +119,10 @@
         jQuery.validator.addMethod("lettersOnly", function(value, element) {
             return this.optional(element) || /^[A-Za-z\s]+$/.test(value);
         }, "Please enter letters only.");
+
+        jQuery.validator.addMethod("basicEmail", function(value, element) {
+            return this.optional(element) || /^[^@]+@[^@]+\.[^@]+$/.test(value);
+        }, "Please enter a valid email address.");
 
     });
     jQuery('input[type="file"]').change(function(e) {

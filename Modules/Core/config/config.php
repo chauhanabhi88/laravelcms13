@@ -63,10 +63,15 @@ return [
 
     'isBaseCurrency' => 1,
     'isDisplayCurrency' => 1,
+    /*
+    | Used by encrypt_It() / decrypt_It() to obfuscate record ids in urls.
+    | The previous default (bf-cbc) is no longer shipped by OpenSSL 3, where it
+    | made every encrypted id come back as an empty string.
+    */
     'encrypt' => [
-        'password' => 'sc3R7469',
-        'method' => 'bf-cbc',
-        'iv' => '95724836',
+        'password' => env('CORE_ENCRYPT_PASSWORD', 'sc3R7469'),
+        'method' => env('CORE_ENCRYPT_METHOD', 'aes-128-cbc'),
+        'iv' => env('CORE_ENCRYPT_IV', '9572483695724836'),
         'datepicker_format' => 'dd-mm-yy',
         'php_datepicker_format' => 'd-m-Y',
     ],

@@ -2,28 +2,22 @@
 
 namespace Modules\Customer\Http\Controllers\Backend;
 
+use Config;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Modules\Customer\Http\Requests\CreateRequest;
-use Modules\Customer\Http\Requests\UpdateRequest;
-use Modules\Customer\Http\Requests\CustomerAddressRequest;
+use Illuminate\Support\Facades\Hash;
 use Modules\Core\Http\Controllers\BackendController;
-use Modules\Customer\Repositories\CustomerRepository;
+use Modules\Customer\Http\Requests\CreateRequest;
+use Modules\Customer\Http\Requests\CustomerAddressRequest;
+use Modules\Customer\Http\Requests\UpdateRequest;
 use Modules\Customer\Models\Customer;
 use Modules\Customer\Models\CustomerAddress;
-use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
-use Config;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Mail;
-use Modules\Customer\Emails\CustomerEmailVerifyMail;
-use Validator;
-use Modules\Menu\Models\Menu;
+use Modules\Customer\Repositories\CustomerRepository;
 
 class CustomerController extends BackendController
 {
     protected $customer = null;
+
     protected $customerEntity = null;
 
     public function __construct(CustomerRepository $customer, Customer $customerEntity)
@@ -42,10 +36,10 @@ class CustomerController extends BackendController
     {
         try {
             if (function_exists('getPerPageForModule')) {
-                $perPage = getPerPageForModule(config("customer.cache.name"), $request->get("per_page"));
+                $perPage = getPerPageForModule(config('customer.cache.name'), $request->get('per_page'));
                 $request->merge(['per_page' => $perPage]);
             }
-            setFilterSession(config("customer.cache.name"), $request);
+            setFilterSession(config('customer.cache.name'), $request);
             $statusOptions = $this->customer->getStatusOptions(true);
             $filters = $this->customer->getFilters($request, $statusOptions);
             $collection = $this->customer->pagination($request);
@@ -53,31 +47,33 @@ class CustomerController extends BackendController
             $activeMenuId = getActiveMenuId($request, 'admin.customer.index');
             $columns = getColumnObject()->getColumns($activeMenuId);
             $content = view('customer::backend.partials.grid', compact('request', 'collection', 'columns', 'filters', 'statusOptions', 'activeMenuId'));
+
             return response()->json([
                 'type' => 'success',
                 'content' => [
                     'element' => 'collection',
-                    'html' => $content->__toString()
+                    'html' => $content->__toString(),
                 ],
                 'message' => $request->get('message'),
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'type' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
         }
     }
 
     /**
      * Display a listing of the resource.
+     *
      * @return Response
      */
     public function index(Request $request)
     {
         try {
             if (function_exists('getPerPageForModule')) {
-                $perPage = getPerPageForModule(config("customer.cache.name"), $request->get("per_page"));
+                $perPage = getPerPageForModule(config('customer.cache.name'), $request->get('per_page'));
                 $request->merge(['per_page' => $perPage]);
             }
             $statusOptions = $this->customer->getStatusOptions(true);
@@ -90,30 +86,35 @@ class CustomerController extends BackendController
 
             return view('customer::backend.index', compact('request', 'collection', 'columns', 'filters', 'statusOptions', 'activeMenuId'));
         } catch (\Throwable $e) {
-            return redirect()->route('admin.dashboard.index', updateUrlParams())->with("error", $e->getMessage());
+            return redirect()->route('admin.dashboard.index', updateUrlParams())->with('error', $e->getMessage());
         }
     }
+
     /**
      * image max upload size.
+     *
      * @return Response
      */
     private function getMaxImageSize()
     {
-        $maxUploadSize = (!empty(settings('customer', 'max_upload_size'))) ? settings('customer', 'max_upload_size') : config('asgard.customer.config.defualt_image_size');
-        $maxUploadServer = (int)(ini_get('upload_max_filesize')) > (int)(ini_get('post_max_size')) ? (int)(ini_get('post_max_size')) : (int)(ini_get('upload_max_filesize'));
+        $maxUploadSize = (! empty(settings('customer', 'max_upload_size'))) ? settings('customer', 'max_upload_size') : Config::get('customer.default_image_size');
+        $maxUploadServer = (int) (ini_get('upload_max_filesize')) > (int) (ini_get('post_max_size')) ? (int) (ini_get('post_max_size')) : (int) (ini_get('upload_max_filesize'));
+
         return $maxUploadSize ? (($maxUploadSize > $maxUploadServer) ? $maxUploadServer : $maxUploadSize) : $maxUploadServer;
     }
 
     private function getImageTypes()
     {
-        $imageTypes = (!empty(settings('customer', 'image_type'))) ? settings('customer', 'image_type') : config('asgard.customer.config.defualt_image_type');
+        $imageTypes = (! empty(settings('customer', 'image_type'))) ? settings('customer', 'image_type') : Config::get('customer.default_image_type');
         $imageTypes = explode(',', $imageTypes);
-        $imageTypes = '.' . implode(',.', $imageTypes);
+        $imageTypes = '.'.implode(',.', $imageTypes);
+
         return $imageTypes;
     }
 
     /**
      * Show the form for creating a new resource.
+     *
      * @return Response
      */
     public function create()
@@ -122,15 +123,17 @@ class CustomerController extends BackendController
             $image_extension = $this->getImageTypes();
             $image_max_size = $this->getMaxImageSize();
             $statusOptions = $this->customer->getStatusOptions(true);
-            return view('customer::backend.create', compact("statusOptions", "image_extension", "image_max_size"));
+
+            return view('customer::backend.create', compact('statusOptions', 'image_extension', 'image_max_size'));
         } catch (\Throwable $e) {
-            return redirect()->route('admin.dashboard.index', updateUrlParams())->with("error", $e->getMessage());
+            return redirect()->route('admin.dashboard.index', updateUrlParams())->with('error', $e->getMessage());
         }
     }
 
     /**
      * Store a newly created resource in storage.
-     * @param Request $request
+     *
+     * @param  Request  $request
      * @return Response
      */
     public function store(CreateRequest $request)
@@ -139,32 +142,31 @@ class CustomerController extends BackendController
             $params = $request->all();
             $checkEmailInTransh = Customer::onlyTrashed()->where('email', $params['customer']['email'])->get()->first();
 
-            /*customer is  registred in our system but added in softdelete*/
-            if (!empty($checkEmailInTransh)) {
-                return redirect()->route('admin.customer.create', updateUrlParams())->with("error", trans("customer::customer.messages.soft_delete_email_exist"));
+            /* customer is  registred in our system but added in softdelete */
+            if (! empty($checkEmailInTransh)) {
+                return redirect()->route('admin.customer.create', updateUrlParams())->with('error', trans('customer::customer.messages.soft_delete_email_exist'));
             }
             if ($request->file('profile_picture')) {
-                $imageUploadParams = array(
-                    'module_name' => Config::get('customer.name'),
+                $imageUploadParams = [
+                    'module_name' => strtolower(Config::get('customer.name')),
                     'dbfield' => 'profile_picture',
                     'thumbnail' => true,
-                    'thumbnail_size' => 100
-                );
+                    'thumbnail_size' => 100,
+                ];
                 $imageParams = $this->customer->setUploadParams($imageUploadParams)->uploadImage($request);
                 $params['customer']['profile_picture'] = $imageParams['profile_picture'];
             }
             if (isset($params['password']) && $params['password']) {
                 $params['customer']['password'] = Hash::make($params['password']);
             }
-            $params['customer']['signup_type'] = config('customer.signup_type.admin.code');
 
             $params['customer']['status'] = (isset($params['customer']['status'])) ? config('core.enabled') : config('core.disabled');
 
             $customer = $this->customer->create($params['customer']);
 
-            if (isset($customer) && !empty($customer)) {
+            if (isset($customer) && ! empty($customer)) {
                 $customerId = $customer->id;
-                $customerAddress = new CustomerAddress();
+                $customerAddress = new CustomerAddress;
                 $addressArray = $params['address'];
                 $addressArray['customer_id'] = $customerId;
                 $addressArray['is_default_address'] = config('customer.is_default_address.yes');
@@ -172,87 +174,88 @@ class CustomerController extends BackendController
             }
 
             if (isset($params['snc']) && $params['snc']) {
-                return redirect()->route('admin.customer.edit', updateUrlParams([$customer->id]))->with("success", trans("customer::customer.messages.created_success"));
+                return redirect()->route('admin.customer.edit', updateUrlParams([$customer->id]))->with('success', trans('customer::customer.messages.created_success'));
             }
 
-            return redirect()->route('admin.customer.index', updateUrlParams())->with("success", trans("customer::customer.messages.created_success"));
+            return redirect()->route('admin.customer.index', updateUrlParams())->with('success', trans('customer::customer.messages.created_success'));
         } catch (\Throwable $e) {
-            return redirect()->route('admin.customer.create', updateUrlParams())->with("error", $e->getMessage());
+            return redirect()->route('admin.customer.create', updateUrlParams())->with('error', $e->getMessage());
         }
     }
 
     /**
      * Show the form for editing the specified resource.
-     * @param int $id
+     *
+     * @param  int  $id
      * @return Response
      */
     public function edit(Request $request)
     {
         try {
             $id = $request->id;
-            if (!$id) {
-                throw new \Exception(trans("customer::customer.messages.data_invalid"));
+            if (! $id) {
+                throw new \Exception(trans('customer::customer.messages.data_invalid'));
             }
             $customer = $this->customer->find($id);
 
-            if (!$customer) {
-                throw new \Exception(trans("customer::customer.messages.data_invalid"));
+            if (! $customer) {
+                throw new \Exception(trans('customer::customer.messages.data_invalid'));
             }
 
-            $image_extension =  config('asgard.customer.config.defualt_image_type')?((!empty(settings('customer', 'image_type'))) ? settings('customer', 'image_type') : config('asgard.customer.config.defualt_image_type')):'jpeg,jpg,png';
+            $image_extension = $this->getImageTypes();
             $image_max_size = $this->getMaxImageSize();
             $statusOptions = $this->customer->getStatusOptions();
-            return view('customer::backend.edit', compact("customer", "statusOptions", "image_extension", "image_max_size"));
+
+            return view('customer::backend.edit', compact('customer', 'statusOptions', 'image_extension', 'image_max_size'));
         } catch (\Throwable $e) {
-            return redirect()->route('admin.customer.index', updateUrlParams())->with("erroe", $e->getMessage());
+            return redirect()->route('admin.customer.index', updateUrlParams())->with('error', $e->getMessage());
         }
     }
 
     public function saveAddress(CustomerAddressRequest $request)
     {
+        $customerId = $request->get('customer_id');
         try {
 
-            $customerAddress = new CustomerAddress();
+            $customerAddress = new CustomerAddress;
 
             $addressArray = $request->get('address');
-            $customerId = $request->get('customer_id');
             $addressArray['customer_id'] = $customerId;
             $addressId = $request->get('address_id');
 
-            if (isset($addressArray['is_default_address']) && !empty($addressArray['is_default_address'])) {
-                if ($addressArray['is_default_address'] == "on") {
+            if (isset($addressArray['is_default_address']) && ! empty($addressArray['is_default_address'])) {
+                if ($addressArray['is_default_address'] == 'on') {
                     $customerAddress->where('customer_id', $customerId)->update(['is_default_address' => 0]);
-                    $addressArray['is_default_address'] = config("customer.is_default_address.yes");
+                    $addressArray['is_default_address'] = config('customer.is_default_address.yes');
                 } else {
-                    $addressArray['is_default_address'] = config("customer.is_default_address.no");
+                    $addressArray['is_default_address'] = config('customer.is_default_address.no');
                 }
             } else {
                 $addressArray['is_default_address'] = config('customer.is_default_address.no');
             }
 
-            if (isset($addressId) && !empty($addressId)) {
+            if (isset($addressId) && ! empty($addressId)) {
                 $customerAddress = $customerAddress->find($addressId);
                 $customerAddress->update($addressArray);
             } else {
                 $customerAddress->create($addressArray);
             }
-            return redirect()->route('admin.customer.edit', updateUrlParams([$customerId]))->withInput(['tab' => '#custom-tabs-three-address-tab'])->with('success', trans("customer::customer.messages.address_save"));
+
+            return redirect()->route('admin.customer.edit', updateUrlParams([$customerId]))->withInput(['tab' => '#custom-tabs-three-address-tab'])->with('success', trans('customer::customer.messages.address_save'));
         } catch (\Throwable $e) {
-            return redirect()->route('admin.customer.edit', updateUrlParams([$customerId]))->with("error", $e->getMessage());
+            return redirect()->route('admin.customer.edit', updateUrlParams([$customerId]))->with('error', $e->getMessage());
         }
     }
-
-
 
     public function getAddress(Request $request)
     {
         try {
-            $customerAddress = new CustomerAddress();
+            $customerAddress = new CustomerAddress;
             $customerAddress = $customerAddress->find($request->get('id'));
             if ($customerAddress) {
                 return response()->json([
                     'type' => 'success',
-                    'data' =>  $customerAddress->toArray()
+                    'data' => $customerAddress->toArray(),
                 ]);
             }
         } catch (\Throwable $e) {
@@ -262,40 +265,44 @@ class CustomerController extends BackendController
 
     public function deleteAddress(Request $request)
     {
-        $id = $request->id;
-        if (!$id) {
-            throw new \Exception(trans("cuatomer::cuatomer.messages.data_invalid"));
+        try {
+            $id = $request->id;
+            $customerAddress = (new CustomerAddress)->find($id);
+            if (! $id || ! $customerAddress) {
+                throw new \Exception(trans('customer::customer.messages.data_invalid'));
+            }
+            $customerId = $customerAddress->customer_id;
+            if ($customerAddress->is_default_address == config('customer.is_default_address.yes')) {
+                return redirect()->route('admin.customer.edit', updateUrlParams([$customerId]))->withInput(['tab' => '#custom-tabs-three-address-tab'])->with('error', trans('customer::customer.messages.default_add_error'));
+            }
+            $customerAddress->delete();
+
+            return redirect()->route('admin.customer.edit', updateUrlParams([$customerId]))->withInput(['tab' => '#custom-tabs-three-address-tab'])->with('success', trans('customer::customer.messages.address_remove'));
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.customer.index', updateUrlParams())->with('error', $e->getMessage());
         }
-        $customerAddress = new CustomerAddress();
-        $customerAddress = $customerAddress->find($id);
-        $customerId = $customerAddress->customer_id;
-        if ($customerAddress->is_default_address == config('customer.is_default_address.yes')) {
-            return redirect()->route('admin.customer.edit', updateUrlParams([$customerId]))->withInput(['tab' => '#custom-tabs-three-address-tab'])->with('error', trans("customer::customer.messages.default_add_error"));
-        }
-        $customerId = $customerAddress->customer_id;
-        $customerAddress->delete();
-        return redirect()->route('admin.customer.edit', updateUrlParams([$customerId]))->withInput(['tab' => '#custom-tabs-three-address-tab'])->with('success', trans('customer::customer.messages.address_remove'));
     }
 
     /**
      * Update the specified resource in storage.
-     * @param Request $request
-     * @param int $id
+     *
+     * @param  Request  $request
+     * @param  int  $id
      * @return Response
      */
     public function update(UpdateRequest $request)
     {
         try {
             $id = $request->id;
-            if (!$id) {
-                throw new \Exception(trans("banner::banner_group.messages.data_invalid"));
+            if (! $id) {
+                throw new \Exception(trans('customer::customer.messages.data_invalid'));
             }
             $params = $request->all();
             $checkEmailInTransh = Customer::onlyTrashed()->where('email', $params['customer']['email'])->get()->first();
 
-            /*customer is  registred in our system but added in softdelete*/
-            if (!empty($checkEmailInTransh)) {
-                return redirect()->route('admin.customer.edit', updateUrlParams([$id]))->with("error",  trans("customer::customer.messages.soft_delete_email_exist"));
+            /* customer is  registred in our system but added in softdelete */
+            if (! empty($checkEmailInTransh)) {
+                return redirect()->route('admin.customer.edit', updateUrlParams([$id]))->with('error', trans('customer::customer.messages.soft_delete_email_exist'));
             }
             if (isset($params['password']) && $params['password']) {
                 $params['customer']['password'] = Hash::make($params['password']);
@@ -303,54 +310,60 @@ class CustomerController extends BackendController
             $params['customer']['status'] = (isset($params['customer']['status'])) ? config('core.enabled') : config('core.disabled');
 
             $customer = $this->customer->find($id);
-            if (!$customer) {
-                throw new \Exception(trans("customer::customer.messages.data_invalid"));
+            if (! $customer) {
+                throw new \Exception(trans('customer::customer.messages.data_invalid'));
             }
 
-
             if (isset($params['remove_profile_picture']) && $params['remove_profile_picture']) {
-                $imageRemoveParams = array(
+                $imageRemoveParams = [
                     'module_name' => strtolower(Config::get('customer.name')),
-                    'dbfield' => 'profile_picture'
-                );
-                $this->customer->setUploadParams($imageRemoveParams)->setModel($customer)->removeFile($customer->profile_picture, 'Customer');
-                //$this->customer->removeImage();
+                    'dbfield' => 'profile_picture',
+                ];
+                $this->customer->setUploadParams($imageRemoveParams)->setModel($customer)->removeFile($customer->profile_picture, strtolower(Config::get('customer.name')));
                 $params['customer']['profile_picture'] = null;
             }
             $request->merge($params);
             if ($request->file('profile_picture')) {
-                $imageUploadParams = array(
+                $imageUploadParams = [
                     'module_name' => strtolower(Config::get('customer.name')),
                     'dbfield' => 'profile_picture',
                     'thumbnail' => true,
-                    'thumbnail_size' => 100
-                );
-                $params = $this->customer->setUploadParams($imageUploadParams)->uploadImage($request);
-                $params['customer']['profile_picture'] = $params['profile_picture'];
+                    'thumbnail_size' => 100,
+                ];
+                /* setModel() lets the repository clean up the previously uploaded file */
+                $imageParams = $this->customer->setUploadParams($imageUploadParams)->setModel($customer)->uploadImage($request);
+                $params['customer']['profile_picture'] = $imageParams['profile_picture'];
             }
             $this->customer->update($customer, $params['customer']);
             if (isset($params['snc']) && $params['snc']) {
-                return redirect()->route('admin.customer.edit', updateUrlParams([$id]))->withInput(['tab' => '#custom-tabs-three-address-tab'])->with('success', trans("customer::customer.messages.updated_success"));
+                return redirect()->route('admin.customer.edit', updateUrlParams([$id]))->withInput(['tab' => '#custom-tabs-three-address-tab'])->with('success', trans('customer::customer.messages.updated_success'));
             }
-            return redirect()->route('admin.customer.index', updateUrlParams())->with("success", trans("customer::customer.messages.updated_success"));
+
+            return redirect()->route('admin.customer.index', updateUrlParams())->with('success', trans('customer::customer.messages.updated_success'));
         } catch (\Throwable $e) {
-            return redirect()->route('admin.customer.edit', updateUrlParams([$id]))->with("error", $e->getMessage());
+            if (empty($id)) {
+                return redirect()->route('admin.customer.index', updateUrlParams())->with('error', $e->getMessage());
+            }
+
+            return redirect()->route('admin.customer.edit', updateUrlParams([$id]))->with('error', $e->getMessage());
         }
     }
 
     /**
      * Remove the specified resource from storage.
-     * @param int $id
+     *
+     * @param  int  $id
      * @return Response
      */
     public function destroy(Request $request)
     {
         try {
             $this->customer->deleteRecord($request);
-            $this->customer->flushCache(config("customer.cache.deleted_customer_name"));
-            return redirect()->route('admin.customer.index', updateUrlParams())->with("success", trans("customer::customer.messages.deleted_success"));
+            $this->customer->flushCache(config('customer.cache.deleted_customer_name'));
+
+            return redirect()->route('admin.customer.index', updateUrlParams())->with('success', trans('customer::customer.messages.deleted_success'));
         } catch (\Throwable $e) {
-            return redirect()->route('admin.customer.index', updateUrlParams())->with("error", $e->getMessage());
+            return redirect()->route('admin.customer.index', updateUrlParams())->with('error', $e->getMessage());
         }
     }
 
@@ -360,19 +373,16 @@ class CustomerController extends BackendController
     public function massDelete(Request $request)
     {
         try {
-            // $imageRemoveParams = array(
-            //     'module_name' => config('customer.name'),
-            //     'dbfield' => 'profile_picture'
-            // );
-            // $this->customer->setUploadParams($imageRemoveParams);
+            /* soft delete only: the uploaded files are removed when the record is force deleted from the deleted customers grid */
             $this->customer->destroyMultiple($request);
-            $this->customer->flushCache(config("customer.cache.deleted_customer_name"));
-            return redirect()->route('admin.customer.index', updateUrlParams())->with("success", trans("customer::customer.messages.deleted_success"));
+            $this->customer->flushCache(config('customer.cache.deleted_customer_name'));
+
+            return redirect()->route('admin.customer.index', updateUrlParams())->with('success', trans('customer::customer.messages.deleted_success'));
         } catch (\Throwable $e) {
-            return redirect()->route('admin.customer.index', updateUrlParams())->with("error", $e->getMessage());
+            return redirect()->route('admin.customer.index', updateUrlParams())->with('error', $e->getMessage());
         }
     }
-    
+
     /**
      * status change on grid page
      */
@@ -382,15 +392,16 @@ class CustomerController extends BackendController
             $id = $request->get('id');
             $status = $request->get('status');
             $customerRow = $this->customer->find($id);
-            $status = ($status == 1) ? 1 : 2;
-            $params = array('status' => $status);
+            $status = ($status == config('core.enabled')) ? config('core.enabled') : config('core.disabled');
+            $params = ['status' => $status];
             $this->customer->update($customerRow, $params);
         }
-        $gridRequest = new Request();
+        $gridRequest = new Request;
         $gridRequest->merge([
             'active_menu_id' => $request->get('active_menu_id'),
-            'message' => trans("core::core.messages.status_change_success")
+            'message' => trans('core::core.messages.status_change_success'),
         ]);
+
         return $this->filters($gridRequest);
     }
 }

@@ -562,75 +562,94 @@ abstract class EloquentBaseRepository implements BaseRepository
             $fileData = $this->uploadFileParameters($request);
             $storagePath = $fileData['storagePath'];
             $file = $fileData['file'];
-            $thumbmail = $fileData['thumbmail'];
-
-            if (isset($this->_uploadParams['resize_original_image_width']) && $this->_uploadParams['resize_original_image_width'] && isset($this->_uploadParams['resize_original_image_height']) && $this->_uploadParams['resize_original_image_height']) {
-
-                $manager = new ImageManager(new Driver);
-                $image = $manager->read($file);
-
-                $image = $image->resize($this->_uploadParams['resize_original_image_width'], $this->_uploadParams['resize_original_image_height'], function ($constraint) {
-                    $constraint->aspectRatio();
-                });
-
-                $image->save();
-                $file->store($storagePath, $disk);
-
-            } else {
-                $file->store($storagePath, $disk);
-            }
 
             $fileName = $file->hashName();
-            $filePath = $storagePath.'/'.$file->hashName();
-            $thumbPath = $storagePath.'/thumbnails/'.$file->hashName();
+            $filePath = $storagePath.'/'.$fileName;
+            $thumbPath = $storagePath.'/thumbnails/'.$fileName;
+            $extension = $this->getUploadedFileExtension($file);
 
-            if (isset($this->_uploadParams['thumbnail']) && $this->_uploadParams['thumbnail']) {
-                $manager = new ImageManager(new Driver);
-                $image = $manager->read($file);
-                $image = $image->resize($this->_uploadParams['thumbnail_width'], $this->_uploadParams['thumbnail_height'], function ($constraint) {
-                    $constraint->aspectRatio();
-                });
-                $image->save();
-                $thumbmail->store($storagePath.'/thumbnails', $disk);
+            $resizeWidth = $this->_uploadParams['resize_original_image_width'] ?? null;
+            $resizeHeight = $this->_uploadParams['resize_original_image_height'] ?? null;
+
+            if ($resizeWidth && $resizeHeight) {
+                $image = $this->readImage($file)->scaleDown((int) $resizeWidth, (int) $resizeHeight);
+                Storage::disk($disk)->put($filePath, (string) $image->encodeUsingFileExtension($extension));
+            } else {
+                $file->store($storagePath, $disk);
             }
+
+            $hasThumbnail = ! empty($this->_uploadParams['thumbnail']);
+            if ($hasThumbnail) {
+                /* callers pass either thumbnail_size or an explicit thumbnail_width / thumbnail_height pair */
+                $thumbWidth = $this->_uploadParams['thumbnail_width'] ?? $this->_uploadParams['thumbnail_size'] ?? 100;
+                $thumbHeight = $this->_uploadParams['thumbnail_height'] ?? $this->_uploadParams['thumbnail_size'] ?? null;
+
+                $thumbnail = $this->readImage($file)->scaleDown((int) $thumbWidth, $thumbHeight ? (int) $thumbHeight : null);
+                Storage::disk($disk)->put($thumbPath, (string) $thumbnail->encodeUsingFileExtension($extension));
+            }
+
             $request = $request->all();
 
-            if (((! isset($this->_uploadParams['thumbnail']) || empty($this->_uploadParams['thumbnail'])) && file_exists(public_path('storage').'/'.$filePath)) || isset($this->_uploadParams['thumbnail']) && $this->_uploadParams['thumbnail'] && file_exists(public_path('storage').'/'.$thumbPath) && file_exists(public_path('storage').'/'.$filePath)) {
-                if (isset($this->_uploadParams['column']) && $this->_uploadParams['column']) {
-                    $request[$this->_uploadParams['column']] = $fileName;
-                } else {
-                    $request[$this->_uploadParams['dbfield']] = $fileName;
-
-                    return $request;
-                    // exit();
-                }
-            } else {
+            if (! Storage::disk($disk)->exists($filePath) || ($hasThumbnail && ! Storage::disk($disk)->exists($thumbPath))) {
                 throw new Exception('File not found.');
-                exit;
             }
+
+            if (isset($this->_uploadParams['column']) && $this->_uploadParams['column']) {
+                $request[$this->_uploadParams['column']] = $fileName;
+            } else {
+                $request[$this->_uploadParams['dbfield']] = $fileName;
+            }
+
+            return $request;
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+            throw new Exception($e->getMessage(), 0, $e);
         }
+    }
+
+    /**
+     * Read an uploaded file into an Intervention image instance.
+     *
+     * The uploaded file must be read by its real path: the temporary upload has a
+     * ".tmp" extension, so anything that relies on the extension (encoding, saving
+     * in place) fails on it.
+     */
+    protected function readImage($file)
+    {
+        return (new ImageManager(new Driver))->decodePath($file->getRealPath());
+    }
+
+    /**
+     * Resolve the extension the stored file will carry.
+     */
+    protected function getUploadedFileExtension($file): string
+    {
+        $extension = pathinfo($file->hashName(), PATHINFO_EXTENSION);
+
+        if (! $extension) {
+            $extension = $file->guessExtension() ?: 'jpg';
+        }
+
+        return strtolower($extension);
     }
 
     public function uploadMultipleImage($request)
     {
+        $disk = getStorageDisk();
         $this->_uploadParams['module_name'] = strtolower($this->_uploadParams['module_name']);
         $storagePath = (isset($this->_uploadParams['storage_path']) && $this->_uploadParams['storage_path']) ? $this->_uploadParams['module_name'].$this->_uploadParams['storage_path'] : $this->_uploadParams['module_name'];
-        $thumbmail = $file = $request;
-        $file->store($storagePath, ['disk' => 'public']);
+        $file = $request;
+        $file->store($storagePath, $disk);
         $fileName = $file->hashName();
 
         if (isset($this->_uploadParams['thumbnail']) && $this->_uploadParams['thumbnail']) {
+            $thumbSize = (int) ($this->_uploadParams['thumbnail_size'] ?? 100);
+            $extension = $this->getUploadedFileExtension($file);
 
-            $manager = new ImageManager(new Driver);
-            $image = $manager->read($file);
-            $image = $image->resize($this->_uploadParams['thumbnail_size'], null, function ($constraint) {
-                $constraint->aspectRatio();
-            });
-            $image->save();
-
-            $thumbmail->store($storagePath.'/thumbnails', ['disk' => 'public']);
+            $thumbnail = $this->readImage($file)->scaleDown($thumbSize, $thumbSize);
+            Storage::disk($disk)->put(
+                $storagePath.'/thumbnails/'.$fileName,
+                (string) $thumbnail->encodeUsingFileExtension($extension)
+            );
         }
 
         return $fileName;
@@ -653,7 +672,7 @@ abstract class EloquentBaseRepository implements BaseRepository
             unlink(storage_path($thumbnailPath.$this->model->{$this->_uploadParams['dbfield']}));
         }
 
-        $fileDir = scandir(storage_path($path), 1);
+        $fileDir = is_dir(storage_path($path)) ? scandir(storage_path($path), 1) : [];
         if (isset($fileDir) && ! empty($fileDir)) {
             foreach ($fileDir as $key => $value) {
                 $folderPath = $path.$value.'/';
@@ -664,8 +683,9 @@ abstract class EloquentBaseRepository implements BaseRepository
         }
 
         if (! empty($fileName)) {
-            $path = strtolower(public_path().'/storage/'.$moduleName);
-            $dir = scandir($path, 1);
+            $moduleName = strtolower($moduleName);
+            $path = public_path().'/storage/'.$moduleName;
+            $dir = is_dir($path) ? scandir($path, 1) : [];
             if (isset($dir) && ! empty($dir)) {
                 foreach ($dir as $key => $value) {
                     $storagePath = '/storage/'.$moduleName.'/'.$value.'/'.$fileName;
