@@ -8,7 +8,7 @@
 
 <div class="form-group">
     <label>{{ trans('block::block.labels.status') }}</label>
-    <span data-placement="right" data-toggle="tooltip" title="{!! $statusOptions[$block->is_enabled] !!}">
+    <span data-placement="right" data-toggle="tooltip" title="{{ $statusOptions[$block->is_enabled] ?? '' }}">
         <label class="switch">
             <input type="checkbox" name="is_enabled" class="status" {{ ($block->is_enabled == 1) ? "checked" : ""}}>
             <span class="slider round"></span>
