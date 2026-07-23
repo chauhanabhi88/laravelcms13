@@ -10,7 +10,7 @@ class CacheAttributeDecorator extends BaseCacheDecorator implements AttributeRep
     public function __construct(AttributeRepository $attribute)
     {
         parent::__construct();
-        $this->entityName = config("attribute.name");
+        $this->entityName = config('attribute.name');
         $this->repository = $attribute;
     }
 
@@ -28,28 +28,29 @@ class CacheAttributeDecorator extends BaseCacheDecorator implements AttributeRep
 
     public function pagination($request)
     {
-        return $this->remember(function() use ($request) {
+        return $this->remember(function () use ($request) {
             return $this->repository->pagination($request);
         });
     }
 
     public function filter($request)
     {
-        return $this->remember(function() use ($request) {
+        return $this->remember(function () use ($request) {
             return $this->repository->filter($request);
         });
     }
 
-
     public function getInputTypeOptions($flag = false)
     {
-        return $this->remember(function() use ($flag) {
+        return $this->remember(function () use ($flag) {
             return $this->repository->getInputTypeOptions($flag);
         });
     }
-    public function getAttributeData($code,$flag = true){
-        return $this->remember(function() use ($code) {
-            return $this->repository->getAttributeData($code);
+
+    public function getAttributeData($code, $flag = true)
+    {
+        return $this->remember(function () use ($code, $flag) {
+            return $this->repository->getAttributeData($code, $flag);
         });
     }
 }

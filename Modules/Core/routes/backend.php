@@ -20,121 +20,121 @@ Route::prefix('module')->group(function () {
     Route::get('/', [
         'as' => 'admin.module.index',
         'uses' => 'ModuleController@index',
-        'middleware' => 'can:admin.module.index'
+        'middleware' => 'can:admin.module.index',
     ]);
 
     Route::put('/', [
         'as' => 'admin.module.update',
         'uses' => 'ModuleController@update',
-        'middleware' => 'can:admin.module.update'
+        'middleware' => 'can:admin.module.update',
     ]);
 
     Route::post('/createModule', [
         'as' => 'admin.module.createmodule',
         'uses' => 'ModuleController@create',
-        'middleware' => 'can:admin.module.create'
+        'middleware' => 'can:admin.module.create',
     ]);
 
-    Route::get('/clearCache', [
+    Route::post('/clearCache', [
         'as' => 'admin.module.clearCache',
         'uses' => 'ModuleController@clearCache',
-        'middleware' => 'can:admin.module.clear_all_cache'
+        'middleware' => 'can:admin.module.clear_all_cache',
     ]);
 
-    Route::get('/publish', [
+    Route::post('/publish', [
         'as' => 'admin.module.publish',
         'uses' => 'ModuleController@publish',
-        'middleware' => 'can:admin.module.publish'
+        'middleware' => 'can:admin.module.publish',
     ]);
 
-    Route::get('/migrate', [
+    Route::post('/migrate', [
         'as' => 'admin.module.migrate',
         'uses' => 'ModuleController@migrate',
-        'middleware' => 'can:admin.module.migrate'
+        'middleware' => 'can:admin.module.migrate',
     ]);
 
-    Route::get('/translation', [
+    Route::post('/translation', [
         'as' => 'admin.module.publishtranslation',
         'uses' => 'ModuleController@publishTranslation',
-        'middleware' => 'can:admin.module.publishtranslation'
+        'middleware' => 'can:admin.module.publishtranslation',
     ]);
 
-    Route::get('/config', [
+    Route::post('/config', [
         'as' => 'admin.module.publishconfig',
         'uses' => 'ModuleController@publishConfig',
-        'middleware' => 'can:admin.module.publishconfig'
+        'middleware' => 'can:admin.module.publishconfig',
     ]);
 
-    Route::get('/seed', [
+    Route::post('/seed', [
         'as' => 'admin.module.seed',
         'uses' => 'ModuleController@seed',
-        'middleware' => 'can:admin.module.seed'
+        'middleware' => 'can:admin.module.seed',
     ]);
 
     Route::post('/getColumns', [
         'as' => 'admin.module.getcolumns',
         'uses' => 'ModuleController@getColumns',
-        'middleware' => 'can:admin.module.index'
+        'middleware' => 'can:admin.module.index',
     ]);
 
     Route::post('/create', [
         'as' => 'admin.module.create',
         'uses' => 'ModuleController@createModule',
-        'middleware' => 'can:admin.module.create'
+        'middleware' => 'can:admin.module.create',
     ]);
 
     Route::post('/create/folder', [
         'as' => 'admin.module.createfolder',
         'uses' => 'ModuleController@createFolder',
-        'middleware' => 'can:admin.module.create'
+        'middleware' => 'can:admin.module.create',
     ]);
 
     Route::post('/createFolder', [
         'as' => 'admin.module.savefolder',
         'uses' => 'ModuleController@saveFolder',
-        'middleware' => 'can:admin.module.create'
+        'middleware' => 'can:admin.module.create',
     ]);
 
     Route::post('/getEntities', [
         'as' => 'admin.module.getentities',
         'uses' => 'ModuleController@getEntities',
-        'middleware' => 'can:admin.module.seed'
+        'middleware' => 'can:admin.module.seed',
     ]);
 
     Route::post('/createSeeder', [
         'as' => 'admin.module.createseeder',
         'uses' => 'ModuleController@createSeed',
-        'middleware' => 'can:admin.module.seed'
+        'middleware' => 'can:admin.module.seed',
     ]);
 
-    Route::get('/enable', [
+    Route::post('/enable', [
         'as' => 'admin.module.enable',
         'uses' => 'ModuleController@enable',
-        'middleware' => 'can:admin.module.create'
+        'middleware' => 'can:admin.module.create',
     ]);
 
     Route::post('/getDependentModules', [
         'as' => 'admin.module.getdependentmodules',
         'uses' => 'ModuleController@getDependentModules',
-        'middleware' => 'can:admin.module.create'
+        'middleware' => 'can:admin.module.create',
     ]);
 
     Route::post('/addDependency', [
         'as' => 'admin.module.adddependency',
         'uses' => 'ModuleController@addDependency',
-        'middleware' => 'can:admin.module.create'
+        'middleware' => 'can:admin.module.create',
     ]);
 
-    Route::get('/maintenance/up', [
+    Route::post('/maintenance/up', [
         'as' => 'admin.module.maintenance_up',
         'uses' => 'ModuleController@maintenanceModeUp',
-        'middleware' => 'can:admin.module.maintenance_up'
+        'middleware' => 'can:admin.module.maintenance_up',
     ]);
 
-    Route::get('/maintenance/down', [
+    Route::post('/maintenance/down', [
         'as' => 'admin.module.maintenance_down',
         'uses' => 'ModuleController@maintenanceModeDown',
-        'middleware' => 'can:admin.module.maintenance_down'
+        'middleware' => 'can:admin.module.maintenance_down',
     ]);
 
 });
@@ -143,13 +143,13 @@ Route::prefix('entity')->group(function () {
     Route::get('/create/{module}', [
         'as' => 'admin.entity.manage',
         'uses' => 'EntityController@manage',
-        'middleware' => 'can:admin.entity.manage'
+        'middleware' => 'can:admin.entity.manage',
     ]);
 
     Route::post('/', [
         'as' => 'admin.entity.save',
         'uses' => 'EntityController@save',
-        'middleware' => 'can:admin.entity.save'
+        'middleware' => 'can:admin.entity.save',
     ]);
 
     // Route::put('/', [
@@ -161,28 +161,31 @@ Route::prefix('entity')->group(function () {
     Route::post('loadEntity', [
         'as' => 'admin.entity.loadEntity',
         'uses' => 'EntityController@loadEntity',
+        'middleware' => 'can:admin.entity.manage',
     ]);
 
     Route::post('loadColumns', [
         'as' => 'admin.entity.loadColumns',
         'uses' => 'EntityController@loadColumns',
+        'middleware' => 'can:admin.entity.manage',
     ]);
 
     Route::delete('/entity', [
         'as' => 'admin.entity.entity',
         'uses' => 'EntityController@delete',
-        'middleware' => 'can:admin.entity.delete'
+        'middleware' => 'can:admin.entity.delete',
     ]);
 
     Route::put('/edit', [
         'as' => 'admin.entity.edit',
         'uses' => 'EntityController@edit',
+        'middleware' => 'can:admin.entity.manage',
     ]);
 
     Route::post('/create_migration', [
         'as' => 'admin.module.create_migration',
         'uses' => 'ModuleController@createMigration',
-        'middleware' => 'can:admin.module.migrate'
+        'middleware' => 'can:admin.module.migrate',
     ]);
 });
 

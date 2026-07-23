@@ -15,7 +15,7 @@ class UpdateRequest extends FormRequest
     public function rules()
     {
         $rules = [];
-        $attribute = new Attribute();
+        $attribute = new Attribute;
         $attributecode = 'required|unique:'.$attribute->getTable().',code,'.$this->id;
         foreach (getLanguageOptions() as $locale => $value) {
             $rules["{$locale}.name"] = 'required';
@@ -23,7 +23,21 @@ class UpdateRequest extends FormRequest
         $rules['code'] = $attributecode;
         $rules['is_required'] = 'required';
 
+        $imageTypes = ! empty(settings('attribute', 'image_type')) ? settings('attribute', 'image_type') : 'jpeg,jpg,png';
+        $maxUpload = $this->getMaxUpload();
+        $maxUpload *= 1024;
+        $rules['option.old.*.image'] = 'mimes:'.$imageTypes.'|max:'.$maxUpload;
+        $rules['option.new.*.image'] = 'mimes:'.$imageTypes.'|max:'.$maxUpload;
+
         return $rules;
+    }
+
+    private function getMaxUpload()
+    {
+        $maxUploadSize = settings('attribute', 'max_upload_size');
+        $maxUploadServer = (int) (ini_get('upload_max_filesize')) > (int) (ini_get('post_max_size')) ? (int) (ini_get('post_max_size')) : (int) (ini_get('upload_max_filesize'));
+
+        return $maxUploadSize ? ($maxUploadSize > $maxUploadServer ? $maxUploadServer : $maxUploadSize) : $maxUploadServer;
     }
 
     /**

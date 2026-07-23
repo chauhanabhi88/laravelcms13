@@ -20,10 +20,16 @@
                         </button>
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButtonMaintenance">
                             <div class="dropdown">
-                                <button type="button" class="btn btn-primary btn-fw" onclick="setLocation('{{ route('admin.module.maintenance_up', updateUrlParams()) }}')">{{ trans("core::core.buttons.maintenance_up") }}</button>
+                                <form method="POST" action="{{ route('admin.module.maintenance_up', updateUrlParams()) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.maintenance_up") }}</button>
+                                </form>
                             </div>
                             <div class="dropdown">
-                                <button type="button" class="btn btn-primary btn-fw" onclick="setLocation('{{ route('admin.module.maintenance_down', updateUrlParams()) }}')">{{ trans("core::core.buttons.maintenance_down") }}</button>
+                                <form method="POST" action="{{ route('admin.module.maintenance_down', updateUrlParams()) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.maintenance_down") }}</button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -65,7 +71,6 @@
 <div class="row">
     <div class="col-12">
         <div class="card card-info card-outline">
-            {{ formStart(false,"POST", 'admin.user.filters', updateUrlParams(), ['id'=>'search_frm']) }}
             <!-- /.card-header -->
             <div class="card-body table-responsive">
                 <table class="table table-bordered table-striped table-hover text-nowrap module-tbl">
@@ -74,32 +79,50 @@
                             <th>{{ trans("core::core.labels.module_name") }}</th>
                             <th>
                                 @can('admin.module.clear_all_cache')
-                                <button type="button" class="btn btn-primary btn-fw clear-all-cache" onclick="setLocation('{{ route('admin.module.clearCache', updateUrlParams()) }}')">{{ trans("core::core.buttons.clear_all_cache") }}</button>
+                                <form method="POST" action="{{ route('admin.module.clearCache', updateUrlParams()) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw clear-all-cache">{{ trans("core::core.buttons.clear_all_cache") }}</button>
+                                </form>
                                 @endcan
                             </th>
                             <th>
                                 @can('admin.module.publish')
-                                <button type="button" class="btn btn-primary btn-fw publish" onclick="setLocation('{{ route('admin.module.publish', updateUrlParams()) }}')">{{ trans("core::core.buttons.publish_accets_all") }}</button>
+                                <form method="POST" action="{{ route('admin.module.publish', updateUrlParams()) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw publish">{{ trans("core::core.buttons.publish_accets_all") }}</button>
+                                </form>
                                 @endcan
                             </th>
                             <th>
                                 @can('admin.module.migrate')
-                                <button type="button" class="btn btn-primary btn-fw publish" onclick="setLocation('{{ route('admin.module.migrate', updateUrlParams()) }}')">{{ trans("core::core.buttons.run_migration_all") }}</button>
+                                <form method="POST" action="{{ route('admin.module.migrate', updateUrlParams()) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw publish">{{ trans("core::core.buttons.run_migration_all") }}</button>
+                                </form>
                                 @endcan
                             </th>
                             <th>
                                 @can('admin.module.publishtranslation')
-                                <button type="button" class="btn btn-primary btn-fw publish" onclick="setLocation('{{ route('admin.module.publishtranslation', updateUrlParams()) }}')">{{ trans("core::core.buttons.publish_translation_all") }}</button>
+                                <form method="POST" action="{{ route('admin.module.publishtranslation', updateUrlParams()) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw publish">{{ trans("core::core.buttons.publish_translation_all") }}</button>
+                                </form>
                                 @endcan
                             </th>
                             <th>
                                 @can('admin.module.publishconfig')
-                                <button type="button" class="btn btn-primary btn-fw publish" onclick="setLocation('{{ route('admin.module.publishconfig', updateUrlParams()) }}')">{{ trans("core::core.buttons.publish_config_all") }}</button>
+                                <form method="POST" action="{{ route('admin.module.publishconfig', updateUrlParams()) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw publish">{{ trans("core::core.buttons.publish_config_all") }}</button>
+                                </form>
                                 @endcan
                             </th>
                             <th>
                                 @can('admin.module.seed')
-                                <button type="button" class="btn btn-primary btn-fw publish" onclick="setLocation('{{ route('admin.module.seed', updateUrlParams()) }}')">{{ trans("core::core.buttons.module_seed_all") }}</button>
+                                <form method="POST" action="{{ route('admin.module.seed', updateUrlParams()) }}">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw publish">{{ trans("core::core.buttons.module_seed_all") }}</button>
+                                </form>
                                 @endcan
                             </th>
                         </tr>
@@ -118,25 +141,55 @@
                                 @else
                                 {{ "-" }}
                                 @endif
+                                @can('admin.module.create')
                                 @if (!array_key_exists($name,$moduleCheck))
-                                <a href="{{ route('admin.module.enable', updateUrlParams([['module' => $module['alias']]])) }}" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.enable_module") }}</a>
+                                <form method="POST" action="{{ route('admin.module.enable', updateUrlParams([['module' => $module['alias']]])) }}" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.enable_module") }}</button>
+                                </form>
                                 @endif
+                                @endcan
                             </td>
                             <td>
-                                <a href="{{ route('admin.module.publish', updateUrlParams([['module' => $module['alias']]])) }}" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.publish_accets") }}</a>
+                                @can('admin.module.publish')
+                                <form method="POST" action="{{ route('admin.module.publish', updateUrlParams([['module' => $module['alias']]])) }}" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.publish_accets") }}</button>
+                                </form>
+                                @endcan
                             </td>
                             <td>
-                                <a href="{{ route('admin.module.migrate', updateUrlParams([['module' => $module['alias']]])) }}" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.run_migration") }}</a>
+                                @can('admin.module.migrate')
+                                <form method="POST" action="{{ route('admin.module.migrate', updateUrlParams([['module' => $module['alias']]])) }}" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.run_migration") }}</button>
+                                </form>
                                 <button type="button" class="btn btn-primary btn-fw create-migration" data-target="#create_migration_name" data-toggle="modal" data-module="{{ $name }}" data-module_name="{{$module['alias'] }}">{{trans('core::core.labels.migration_name')}}</button>
+                                @endcan
                             </td>
                             <td>
-                                <a href="{{ route('admin.module.publishtranslation', updateUrlParams([['module' => $module['alias']]])) }}" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.publish_translation") }}</a>
+                                @can('admin.module.publishtranslation')
+                                <form method="POST" action="{{ route('admin.module.publishtranslation', updateUrlParams([['module' => $module['alias']]])) }}" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.publish_translation") }}</button>
+                                </form>
+                                @endcan
                             </td>
                             <td>
-                                <a href="{{ route('admin.module.publishconfig', updateUrlParams([['module' => $module['alias']]])) }}" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.publish_config") }}</a>
+                                @can('admin.module.publishconfig')
+                                <form method="POST" action="{{ route('admin.module.publishconfig', updateUrlParams([['module' => $module['alias']]])) }}" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.publish_config") }}</button>
+                                </form>
+                                @endcan
                             </td>
                             <td>
-                                <a href="{{ route('admin.module.seed', updateUrlParams([['module' => $module['alias']]])) }}" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.module_seed") }}</a>
+                                @can('admin.module.seed')
+                                <form method="POST" action="{{ route('admin.module.seed', updateUrlParams([['module' => $module['alias']]])) }}" class="d-inline">
+                                    @csrf
+                                    <button type="submit" class="btn btn-primary btn-fw">{{ trans("core::core.buttons.module_seed") }}</button>
+                                </form>
+                                @endcan
                             </td>
                         </tr>
                         @empty
@@ -147,7 +200,6 @@
                     </tbody>
                 </table>
             </div>
-            {{ formEnd() }}
         </div>
         <!-- /.card -->
     </div>

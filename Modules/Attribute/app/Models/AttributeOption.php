@@ -4,28 +4,28 @@ namespace Modules\Attribute\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Modules\Core\Repositories\Transaltion\Translatable;
-use Modules\Blog\Models\AttributeOptionTranslation;
 
 class AttributeOption extends Model
 {
     use Translatable;
 
     protected $table = 'attribute_option';
+
     public $translatedAttributes = ['name'];
+
     protected $fillable = [
         'attribute_id',
         'custom_option',
         'default',
         'child_attribute_id',
         'sort_order',
-        'image'
+        'image',
     ];
 
-    //Please Don't remove below Line
-    //AppendFunctionHere
+    // Please Don't remove below Line
+    // AppendFunctionHere
     /**
      * relationship with Modules\Attribute\Models\Attribute
-     *
      */
     public function attribute()
     {
