@@ -2,16 +2,14 @@
 
 namespace Modules\Core\Support\Migrations;
 
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Illuminate\Contracts\Support\Arrayable;
 
 class SchemaParser implements Arrayable
 {
     /**
      * The array of custom attributes.
-     *
-     * @var array
      */
     protected array $customAttributes = [
         'remember_token' => 'rememberToken()',
@@ -20,27 +18,22 @@ class SchemaParser implements Arrayable
 
     /**
      * The migration schema.
-     *
-     * @var string
      */
     protected ?string $schema;
 
     /**
      * The relationship keys.
-     *
-     * @var array
      */
     protected array $relationshipKeys = [
         'belongsTo',
     ];
+
     protected array $foreignKeys = [
         'foreign',
     ];
 
     /**
      * Create new instance.
-     *
-     * @param string|null $schema
      */
     public function __construct(?string $schema = null)
     {
@@ -49,10 +42,6 @@ class SchemaParser implements Arrayable
 
     /**
      * Parse a string to array of formatted schema.
-     *
-     * @param string $schema
-     *
-     * @return array
      */
     public function parse(?string $schema): array
     {
@@ -89,21 +78,22 @@ class SchemaParser implements Arrayable
         $currentSchema = '';
 
         foreach ($parts as $part) {
-            if (empty($part))
+            if (empty($part)) {
                 continue;
+            }
 
             // If part contains field definition (has colon), it's a new field
-            if (strpos($part, ':') !== false && !empty($currentSchema)) {
+            if (strpos($part, ':') !== false && ! empty($currentSchema)) {
                 $schemas[] = $currentSchema;
                 $currentSchema = $part;
             } else {
                 // Continue building current field
-                $currentSchema .= (!empty($currentSchema) ? '##' : '') . $part;
+                $currentSchema .= (! empty($currentSchema) ? '##' : '').$part;
             }
         }
 
         // Add the last schema
-        if (!empty($currentSchema)) {
+        if (! empty($currentSchema)) {
             $schemas[] = $currentSchema;
         }
 
@@ -160,7 +150,7 @@ class SchemaParser implements Arrayable
      */
     public function createField(string $column, array $attributes, string $type = 'add'): string
     {
-        $results = "\t\t\t" . '$table';
+        $results = "\t\t\t".'$table';
 
         foreach ($attributes as $key => $field) {
             if (in_array($column, $this->relationshipKeys)) {
@@ -174,24 +164,21 @@ class SchemaParser implements Arrayable
             }
         }
 
-        return $results . ';' . PHP_EOL;
+        return $results.';'.PHP_EOL;
     }
 
     /**
      * Add relation column.
      *
-     * @param int    $key
-     * @param string $field
-     * @param string $column
      *
      * @return string
      */
     protected function addRelationColumn(int $key, string $field, ?string $column = null)
     {
         if ($key === 0) {
-            $relatedColumn = Str::snake(class_basename($field)) . '_id';
+            $relatedColumn = Str::snake(class_basename($field)).'_id';
 
-            return "->unsignedBigInteger('{$relatedColumn}');" . PHP_EOL . "\t\t\t" . "\$table->foreign('{$relatedColumn}')";
+            return "->unsignedBigInteger('{$relatedColumn}');".PHP_EOL."\t\t\t"."\$table->foreign('{$relatedColumn}')";
         }
         if ($key === 1) {
             return "->references('{$field}')";
@@ -200,10 +187,10 @@ class SchemaParser implements Arrayable
             return "->on('{$field}')";
         }
         if (Str::contains($field, '(')) {
-            return '->' . $field;
+            return '->'.$field;
         }
 
-        return '->' . $field . '()';
+        return '->'.$field.'()';
     }
 
     /**
@@ -211,18 +198,16 @@ class SchemaParser implements Arrayable
      */
     protected function addForeignColumn(int $key, string $field, string $column): string
     {
-        return "->" . $field;
+        return '->'.$field;
     }
 
     /**
      * Format field to script.
-     *
-     * @return string
      */
     protected function addColumn(int $key, string $field, string $column): string
     {
         if ($this->hasCustomAttribute($column)) {
-            return '->' . $field;
+            return '->'.$field;
         }
 
         if ($key == 0) {
@@ -231,15 +216,16 @@ class SchemaParser implements Arrayable
 
             // Remove &foreign& markers if present
             $columnName = str_replace('&foreign&', '', $columnName);
-            $length = (isset($split[1]) && !empty($split[1])) ? "," . $split[1] : '';
-            return '->' . $field . "('" . $columnName . "' $length)";
+            $length = (isset($split[1]) && ! empty($split[1])) ? ','.$split[1] : '';
+
+            return '->'.$field."('".$columnName."' $length)";
         }
 
         if (Str::contains($field, '(')) {
-            return '->' . $field;
+            return '->'.$field;
         }
 
-        return '->' . $field . '()';
+        return '->'.$field.'()';
     }
 
     /**
@@ -248,18 +234,14 @@ class SchemaParser implements Arrayable
     protected function removeColumn(int $key, string $field, string $column): string
     {
         if ($this->hasCustomAttribute($column)) {
-            return '->' . $field;
+            return '->'.$field;
         }
 
-        return '->dropColumn(' . "'" . $column . "')";
+        return '->dropColumn('."'".$column."')";
     }
 
     /**
      * Get column name from schema.
-     *
-     * @param string $schema
-     *
-     * @return string
      */
     public function getColumn(string $schema): string
     {
@@ -271,7 +253,7 @@ class SchemaParser implements Arrayable
      */
     public function getAttributes(string $column, string $schema): array
     {
-        $fields = str_replace($column . ':', '', $schema);
+        $fields = str_replace($column.':', '', $schema);
 
         if ($this->hasCustomAttribute($column)) {
             return $this->getCustomAttribute($column);
@@ -284,19 +266,20 @@ class SchemaParser implements Arrayable
         $parts = explode(':', $fields);
 
         foreach ($parts as $part) {
-            if (empty($part))
+            if (empty($part)) {
                 continue;
+            }
 
             // If part contains ##, split it further
             if (strpos($part, '##') !== false) {
                 $subParts = explode('##', $part);
                 foreach ($subParts as $subPart) {
-                    if (!empty(trim($subPart))) {
+                    if (! empty(trim($subPart))) {
                         $attributes[] = trim($subPart);
                     }
                 }
             } else {
-                if (!empty(trim($part))) {
+                if (! empty(trim($part))) {
                     $attributes[] = trim($part);
                 }
             }
@@ -330,18 +313,19 @@ class SchemaParser implements Arrayable
         $data = '';
         foreach ($this->toArray() as $column => $attributes) {
             if (strpos($column, '&foreign&') !== false) {
-                $results[] = str_replace("&foreign&", "", $column);
+                $results[] = str_replace('&foreign&', '', $column);
             }
         }
-        if (!$results) {
+        if (! $results) {
             return $data;
         }
         $data .= 'Schema::table($module->getTable(), function (Blueprint $table) {';
         foreach ($results as $key => $value) {
-            $data .= "\n" . '$table->dropForeign(["' . $value . '"]);';
+            $data .= "\n".'$table->dropForeign(["'.$value.'"]);';
         }
         $data = rtrim($data, ',');
-        $data .= "\n" . '});';
+        $data .= "\n".'});';
+
         return $data;
     }
 
@@ -350,39 +334,36 @@ class SchemaParser implements Arrayable
      */
     public function getForeignKeys(string $table): string
     {
-
-        $database = \DB::connection()->getDatabaseName();
         $result = '';
         $temp = [];
-        $data = \DB::select("
-            SELECT * FROM information_schema.TABLE_CONSTRAINTS
-            WHERE information_schema.TABLE_CONSTRAINTS.CONSTRAINT_TYPE = 'FOREIGN KEY'
-            AND information_schema.TABLE_CONSTRAINTS.TABLE_SCHEMA = '" . $database . "'
-            AND information_schema.TABLE_CONSTRAINTS.TABLE_NAME = '" . $table . "';
-        ");
 
+        // Schema::getForeignKeys() replaces a hand-rolled information_schema
+        // query that interpolated $table straight into SQL. $table reaches here
+        // from the entity form, and the query was MySQL-only besides.
+        $data = \Schema::hasTable($table) ? \Schema::getForeignKeys($table) : [];
 
-        if (!$data) {
+        if (! $data) {
             return $result;
         }
-        foreach ($data as $object) {
-            $value = str_replace('_foreign', '', $object->CONSTRAINT_NAME);
-            $value = str_replace($table . '_', '', $value);
+        foreach ($data as $foreignKey) {
+            $value = str_replace('_foreign', '', $foreignKey['name']);
+            $value = str_replace($table.'_', '', $value);
             $temp[$value] = $value;
         }
         $intersect = array_intersect_key($temp, $this->toArray());
-        if (!$intersect) {
+        if (! $intersect) {
             return $result;
         }
-        $result .= 'Schema::table("' . $table . '", function (Blueprint $table) {';
+        $result .= 'Schema::table("'.$table.'", function (Blueprint $table) {';
 
         foreach ($this->toArray() as $column => $attributes) {
             if (array_key_exists($column, $temp)) {
-                $result .= "\n" . '$table->dropForeign(["' . $column . '"]);';
+                $result .= "\n".'$table->dropForeign(["'.$column.'"]);';
             }
         }
         $result = rtrim($result, ',');
-        $result .= "\n" . '});';
+        $result .= "\n".'});';
+
         return $result;
     }
 
@@ -392,6 +373,7 @@ class SchemaParser implements Arrayable
     public function getEntityName(string $name): string
     {
         $name = Str::studly($name);
+
         return $name;
     }
 }

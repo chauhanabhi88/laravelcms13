@@ -2,28 +2,33 @@
 
 namespace Modules\Customer\Http\Controllers\Api\V1;
 
+use Illuminate\Auth\Access\UnauthorizedException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Validator;
-use Modules\Customer\Models\Customer;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
-use Modules\Customer\Repositories\CustomerRepository;
-use Modules\Customer\Repositories\CustomerLoginLogRepository;
-use Modules\Customer\Emails\CustomerRegistrationAdminMail;
-use Modules\Customer\Emails\CustomerEmailVerifyMail;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
-use Modules\Menu\Models\Menu;
-use Modules\Customer\Http\Requests\UpdateRequest;
-use Modules\Customer\Models\CustomerAddress;
-use Modules\Customer\Http\Requests\CustomerAddressRequest;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
+use Laravel\Passport\RefreshTokenRepository;
+use Modules\Customer\Emails\CustomerEmailVerifyMail;
+use Modules\Customer\Emails\CustomerRegistrationAdminMail;
 use Modules\Customer\Http\Requests\CreateRequest;
+use Modules\Customer\Http\Requests\CustomerAddressRequest;
+use Modules\Customer\Http\Requests\UpdateRequest;
+use Modules\Customer\Models\Customer;
+use Modules\Customer\Models\CustomerAddress;
+use Modules\Customer\Repositories\CustomerLoginLogRepository;
+use Modules\Customer\Repositories\CustomerRepository;
+use Modules\Menu\Models\Menu;
+
 class CustomerController extends Controller
 {
     protected $customerRepo;
+
     protected $customerLoginLogRepository;
 
     // Dependency injection: Laravel resolves the interface from your ServiceProvider
@@ -32,6 +37,7 @@ class CustomerController extends Controller
         $this->customerRepo = $customerRepo;
         $this->customerLoginLogRepository = $customerLoginLogRepository;
     }
+
     public function signup(Request $request)
     {
         try {
@@ -45,16 +51,17 @@ class CustomerController extends Controller
 
             // validation of data start
             $rules = [
-                "email" => "required|email|unique:customer",
+                'email' => 'required|email|unique:customer',
                 'password' => [
                     'required',
                     Password::min(5)
                         ->mixedCase()
                         ->numbers()
-                        ->symbols()
+                        ->symbols(),
                 ],
-                "first_name" => "required|min:3",
-                "last_name" => "required|min:3",
+                'first_name' => 'required|min:3',
+                'last_name' => 'required|min:3',
+                'profile_picture' => 'mimes:'.(! empty(settings('customer', 'image_type')) ? settings('customer', 'image_type') : config('customer.default_image_type')).'|max:'.$this->getMaxImageSize() * 1024,
             ];
             $validator = Validator::make($data, $rules, [
                 'required' => trans('customer::customer_api.messages.required'),
@@ -72,17 +79,15 @@ class CustomerController extends Controller
             }
             // validation of  data end
 
-            if (!array_key_exists('status', $data) || !in_array($data['status'], [config('core.enabled'), config('core.disabled')])) {
-                $data['status'] = config('core.enabled');
-            }
+            /* the status is driven by the email verification setting, never by the request payload */
             $data['status'] = $status;
 
             if ($request->file('profile_picture')) {
                 $imageUploadParams = [
-                    'module_name' => config('customer.name'),
+                    'module_name' => strtolower(config('customer.name')),
                     'dbfield' => 'profile_picture',
                     'thumbnail' => true,
-                    'thumbnail_size' => 100
+                    'thumbnail_size' => 100,
                 ];
                 $imageParams = $this->customerRepo->setUploadParams($imageUploadParams)->uploadImage($request);
                 $data['profile_picture'] = $imageParams['profile_picture'];
@@ -101,12 +106,13 @@ class CustomerController extends Controller
                 /* If Verfication On, then Send Verification link to Customer */
                 Mail::send(new CustomerEmailVerifyMail($customer));
             }
-            /* Notification Mail Send to Admin*/
+            /* Notification Mail Send to Admin */
             Mail::send(new CustomerRegistrationAdminMail($customer));
+
             return response()->json(['success' => true, 'message' => trans('customer::customer_api.messages.signup_success')]);
 
         } catch (\Throwable $th) {
-            return response()->json(["success" => false, "message" => $th->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => $th->getMessage()], 500);
         }
     }
 
@@ -114,8 +120,8 @@ class CustomerController extends Controller
     {
         try {
             $rules = [
-                "email" => "required|email",
-                "password" => "required",
+                'email' => 'required|email',
+                'password' => 'required',
             ];
             $validator = Validator::make($request->all(), $rules, [
                 'required' => trans('customer::customer_api.messages.required'),
@@ -128,21 +134,21 @@ class CustomerController extends Controller
             try {
                 return $this->manageMultiDeviceLogin($request);
             } catch (\Throwable $th) {
-                return response()->json(["success" => false, "message" => $th->getMessage()], 400);
+                return response()->json(['success' => false, 'message' => $th->getMessage()], 400);
             }
         } catch (\Throwable $th) {
-            return response()->json(["success" => false, "message" => $th->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => $th->getMessage()], 500);
         }
     }
 
     /**
      * Manage Multi Device Login
      *
-     * @param Request $request
      * @return JsonResponse
+     *
      * @throws Exception
-     * @throws \Illuminate\Auth\Access\UnauthorizedException
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws UnauthorizedException
+     * @throws ValidationException
      */
     public function manageMultiDeviceLogin(Request $request)
     {
@@ -155,22 +161,22 @@ class CustomerController extends Controller
         if (empty($customer)) {
             $customer = $this->customerRepo->where('email', $request->email)->withTrashed()->latest()->first();
         }
-        if (!empty($customer)) {
+        if (! empty($customer)) {
 
-            //If Customer is deleted then show this message
+            // If Customer is deleted then show this message
             if ($customer->trashed()) {
-                throw new \Exception(trans("customer::front_customer.messages.deleted_customer"));
+                throw new \Exception(trans('customer::front_customer.messages.deleted_customer'));
             }
 
             // if multiple device login is not allowed, then inactivate previous session
-            $allowMultipleLogin = settings("customer", "multi_device_login");
-            if (!$allowMultipleLogin) {
-                $refreshTokenRepository = app(\Laravel\Passport\RefreshTokenRepository::class);
+            $allowMultipleLogin = settings('customer', 'multi_device_login');
+            if (! $allowMultipleLogin) {
+                $refreshTokenRepository = app(RefreshTokenRepository::class);
                 $clientId = $request->client_id;
-                $customerInfor = Customer::where("id", $customer->id)->with("tokens", function ($q) use ($clientId) {
-                    $q->where("client_id", $clientId);
+                $customerInfor = Customer::where('id', $customer->id)->with('tokens', function ($q) use ($clientId) {
+                    $q->where('client_id', $clientId);
                 })->first();
-                if (!empty($customerInfor) && !empty($customerInfor->tokens)) {
+                if (! empty($customerInfor) && ! empty($customerInfor->tokens)) {
                     foreach ($customerInfor->tokens as $token) {
                         $token->revoke();
                         $refreshTokenRepository->revokeRefreshTokensByAccessTokenId($token->id);
@@ -185,26 +191,27 @@ class CustomerController extends Controller
                 'password' => $request->password,
                 'scope' => 'customer',
             ]);
-            if ($responseLogin->failed() || !$responseLogin->json('access_token')) {
+            if ($responseLogin->failed() || ! $responseLogin->json('access_token')) {
                 return response()->json(['message' => trans('customer::customer_api.messages.wrong_credentials')], 400);
             }
             $response = $responseLogin->json();
             if ($response && empty($response['error'])) {
-                //update login log
+                // update login log
                 $logParam = [];
                 $logParam['customer_id'] = $customer->id;
-                $logParam['is_loggedin'] = config("core.yes");
+                $logParam['is_loggedin'] = config('core.yes');
                 $logParam['device'] = $device;
                 $logParam['app_version'] = $appVersion;
 
                 // if multiple device login is not allowed, then inactivate previous session(customer_login_log)
-                if (!$allowMultipleLogin) {
+                if (! $allowMultipleLogin) {
                     $this->customerLoginLogRepository->inActivePreviousSession($logParam);
                 }
                 $this->customerLoginLogRepository->setParam($logParam);
+
                 return $response;
             } else {
-                $message = (isset($response['error_description'])) ? $response['error_description'] : (isset($response['message']) ? $response['message'] : "");
+                $message = (isset($response['error_description'])) ? $response['error_description'] : (isset($response['message']) ? $response['message'] : '');
                 throw new \Exception($message, $responseLogin->getStatusCode());
             }
         }
@@ -214,7 +221,7 @@ class CustomerController extends Controller
     {
         try {
             if (function_exists('getPerPageForModule')) {
-                $perPage = getPerPageForModule(config("customer.cache.name"), $request->get("per_page"));
+                $perPage = getPerPageForModule(config('customer.cache.name'), $request->get('per_page'));
                 $request->merge(['per_page' => 4]);
             }
             $statusOptions = $this->customerRepo->getStatusOptions(true);
@@ -229,7 +236,7 @@ class CustomerController extends Controller
 
             return response()->json(compact('request', 'collection', 'columns', 'filters', 'statusOptions'));
         } catch (\Throwable $e) {
-            return response()->json(["success" => false, 'message' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 
@@ -247,8 +254,10 @@ class CustomerController extends Controller
                 'defualt-image' => true,
             ];
             $customer->profile_picture = getImageUrl($og_image_param) ? getImageUrl($og_image_param) : getImageUrl($thumbnail_image_param);
+
             return $customer;
         });
+
         return $collection;
     }
 
@@ -256,10 +265,10 @@ class CustomerController extends Controller
     {
         try {
             if (function_exists('getPerPageForModule')) {
-                $perPage = getPerPageForModule(config("customer.cache.name"), $request->get("per_page"));
+                $perPage = getPerPageForModule(config('customer.cache.name'), $request->get('per_page'));
                 $request->merge(['per_page' => 4]);
             }
-            setFilterSession(config("customer.cache.name"), $request);
+            setFilterSession(config('customer.cache.name'), $request);
             $statusOptions = $this->customerRepo->getStatusOptions(true);
             $filters = $this->customerRepo->getFilters($request, $statusOptions);
             $collection = $this->customerRepo->pagination($request);
@@ -267,12 +276,13 @@ class CustomerController extends Controller
             // $columns = $this->customerRepo->sortColumns($request);
             $activeMenuId = $request->get('active_menu_id');
             $columns = getColumnObject()->getColumns($activeMenuId);
+
             return response()->json(compact('request', 'collection', 'columns', 'filters', 'statusOptions'));
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -281,13 +291,13 @@ class CustomerController extends Controller
     {
         try {
             $id = $request->id;
-            if (!$id) {
-                throw new \Exception(trans("customer::customer.messages.data_invalid"));
+            if (! $id) {
+                throw new \Exception(trans('customer::customer.messages.data_invalid'));
             }
             $customer = $this->customerRepo->find($id);
 
-            if (!$customer) {
-                throw new \Exception(trans("customer::customer.messages.data_invalid"));
+            if (! $customer) {
+                throw new \Exception(trans('customer::customer.messages.data_invalid'));
             }
             $og_image_param = [
                 'module' => config('customer.name'),
@@ -296,48 +306,52 @@ class CustomerController extends Controller
             $addresses = $customer->address;
             $customer->address = $addresses;
             $customer->profile_picture = getImageUrl($og_image_param) ? getImageUrl($og_image_param) : null;
-            $image_extension = config('asgard.customer.config.defualt_image_type') ? ((!empty(settings('customer', 'image_type'))) ? settings('customer', 'image_type') : config('asgard.customer.config.defualt_image_type')) : 'jpeg,jpg,png';
+            $image_extension = (! empty(settings('customer', 'image_type'))) ? settings('customer', 'image_type') : config('customer.default_image_type');
             $image_max_size = $this->getMaxImageSize();
             $statusOptions = $this->customerRepo->getStatusOptions();
-            return response()->json(compact("customer", "statusOptions", "image_extension", "image_max_size"));
+
+            return response()->json(compact('customer', 'statusOptions', 'image_extension', 'image_max_size'));
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
 
     /**
      * image max upload size.
+     *
      * @return Response
      */
     private function getMaxImageSize()
     {
-        $maxUploadSize = (!empty(settings('customer', 'max_upload_size'))) ? settings('customer', 'max_upload_size') : config('asgard.customer.config.defualt_image_size');
+        $maxUploadSize = (! empty(settings('customer', 'max_upload_size'))) ? settings('customer', 'max_upload_size') : config('customer.default_image_size');
         $maxUploadServer = (int) (ini_get('upload_max_filesize')) > (int) (ini_get('post_max_size')) ? (int) (ini_get('post_max_size')) : (int) (ini_get('upload_max_filesize'));
+
         return $maxUploadSize ? (($maxUploadSize > $maxUploadServer) ? $maxUploadServer : $maxUploadSize) : $maxUploadServer;
     }
 
     /**
      * Update the specified resource in storage.
-     * @param \Modules\Customer\Http\Requests\UpdateRequest $request
-     * @return \Illuminate\Http\Response
+     *
+     * @return Response
+     *
      * @throws \Throwable
      */
     public function update(UpdateRequest $request)
     {
         try {
             $id = $request->id;
-            if (!$id) {
-                throw new \Exception(trans("banner::banner_group.messages.data_invalid"));
+            if (! $id) {
+                throw new \Exception(trans('banner::banner_group.messages.data_invalid'));
             }
             $params = $request->all();
             $checkEmailInTransh = Customer::onlyTrashed()->where('email', $params['customer']['email'])->get()->first();
 
-            /*customer is  registred in our system but added in softdelete*/
-            if (!empty($checkEmailInTransh)) {
-                return response()->json(['success' => false, 'message' => trans("customer::customer.messages.soft_delete_email_exist")], 400);
+            /* customer is  registred in our system but added in softdelete */
+            if (! empty($checkEmailInTransh)) {
+                return response()->json(['success' => false, 'message' => trans('customer::customer.messages.soft_delete_email_exist')], 400);
             }
             if (isset($params['password']) && $params['password']) {
                 $params['customer']['password'] = Hash::make($params['password']);
@@ -345,35 +359,35 @@ class CustomerController extends Controller
             $params['customer']['status'] = (isset($params['customer']['status'])) ? config('core.enabled') : config('core.disabled');
 
             $customer = $this->customerRepo->find($id);
-            if (!$customer) {
-                return response()->json(['success' => false, 'message' => trans("customer::customer.messages.data_invalid")], 400);
+            if (! $customer) {
+                return response()->json(['success' => false, 'message' => trans('customer::customer.messages.data_invalid')], 400);
             }
 
-
             if (isset($params['remove_profile_picture']) && $params['remove_profile_picture']) {
-                $imageRemoveParams = array(
+                $imageRemoveParams = [
                     'module_name' => strtolower(config('customer.name')),
-                    'dbfield' => 'profile_picture'
-                );
-                $this->customerRepo->setUploadParams($imageRemoveParams)->setModel($customer)->removeFile($customer->profile_picture, 'Customer');
-                //$this->customerRepo->removeImage();
+                    'dbfield' => 'profile_picture',
+                ];
+                $this->customerRepo->setUploadParams($imageRemoveParams)->setModel($customer)->removeFile($customer->profile_picture, strtolower(config('customer.name')));
                 $params['customer']['profile_picture'] = null;
             }
             $request->merge($params);
             if ($request->file('profile_picture')) {
-                $imageUploadParams = array(
+                $imageUploadParams = [
                     'module_name' => strtolower(config('customer.name')),
                     'dbfield' => 'profile_picture',
                     'thumbnail' => true,
-                    'thumbnail_size' => 100
-                );
-                $params = $this->customerRepo->setUploadParams($imageUploadParams)->uploadImage($request);
-                $params['customer']['profile_picture'] = $params['profile_picture'];
+                    'thumbnail_size' => 100,
+                ];
+                /* setModel() lets the repository clean up the previously uploaded file */
+                $imageParams = $this->customerRepo->setUploadParams($imageUploadParams)->setModel($customer)->uploadImage($request);
+                $params['customer']['profile_picture'] = $imageParams['profile_picture'];
             }
             $this->customerRepo->update($customer, $params['customer']);
+
             return response()->json([
-                "success" => true,
-                "message" => trans("customer::customer.messages.updated_success"),
+                'success' => true,
+                'message' => trans('customer::customer.messages.updated_success'),
             ]);
             // if (isset($params['snc']) && $params['snc']) {
             //     return redirect()->route('admin.customer.edit', updateUrlParams([$id]))->withInput(['tab' => '#custom-tabs-three-address-tab'])->with('success', trans("customer::customer.messages.updated_success"));
@@ -382,7 +396,7 @@ class CustomerController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -391,38 +405,39 @@ class CustomerController extends Controller
     {
         try {
 
-            $customerAddress = new CustomerAddress();
+            $customerAddress = new CustomerAddress;
 
             $addressArray = $request->get('address');
             $customerId = $request->get('customer_id');
             $addressArray['customer_id'] = $customerId;
             $addressId = $request->get('address_id');
 
-            if (isset($addressArray['is_default_address']) && !empty($addressArray['is_default_address'])) {
+            if (isset($addressArray['is_default_address']) && ! empty($addressArray['is_default_address'])) {
                 if ($addressArray['is_default_address'] == 1) {
                     $customerAddress->where('customer_id', $customerId)->update(['is_default_address' => 0]);
-                    $addressArray['is_default_address'] = config("customer.is_default_address.yes");
+                    $addressArray['is_default_address'] = config('customer.is_default_address.yes');
                 } else {
-                    $addressArray['is_default_address'] = config("customer.is_default_address.no");
+                    $addressArray['is_default_address'] = config('customer.is_default_address.no');
                 }
             } else {
                 $addressArray['is_default_address'] = config('customer.is_default_address.no');
             }
 
-            if (isset($addressId) && !empty($addressId)) {
+            if (isset($addressId) && ! empty($addressId)) {
                 $customerAddress = $customerAddress->find($addressId);
                 $customerAddress->update($addressArray);
             } else {
                 $customerAddress->create($addressArray);
             }
+
             return response()->json([
-                "success" => true,
-                "message" => trans("customer::customer.messages.address_save"),
+                'success' => true,
+                'message' => trans('customer::customer.messages.address_save'),
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -431,23 +446,24 @@ class CustomerController extends Controller
     {
         try {
             $id = $request->id;
-            if (!$id) {
-                throw new \Exception(trans("cuatomer::cuatomer.messages.data_invalid"));
+            if (! $id) {
+                throw new \Exception(trans('cuatomer::cuatomer.messages.data_invalid'));
             }
-            $customerAddress = new CustomerAddress();
+            $customerAddress = new CustomerAddress;
             $customerAddress = $customerAddress->find($id);
             if ($customerAddress->is_default_address == config('customer.is_default_address.yes')) {
-                return response()->json(['success' => false, 'message' => trans("customer::customer.messages.default_add_error")]);
+                return response()->json(['success' => false, 'message' => trans('customer::customer.messages.default_add_error')]);
             }
             $customerAddress->delete();
+
             return response()->json([
-                "success" => true,
-                "message" => trans("customer::customer.messages.address_delete"),
+                'success' => true,
+                'message' => trans('customer::customer.messages.address_delete'),
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
 
@@ -459,17 +475,17 @@ class CustomerController extends Controller
             $params = $request->all();
             $checkEmailInTransh = Customer::onlyTrashed()->where('email', $params['customer']['email'])->get()->first();
 
-            /*customer is  registred in our system but added in softdelete*/
-            if (!empty($checkEmailInTransh)) {
-                return response()->json(["success" => false, "message" => trans("customer::customer.messages.soft_delete_email_exist")], 400);
+            /* customer is  registred in our system but added in softdelete */
+            if (! empty($checkEmailInTransh)) {
+                return response()->json(['success' => false, 'message' => trans('customer::customer.messages.soft_delete_email_exist')], 400);
             }
             if ($request->file('profile_picture')) {
-                $imageUploadParams = array(
-                    'module_name' => config('customer.name'),
+                $imageUploadParams = [
+                    'module_name' => strtolower(config('customer.name')),
                     'dbfield' => 'profile_picture',
                     'thumbnail' => true,
-                    'thumbnail_size' => 100
-                );
+                    'thumbnail_size' => 100,
+                ];
                 $imageParams = $this->customerRepo->setUploadParams($imageUploadParams)->uploadImage($request);
                 $params['customer']['profile_picture'] = $imageParams['profile_picture'];
             }
@@ -482,19 +498,20 @@ class CustomerController extends Controller
 
             $customer = $this->customerRepo->create($params['customer']);
 
-            if (isset($customer) && !empty($customer)) {
+            if (isset($customer) && ! empty($customer)) {
                 $customerId = $customer->id;
-                $customerAddress = new CustomerAddress();
+                $customerAddress = new CustomerAddress;
                 $addressArray = $params['address'];
                 $addressArray['customer_id'] = $customerId;
                 $addressArray['is_default_address'] = config('customer.is_default_address.yes');
                 $customerAddress->create($addressArray);
             }
-            return response()->json(["success" => true, "message" => trans("customer::customer.messages.created_success")]);
+
+            return response()->json(['success' => true, 'message' => trans('customer::customer.messages.created_success')]);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -502,20 +519,21 @@ class CustomerController extends Controller
     /**
      * Delete the specified customer.
      *
-     * @param Request $request
      * @return Response
+     *
      * @throws \Throwable
      */
     public function destroy(Request $request)
     {
         try {
             $this->customerRepo->deleteRecord($request);
-            $this->customerRepo->flushCache(config("customer.cache.deleted_customer_name"));
-            return response()->json(["success" => true, "message" => trans("customer::customer.messages.deleted_success")]);
+            $this->customerRepo->flushCache(config('customer.cache.deleted_customer_name'));
+
+            return response()->json(['success' => true, 'message' => trans('customer::customer.messages.deleted_success')]);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -531,15 +549,16 @@ class CustomerController extends Controller
                 $status = $request->get('update_status');
                 $customerRow = $this->customerRepo->find($id);
                 $status = ($status == 1) ? 1 : 2;
-                $params = array('status' => $status);
+                $params = ['status' => $status];
                 $this->customerRepo->update($customerRow, $params);
             }
-            $request = new Request();
-            return response()->json(['success' => true, 'message' => trans("core::core.messages.status_change_success")]);
+            $request = new Request;
+
+            return response()->json(['success' => true, 'message' => trans('core::core.messages.status_change_success')]);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
 
@@ -548,13 +567,13 @@ class CustomerController extends Controller
     public function massDelete(Request $request)
     {
         try {
-            $limit = (int) settings("core", "max_delete_limit");
+            $limit = (int) settings('core', 'max_delete_limit');
             $selectedIds = $request->get('selected_ids');
             $isSelectAll = $request->get('select_all');
-            if (!$isSelectAll && empty($selectedIds)) {
+            if (! $isSelectAll && empty($selectedIds)) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Invalid request. Expected an array of IDs.'
+                    'message' => 'Invalid request. Expected an array of IDs.',
                 ], 400);
             }
             $collection = $this->customerRepo->filter($request)->limit($limit);
@@ -565,16 +584,16 @@ class CustomerController extends Controller
                 $collection = $collection->whereIn('id', $selectedIds)->get();
                 $ids = $collection->pluck('id')->toArray();
             }
-            if (!empty($ids)) {
+            if (! empty($ids)) {
                 $this->customerRepo->whereIn('id', $ids)->delete();
             }
             // $collection = $this->customerRepo->pagination($request);
 
-            return response()->json(['success' => true, 'message' => trans("core::core.messages.mass_delete_success")]);
+            return response()->json(['success' => true, 'message' => trans('core::core.messages.mass_delete_success')]);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], 500);
         }
 

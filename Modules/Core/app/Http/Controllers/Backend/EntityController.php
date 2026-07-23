@@ -18,22 +18,21 @@ class EntityController extends BackendController
 
     /**
      * Display a listing of the resource.
+     *
      * @return Response
      */
     public function manage(Request $request, $module, EntityRepository $entity)
     {
-        try
-        {
+        try {
             $entityOption = $entity->getEloquantRelationshipOptions(true);
-            
+
             $entityCollection = $entity->getAllEntities();
             $moduleList = ['' => ' -- '.trans('core::core.labels.select').' -- '] + $entityCollection['list'];
             $entityCollection = $entityCollection[$module];
 
             return view('core::backend.entity', compact('entityCollection', 'entityOption', 'module', 'moduleList'));
-        }
-        catch (\Throwable $e) {
-            return redirect(app()->getLocale()."/backend/module")->with("error", $e->getMessage());
+        } catch (\Throwable $e) {
+            return redirect(app()->getLocale().'/backend/module')->with('error', $e->getMessage());
         }
     }
 
@@ -41,9 +40,9 @@ class EntityController extends BackendController
     {
         try {
 
-            if($request->get('newEntity')) {
+            if ($request->get('newEntity')) {
                 $entity = $request->get('entity');
-                $command = "module:make-model";
+                $command = 'module:make-model';
 
                 \Artisan::call($command, [
                     'model' => $entity['name'],
@@ -56,9 +55,9 @@ class EntityController extends BackendController
             $params = $request->all();
             $options['base_module'] = $params['entity']['module'];
             $options['base_entity'] = $params['entity']['name'];
-            
-            if(isset($params['join']) && $params['join']) {
-                
+
+            if (isset($params['join']) && $params['join']) {
+
                 foreach ($params['join'] as $join) {
                     $options['target_entity'] = $join['entity'];
                     $options['target_module'] = $join['module'];
@@ -70,17 +69,16 @@ class EntityController extends BackendController
                         ->addRelationship();
                 }
             }
-            
-            if($request->get('newEntity')) {
-                return redirect(app()->getLocale()."/backend/module")->with("success", trans("core::core.messages.entity_create"));
+
+            if ($request->get('newEntity')) {
+                return redirect(app()->getLocale().'/backend/module')->with('success', trans('core::core.messages.entity_create'));
             }
-            return redirect(app()->getLocale()."/backend/module")->with("success", trans("core::core.messages.entity_update"));
+
+            return redirect(app()->getLocale().'/backend/module')->with('success', trans('core::core.messages.entity_update'));
         } catch (\Throwable $e) {
-            echo "<pre>";
-            echo $e->getMessage();
-            echo $e->getTraceAsString();
-            die;
-            return redirect(app()->getLocale()."/backend/module")->with("error", $e->getMessage());
+            report($e);
+
+            return redirect(app()->getLocale().'/backend/module')->with('error', $e->getMessage());
         }
     }
 
@@ -91,7 +89,7 @@ class EntityController extends BackendController
             $entityCollection = $this->entity->getModuleEntities($request->get('moduleName'));
             $options = '<option value=""> -- '.trans('core::core.labels.select').' -- </option>';
             foreach ($entityCollection as $entity) {
-                $options .= "<option value='".$entity['name']."'>".$entity['name']."</option>";
+                $options .= "<option value='".$entity['name']."'>".$entity['name'].'</option>';
             }
 
             return response()->json([
@@ -99,13 +97,13 @@ class EntityController extends BackendController
                 'content' => [
                     'element' => 'entitySelect',
                     'html' => $options,
-                ]
+                ],
             ]);
 
         } catch (\Throwable $e) {
             return response()->json([
                 'type' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
         }
     }
@@ -119,18 +117,19 @@ class EntityController extends BackendController
             $columns = Schema::getColumnListing($entity->getTable());
             $options = '<option value=""> -- '.trans('core::core.labels.select').' -- </option>';
             foreach ($columns as $column) {
-                $options .= "<option value='".$column."'>".$column."</option>";
+                $options .= "<option value='".$column."'>".$column.'</option>';
             }
+
             return response()->json([
                 'type' => 'success',
                 'content' => [
                     'html' => $options,
-                ]
+                ],
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'type' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
         }
     }
@@ -146,20 +145,21 @@ class EntityController extends BackendController
             $module = $request->get('module');
             $joinData = $this->entity->getByAttributes([
                 'base_module' => $module,
-                'base_entity' => $entity
+                'base_entity' => $entity,
             ]);
             $content = view('core::backend.partials.edit-entity-form', compact('joinData', 'entityCollection', 'module', 'moduleList', 'entityOption', 'entity'));
+
             return response()->json([
                 'type' => 'success',
                 'content' => [
                     'element' => 'entityData',
                     'html' => $content->__toString(),
-                ]
+                ],
             ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'type' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ]);
         }
     }

@@ -269,6 +269,9 @@ return [
         'csrf_expired' => 'Security token has expired. Please try again.',
         'default_column_saved' => 'Default columns saved successfully.',
         'invalid_column_data' => 'Invalid columns data.',
+        'route_not_found' => 'The requested resource could not be found.',
+        'method_not_allowed' => 'The :method method is not supported for this route.',
+        'logged_out' => 'Your session has expired. Please log in again.',
     ],
     'image-note' => [
         'label' => 'Note',

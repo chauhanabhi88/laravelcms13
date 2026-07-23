@@ -3,15 +3,14 @@
 namespace Modules\Core\Commands\Make;
 
 use Illuminate\Support\Str;
+use Modules\Core\Support\Migrations\SchemaParser;
+use Nwidart\Modules\Commands\Make\GeneratorCommand;
 use Nwidart\Modules\Support\Config\GenerateConfigReader;
 use Nwidart\Modules\Support\Migrations\NameParser;
-use Nwidart\Modules\Support\Migrations\SchemaParser;
 use Nwidart\Modules\Support\Stub;
 use Nwidart\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Nwidart\Modules\Commands\Make\GeneratorCommand;
-use Modules\Core\Handler\Log;
 
 class MigrationMakeCommand extends GeneratorCommand
 {
@@ -68,53 +67,51 @@ class MigrationMakeCommand extends GeneratorCommand
     }
 
     /**
-     * @throws \InvalidArgumentException
-     *
      * @return mixed
+     *
+     * @throws \InvalidArgumentException
      */
     protected function getTemplateContents()
     {
         $parser = new NameParser($this->argument('name'));
+        $schema = $this->getSchemaParser();
+        $table = $parser->getTableName();
+        $entityName = $schema->getEntityName($table);
 
         if ($parser->isCreate()) {
-            
-            $entityName = str_ireplace($this->getModuleName(), $this->getModuleName(), $this->getSchemaParser()->getEntityName($parser->getTableName()));
             return Stub::create('/migration/create.stub', [
                 'class' => $this->getClass(),
-                'table' => $parser->getTableName(),
-                'fields' => $this->getSchemaParser()->render(),
-                'foreign' => $this->getSchemaParser()->foreignKeyDown($parser->getTableName()),
+                'table' => $table,
+                'fields' => $schema->render(),
+                'foreign' => $schema->foreignKeyDown($table),
                 'MODULE_NAME' => $this->getModuleName(),
                 'ENTITY' => $entityName,
             ]);
         } elseif ($parser->isAdd()) {
-            $entityName = str_ireplace($this->getModuleName(), $this->getModuleName(), $this->getSchemaParser()->getEntityName($parser->getTableName()));
             return Stub::create('/migration/add.stub', [
                 'class' => $this->getClass(),
-                'table' => $parser->getTableName(),
-                'fields_up' => $this->getSchemaParser()->up(),
-                'fields_down' => $this->getSchemaParser()->down(),
-                'foreign' => $this->getSchemaParser()->foreignKeyDown($parser->getTableName()),
+                'table' => $table,
+                'fields_up' => $schema->up(),
+                'fields_down' => $schema->down(),
+                'foreign' => $schema->foreignKeyDown($table),
                 'MODULE_NAME' => $this->getModuleName(),
                 'ENTITY' => $entityName,
             ]);
         } elseif ($parser->isDelete()) {
-            $entityName = str_ireplace($this->getModuleName(), $this->getModuleName(), $this->getSchemaParser()->getEntityName($parser->getTableName()));
             return Stub::create('/migration/delete.stub', [
                 'class' => $this->getClass(),
-                'table' => $parser->getTableName(),
-                'fields_down' => $this->getSchemaParser()->up(),
-                'fields_up' => $this->getSchemaParser()->down(),
-                'foreign' => $this->getSchemaParser()->getForeignKeys($parser->getTableName()),
+                'table' => $table,
+                'fields_down' => $schema->up(),
+                'fields_up' => $schema->down(),
+                'foreign' => $schema->getForeignKeys($table),
                 'MODULE_NAME' => $this->getModuleName(),
                 'ENTITY' => $entityName,
             ]);
         } elseif ($parser->isDrop()) {
-            $entityName = str_ireplace($this->getModuleName(), $this->getModuleName(), $this->getSchemaParser()->getEntityName($parser->getTableName()));
             return Stub::create('/migration/drop.stub', [
                 'class' => $this->getClass(),
-                'table' => $parser->getTableName(),
-                'fields' => $this->getSchemaParser()->render(),
+                'table' => $table,
+                'fields' => $schema->render(),
                 'MODULE_NAME' => $this->getModuleName(),
                 'ENTITY' => $entityName,
             ]);
@@ -134,7 +131,7 @@ class MigrationMakeCommand extends GeneratorCommand
 
         $generatorPath = GenerateConfigReader::read('migration');
 
-        return $path . $generatorPath->getPath() . '/' . $this->getFileName() . '.php';
+        return $path.$generatorPath->getPath().'/'.$this->getFileName().'.php';
     }
 
     /**
@@ -142,7 +139,7 @@ class MigrationMakeCommand extends GeneratorCommand
      */
     private function getFileName()
     {
-        return date('Y_m_d_His_') . $this->getSchemaName();
+        return date('Y_m_d_His_').$this->getSchemaName();
     }
 
     /**
@@ -169,17 +166,12 @@ class MigrationMakeCommand extends GeneratorCommand
     /**
      * Run the command.
      */
-    public function handle() : int
+    public function handle(): int
     {
-
         $this->components->info('Creating migration...');
 
         if (parent::handle() === E_ERROR) {
             return E_ERROR;
-        }
-
-        if (app()->environment() === 'testing') {
-            return 0;
         }
 
         return 0;

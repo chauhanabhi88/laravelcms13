@@ -56,16 +56,8 @@ $viewPassword = !empty(settings('core', 'view_password')) ? settings('core', 'vi
                         @endphp
                         @if(getImageUrl($og_image_param))
                         <a href="{{getImageUrl($og_image_param)}}" target="_BLANK">
-                            <img src="{{getImageUrl($thumbnail_image_param)}}" height=100 width=150 alt="introduction">
+                            <img src="{{getImageUrl($thumbnail_image_param)}}" height=100 width=150 alt="{{ trans('customer::customer.labels.profile_image') }}">
                         </a>
-                        @endif
-                        @if( $customer->profile_picture != null && file_exists(public_path().'/storage/customer/'.$customer->profile_picture))
-                        {!! getImageByParticularDimension_new($customer->profile_picture,'customer','100','100') !!}
-                        @if( $customer->profile_picture != null && file_exists(public_path().'/storage/customer/100by100/'.$customer->profile_picture) )
-                        <a href="{{ URL::to('/') }}/storage/customer/{{  $customer->profile_picture }}" target="_BLANK">
-                            <img src="{{URL::to('/') }}/storage/customer/100by100/{{$customer->profile_picture}}" alt="introduction">
-                        </a>
-                        @endif
                         {{ normalCheckbox("remove_profile_picture","customer::customer.labels.remove_profile_picture", $errors,null,["class" => "form-control"])}}
                         @endif
                         <div class="image-note">

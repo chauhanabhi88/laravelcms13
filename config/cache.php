@@ -53,6 +53,18 @@ return [
             'lock_path' => storage_path('framework/cache/data'),
         ],
 
+        /*
+         * Customer online/offline tracking, kept in its own directory so it can
+         * be cleared without touching the entity caches. Modules\Customer used
+         * to build this store by hand with `new FileStore(...)`, bypassing this
+         * config entirely - resolve it with Cache::store('customer') instead.
+         */
+        'customer' => [
+            'driver' => 'file',
+            'path' => storage_path('framework/cache/customer'),
+            'lock_path' => storage_path('framework/cache/customer'),
+        ],
+
         'storage' => [
             'driver' => 'storage',
             'disk' => env('CACHE_STORAGE_DISK'),

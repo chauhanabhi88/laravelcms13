@@ -12,6 +12,7 @@ use Nwidart\Modules\Support\Config\GenerateConfigReader;
 use Nwidart\Modules\Traits\ModuleCommandTrait;
 use RuntimeException;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class SeedCommand extends BaseCommand
 {
@@ -53,19 +54,18 @@ class SeedCommand extends BaseCommand
         });
     }
 
-    public function getInfo(): string|null
+    public function getInfo(): ?string
     {
         return 'Seeding module ...';
     }
 
     /**
      * @throws RuntimeException
-     * @return RepositoryInterface
      */
     public function getModuleRepository(): RepositoryInterface
     {
         $modules = $this->laravel['modules'];
-        if (!$modules instanceof RepositoryInterface) {
+        if (! $modules instanceof RepositoryInterface) {
             throw new RuntimeException('Module repository not found!');
         }
 
@@ -73,11 +73,9 @@ class SeedCommand extends BaseCommand
     }
 
     /**
-     * @param $name
+     * @return Module
      *
      * @throws RuntimeException
-     *
-     * @return Module
      */
     public function getModuleByName($name)
     {
@@ -90,8 +88,6 @@ class SeedCommand extends BaseCommand
     }
 
     /**
-     * @param Module $module
-     *
      * @return void
      */
     public function moduleSeed(Module $module)
@@ -101,7 +97,7 @@ class SeedCommand extends BaseCommand
         $config = $module->get('migration');
 
         if (is_array($config) && array_key_exists('seeds', $config)) {
-            foreach ((array)$config['seeds'] as $class) {
+            foreach ((array) $config['seeds'] as $class) {
                 if (class_exists($class)) {
                     $seeders[] = $class;
                 }
@@ -114,7 +110,7 @@ class SeedCommand extends BaseCommand
                 }
             }
         }
-        
+
         if (count($seeders) > 0) {
             array_walk($seeders, [$this, 'dbSeed']);
             $this->info("Module [$name] seeded.");
@@ -124,12 +120,12 @@ class SeedCommand extends BaseCommand
     /**
      * Seed the specified module.
      *
-     * @param string $className
+     * @param  string  $className
      */
     protected function dbSeed($className)
     {
         if ($option = $this->option('class')) {
-            $params['--class'] = Str::finish(substr($className, 0, strrpos($className, '\\')), '\\') . $option;
+            $params['--class'] = Str::finish(substr($className, 0, strrpos($className, '\\')), '\\').$option;
         } else {
             $params = ['--class' => $className];
         }
@@ -146,11 +142,16 @@ class SeedCommand extends BaseCommand
     }
 
     /**
-     * Get master database seeder name for the specified module.
+     * Get every seeder class in the module's seeder directory.
      *
-     * @param string $name
+     * Unlike vendor, which only runs <Name>DatabaseSeeder, this runs every
+     * class in the folder. That means a module's master seeder must NOT
+     * $this->call() its siblings - they are already scheduled here, and calling
+     * them again seeds twice. Use module.json's "migration.seeds" key when you
+     * need explicit control over which seeders run and in what order.
      *
-     * @return string
+     * @param  string  $name
+     * @return array
      */
     public function getSeederName($name)
     {
@@ -158,18 +159,18 @@ class SeedCommand extends BaseCommand
         $foundModules = [];
         $namespace = $this->laravel['modules']->config('namespace');
         $seederPath = GenerateConfigReader::read('seeder');
-        $path = $namespace . '/' . $name . '/' . $seederPath->getPath();
+        $path = $namespace.'/'.$name.'/'.$seederPath->getPath();
         $seederPath = str_replace('/', '\\', $seederPath->getNamespace());
-        
-        if (is_dir(__DIR__ . '/../../../../../' . $path)) {
-            
-            $files = array_diff(scandir(__DIR__ . '/../../../../../' . $path), array('.', '..'));
-            if (!$files) {
+        $directory = base_path($path);
+
+        if (is_dir($directory)) {
+            $files = array_diff(scandir($directory), ['.', '..']);
+            if (! $files) {
                 return $foundModules;
             }
             foreach ($files as $file) {
-                if (substr($file, strpos($file, ".") + 1) == 'php') {
-                    $foundModules[] = $namespace . '\\' . $name . '\\' . $seederPath . '\\' . basename($file, '.php');
+                if (substr($file, strpos($file, '.') + 1) == 'php') {
+                    $foundModules[] = $namespace.'\\'.$name.'\\'.$seederPath.'\\'.basename($file, '.php');
                 }
             }
         }
@@ -180,8 +181,7 @@ class SeedCommand extends BaseCommand
     /**
      * Get master database seeder name for the specified module under a different namespace than Modules.
      *
-     * @param string $name
-     *
+     * @param  string  $name
      * @return array $foundModules array containing namespace paths
      */
     public function getSeederNames($name)
@@ -194,7 +194,7 @@ class SeedCommand extends BaseCommand
         $foundModules = [];
         foreach ($this->laravel['modules']->config('scan.paths') as $path) {
             $namespace = array_slice(explode('/', $path), -1)[0];
-            $foundModules[] = $namespace . '\\' . $name . '\\' . $seederPath . '\\' . $name . 'DatabaseSeeder';
+            $foundModules[] = $namespace.'\\'.$name.'\\'.$seederPath.'\\'.$name.'DatabaseSeeder';
         }
 
         return $foundModules;
@@ -203,7 +203,7 @@ class SeedCommand extends BaseCommand
     /**
      * Report the exception to the exception handler.
      *
-     * @param  \Symfony\Component\Console\Output\OutputInterface  $output
+     * @param  OutputInterface  $output
      * @param  \Throwable  $e
      * @return void
      */

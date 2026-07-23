@@ -22,10 +22,22 @@ return [
     | Define which column you'd like to use to login with, currently
     */
     'login_column' => 'email',
+    /*
+    |--------------------------------------------------------------------------
+    | Login throttling
+    |--------------------------------------------------------------------------
+    | Failed login attempts are counted per client IP. Once max_attempts is
+    | reached the IP is blocked for the remainder of the decay window. The same
+    | limits are reused for the forgot-password endpoint.
+    */
+    'login_throttle' => [
+        'max_attempts' => 10,
+        'decay_seconds' => 120,
+    ],
     'master_admin_slug' => 'master_admin',
     'cache' => [
-        "deleted_user_name" => "DeletedUser",
-		'name' => 'User',
-	],
-    'lang_path' => 'user::user.labels'
+        'deleted_user_name' => 'DeletedUser',
+        'name' => 'User',
+    ],
+    'lang_path' => 'user::user.labels',
 ];

@@ -5,6 +5,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\Builder;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * Passport enables the device code grant by default (Passport::$deviceCodeGrantEnabled)
+ * and registers the passport.device route, so this table must exist or those
+ * requests fail on a missing table.
+ */
 return new class extends Migration
 {
     /**
@@ -31,14 +36,15 @@ return new class extends Migration
      */
     public function up()
     {
-        $this->schema->create('oauth_access_tokens', function (Blueprint $table) {
-            $table->string('id', 100)->primary();
+        $this->schema->create('oauth_device_codes', function (Blueprint $table) {
+            $table->char('id', 80)->primary();
             $table->unsignedBigInteger('user_id')->nullable()->index();
-            $table->uuid('client_id');
-            $table->string('name')->nullable();
-            $table->text('scopes')->nullable();
+            $table->uuid('client_id')->index();
+            $table->char('user_code', 8)->unique();
+            $table->text('scopes');
             $table->boolean('revoked');
-            $table->timestamps();
+            $table->dateTime('user_approved_at')->nullable();
+            $table->dateTime('last_polled_at')->nullable();
             $table->dateTime('expires_at')->nullable();
         });
     }
@@ -50,7 +56,7 @@ return new class extends Migration
      */
     public function down()
     {
-        $this->schema->dropIfExists('oauth_access_tokens');
+        $this->schema->dropIfExists('oauth_device_codes');
     }
 
     /**
