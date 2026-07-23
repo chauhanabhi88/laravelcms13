@@ -46,7 +46,7 @@ $image_extension = config('asgard.banner.config.defualt_image_type') ? (!empty(s
         <div class="form-group">
             <label class="d-block">{{ trans('banner::banner.labels.status') }}</label>
             <span data-placement="right" data-toggle="tooltip" title="{!! trans('core::core.options.status.disable') !!}" class="d-inline-block mt-1">
-                <label class="switch mb-0">
+                <label class="switch mt-2">
                     <input type="checkbox" name="status" class="status">
                     <span class="slider round"></span>
                 </label>

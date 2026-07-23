@@ -62,7 +62,7 @@
 .gp-toggle[aria-pressed="true"] {
     background: var(--gp-primary-hover);
     border-color: var(--gp-primary-hover);
-    color: var(--gp-primary-hover);
+    color: var(--gp-surface);
 }
 
 .gp-toggle .gp-toggle-badge {
@@ -323,11 +323,10 @@
 .gp-panel .filter-main label {
     display: block;
     margin-bottom: 5px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: .07em;
     text-transform: uppercase;
-    color: var(--gp-muted);
 }
 
 .gp-panel .filter-main .form-control,
@@ -338,7 +337,7 @@
     font-size: 13.5px;
     color: var(--gp-ink);
     border: 1px solid var(--gp-line-strong);
-    border-radius: 8px;
+    border-radius: 2px;
     background-color: var(--gp-surface);
     box-shadow: none;
     transition: border-color .14s ease, box-shadow .14s ease;
@@ -348,12 +347,12 @@
     color: var(--gp-muted);
 }
 
-.gp-panel .filter-main .form-control:focus,
+/*.gp-panel .filter-main .form-control:focus,
 .gp-panel .filter-main .custom-select:focus,
 .gp-panel .filter-main select:focus {
     border-color: var(--gp-brand);
     box-shadow: 0 0 0 3px rgba(27, 45, 143, .18);
-}
+}*/
 
 /* --- footer action bar --------------------------------------------------- */
 

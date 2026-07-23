@@ -39,6 +39,19 @@ class EntityController extends BackendController
     public function save(Request $request)
     {
         try {
+            $params = $request->all();
+
+            $entityNamePattern = '/^[A-Za-z0-9_]+$/';
+            if (! preg_match($entityNamePattern, $params['entity']['name'])) {
+                throw new \Exception(trans('core::core.messages.invalid_entity_name'));
+            }
+            if (isset($params['join']) && $params['join']) {
+                foreach ($params['join'] as $join) {
+                    if (! preg_match($entityNamePattern, $join['entity'])) {
+                        throw new \Exception(trans('core::core.messages.invalid_entity_name'));
+                    }
+                }
+            }
 
             if ($request->get('newEntity')) {
                 $entity = $request->get('entity');
@@ -52,7 +65,6 @@ class EntityController extends BackendController
                 ]);
             }
 
-            $params = $request->all();
             $options['base_module'] = $params['entity']['module'];
             $options['base_entity'] = $params['entity']['name'];
 

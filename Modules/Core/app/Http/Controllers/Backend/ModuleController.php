@@ -4,6 +4,7 @@ namespace Modules\Core\Http\Controllers\Backend;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Modules\Attribute\Repositories\AttributeRepository;
 use Modules\Core\Http\Controllers\BackendController;
@@ -274,7 +275,10 @@ class ModuleController extends BackendController
                         .(! empty($params['foreign']) && array_key_exists($addFieldKey, $params['foreign']) ? ':unsigned' : '')
                         .'##';
                     if (! empty($params['foreign']) && array_key_exists($addFieldKey, $params['foreign'])) {
-                        $result = \DB::select(\DB::raw("SHOW KEYS FROM {$params['foreignTable'][$addFieldKey]} WHERE Key_name = 'PRIMARY'"));
+                        if (! Schema::hasTable($params['foreignTable'][$addFieldKey])) {
+                            throw new \Exception(trans('core::core.messages.table_not_found'));
+                        }
+                        $result = \DB::select(\DB::raw('SHOW KEYS FROM `'.$params['foreignTable'][$addFieldKey].'` WHERE Key_name = \'PRIMARY\''));
                         $primaryKey = $result[0]->Column_name;
                         $onDelete = (isset($params['foreignTableDelete'][$addFieldKey]) ? ':onDelete("'.$params['foreignTableDelete'][$addFieldKey].'")' : '');
                         $onUpdate = (isset($params['foreignTableUpdate'][$addFieldKey]) ? ':onUpdate("'.$params['foreignTableUpdate'][$addFieldKey].'")' : '');
@@ -425,7 +429,10 @@ class ModuleController extends BackendController
                                 .(! empty($params['foreign']) && array_key_exists($addFieldKey, $params['foreign']) ? ':unsigned' : '')
                                 .'##';
                             if (! empty($params['foreign']) && array_key_exists($addFieldKey, $params['foreign'])) {
-                                $result = \DB::select(\DB::raw("SHOW KEYS FROM {$params['foreignTable'][$addFieldKey]} WHERE Key_name = 'PRIMARY'"));
+                                if (! Schema::hasTable($params['foreignTable'][$addFieldKey])) {
+                                    throw new \Exception(trans('core::core.messages.table_not_found'));
+                                }
+                                $result = \DB::select(\DB::raw('SHOW KEYS FROM `'.$params['foreignTable'][$addFieldKey].'` WHERE Key_name = \'PRIMARY\''));
                                 $primaryKey = $result[0]->Column_name;
                                 $onDelete = (isset($params['foreignTableDelete'][$addFieldKey]) ? ':onDelete("'.$params['foreignTableDelete'][$addFieldKey].'")' : '');
                                 $onUpdate = (isset($params['foreignTableUpdate'][$addFieldKey]) ? ':onUpdate("'.$params['foreignTableUpdate'][$addFieldKey].'")' : '');
@@ -448,7 +455,10 @@ class ModuleController extends BackendController
                         .(! empty($params['foreign']) && array_key_exists($addFieldKey, $params['foreign']) ? ':unsigned' : '')
                         .'##';
                     if (! empty($params['foreign']) && array_key_exists($addFieldKey, $params['foreign'])) {
-                        $result = \DB::select(\DB::raw("SHOW KEYS FROM {$params['foreignTable'][$addFieldKey]} WHERE Key_name = 'PRIMARY'"));
+                        if (! Schema::hasTable($params['foreignTable'][$addFieldKey])) {
+                            throw new \Exception(trans('core::core.messages.table_not_found'));
+                        }
+                        $result = \DB::select(\DB::raw('SHOW KEYS FROM `'.$params['foreignTable'][$addFieldKey].'` WHERE Key_name = \'PRIMARY\''));
                         $primaryKey = $result[0]->Column_name;
                         $onDelete = (isset($params['foreignTableDelete'][$addFieldKey]) ? ':onDelete("'.$params['foreignTableDelete'][$addFieldKey].'")' : '');
                         $onUpdate = (isset($params['foreignTableUpdate'][$addFieldKey]) ? ':onUpdate("'.$params['foreignTableUpdate'][$addFieldKey].'")' : '');
@@ -588,7 +598,11 @@ class ModuleController extends BackendController
             if (! $name) {
                 throw new \Exception(trans('core::core.messages.module_not_found'));
             }
-            $seeder_table_data = $this->module->getEntities(Str::studly($name));
+            $studlyName = Str::studly($name);
+            if (! array_key_exists($studlyName, $this->module->getModulesName())) {
+                throw new \Exception(trans('core::core.messages.module_not_found'));
+            }
+            $seeder_table_data = $this->module->getEntities($studlyName);
             $content = view('core::backend.partials.seeder-table-names', compact('seeder_table_data'));
 
             return response()->json([
@@ -610,6 +624,9 @@ class ModuleController extends BackendController
             if (! $params['seeder']['module']) {
                 throw new \Exception(trans('core::core.messages.module_not_found'));
             }
+            if (! array_key_exists($params['seeder']['module'], $this->module->getModulesName())) {
+                throw new \Exception(trans('core::core.messages.module_not_found'));
+            }
             $this->module->createSeeder($params['seeder']);
 
             return redirect()->route('admin.module.index', updateUrlParams())->with('success', trans('core::core.messages.module_seed'));
@@ -622,6 +639,9 @@ class ModuleController extends BackendController
     {
         try {
             if (! $module = $request->get('module')) {
+                throw new \Exception(trans('core::core.messages.module_not_found'));
+            }
+            if (! array_key_exists($module, $this->module->getModulesName())) {
                 throw new \Exception(trans('core::core.messages.module_not_found'));
             }
             \Artisan::call('module:enable', ['module' => $module]);

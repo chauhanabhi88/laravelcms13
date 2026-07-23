@@ -47,7 +47,7 @@ div.image-note lh {
     top: -3px;
     position: relative;
     display: inline-block;
-    width: 40px;
+    width: 45px;
     height: 23px;
 }
 
@@ -74,8 +74,8 @@ div.image-note lh {
     content: "";
     height: 16px;
     width: 16px;
-    left: 0px;
-    bottom: 4px;
+    left: 5px;
+    bottom: 0.22rem;
     background-color: white;
     -webkit-transition: .4s;
     transition: .4s;
@@ -529,6 +529,7 @@ table.table thead .sorting_asc_disabled:before, table.table thead .sorting_desc_
     min-height: 1.5rem;
     padding-left: 2.25rem;
     z-index: auto;
+    margin-bottom: 1rem;
 }
 
 .custom-control-input {
@@ -1061,7 +1062,7 @@ footer.footer {
 }
 
 .form-group {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
 }
 .btn-primary {
     color: #fff;

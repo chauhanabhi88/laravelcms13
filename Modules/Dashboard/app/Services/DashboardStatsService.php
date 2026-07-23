@@ -2,7 +2,9 @@
 
 namespace Modules\Dashboard\Services;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Modules\Blog\Models\BlogPost;
 use Modules\Contact\Models\Contact;
@@ -43,8 +45,8 @@ class DashboardStatsService
                 $cards[] = [
                     'key' => 'customers',
                     'label' => trans('dashboard::dashboard.labels.total_customers'),
-                    'count' => Customer::count(),
-                    'today' => Customer::whereDate('created_at', today())->count(),
+                    'count' => Customer::whereNull('deleted_at')->count(),
+                    'today' => Customer::whereDate('created_at', today())->whereNull('deleted_at')->count(),
                     'icon' => 'mdi mdi-account-multiple',
                     'color' => 'primary',
                     'route' => 'admin.customer.index',
@@ -93,8 +95,8 @@ class DashboardStatsService
                 $cards[] = [
                     'key' => 'users',
                     'label' => trans('dashboard::dashboard.labels.total_admins'),
-                    'count' => User::count(),
-                    'today' => User::where('status', config('core.enabled'))->count(),
+                    'count' => User::whereNull('deleted_at')->count(),
+                    'today' => User::where('status', config('core.enabled'))->whereNull('deleted_at')->count(),
                     'today_label' => trans('dashboard::dashboard.labels.active'),
                     'icon' => 'mdi mdi-shield-account',
                     'color' => 'danger',
@@ -179,7 +181,7 @@ class DashboardStatsService
      * Latest contact enquiries for the activity table.
      *
      * @param  int  $limit
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function getRecentContacts($limit = 5)
     {
@@ -194,7 +196,7 @@ class DashboardStatsService
      * Latest registered customers for the activity table.
      *
      * @param  int  $limit
-     * @return \Illuminate\Support\Collection
+     * @return Collection
      */
     public function getRecentCustomers($limit = 5)
     {
@@ -213,7 +215,7 @@ class DashboardStatsService
     public function forget()
     {
         foreach (['stat_cards', 'monthly_trend', 'content_status'] as $key) {
-            Cache::forget('dashboard.' . $key);
+            Cache::forget('dashboard.'.$key);
         }
     }
 
@@ -238,8 +240,7 @@ class DashboardStatsService
     /**
      * Group a query by created_at month and align it with $months.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  array  $months
+     * @param  Builder  $query
      * @return array
      */
     protected function countPerMonth($query, array $months)
