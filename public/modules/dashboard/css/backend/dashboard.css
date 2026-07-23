@@ -1,0 +1,200 @@
+/* Backend dashboard widgets */
+
+.dash-subtitle {
+    color: #9a9a9a;
+    font-size: 13px;
+}
+
+.dash-card {
+    border-radius: 6px;
+    height: 100%;
+}
+
+.dash-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.dash-card__link {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    white-space: nowrap;
+}
+
+.dash-empty {
+    color: #9a9a9a;
+    font-size: 13px;
+    text-align: center;
+    padding: 18px 0;
+}
+
+/* ---------- stat tiles ---------- */
+
+.dash-stat {
+    display: block;
+    border-radius: 6px;
+    border-left: 4px solid transparent;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.dash-stat:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .18);
+    text-decoration: none;
+}
+
+.dash-stat .card-body {
+    display: flex;
+    align-items: center;
+    padding: 18px 20px;
+}
+
+.dash-stat__icon {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-right: 14px;
+}
+
+.dash-stat__body {
+    min-width: 0;
+}
+
+.dash-stat__label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: #9a9a9a;
+    margin: 0 0 2px;
+}
+
+.dash-stat__count {
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.dash-stat__meta {
+    font-size: 12px;
+    color: #9a9a9a;
+}
+
+.dash-stat--primary {
+    border-left-color: #4b49ac;
+}
+
+.dash-stat--primary .dash-stat__icon {
+    background: rgba(75, 73, 172, .15);
+    color: #4b49ac;
+}
+
+.dash-stat--success {
+    border-left-color: #1bcfb4;
+}
+
+.dash-stat--success .dash-stat__icon {
+    background: rgba(27, 207, 180, .15);
+    color: #1bcfb4;
+}
+
+.dash-stat--warning {
+    border-left-color: #fed713;
+}
+
+.dash-stat--warning .dash-stat__icon {
+    background: rgba(254, 215, 19, .15);
+    color: #e0bb00;
+}
+
+.dash-stat--info {
+    border-left-color: #198ae3;
+}
+
+.dash-stat--info .dash-stat__icon {
+    background: rgba(25, 138, 227, .15);
+    color: #198ae3;
+}
+
+.dash-stat--danger {
+    border-left-color: #fe7c96;
+}
+
+.dash-stat--danger .dash-stat__icon {
+    background: rgba(254, 124, 150, .15);
+    color: #fe7c96;
+}
+
+/* ---------- charts ---------- */
+
+.dash-chart-wrapper {
+    position: relative;
+    height: 300px;
+}
+
+.dash-chart-wrapper--doughnut {
+    height: 210px;
+}
+
+.dash-legend {
+    list-style: none;
+    margin: 18px 0 0;
+    padding: 0;
+}
+
+.dash-legend li {
+    display: flex;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 13px;
+}
+
+.dash-legend__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.dash-legend__label {
+    flex: 1;
+}
+
+.dash-legend__value {
+    font-weight: 600;
+}
+
+/* ---------- activity tables ---------- */
+
+.dash-table {
+    margin-bottom: 0;
+}
+
+.dash-table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: #9a9a9a;
+    border-top: 0;
+    padding-top: 0;
+}
+
+.dash-table td {
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+@media (max-width: 767px) {
+    .dash-chart-wrapper {
+        height: 240px;
+    }
+}
