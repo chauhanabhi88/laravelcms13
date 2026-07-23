@@ -3,6 +3,7 @@
 namespace Modules\Pages\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Modules\Pages\Models\Pages;
 
 class UpdateRequest extends FormRequest
@@ -19,7 +20,7 @@ class UpdateRequest extends FormRequest
         foreach (getLanguageOptions() as $locale => $value) {
             $rules["{$locale}.title"] = 'required';
         }
-        $rules['slug'] = 'required|unique:'.$pages->getTable().',slug,'.$this->id;
+        $rules['slug'] = ['required', Rule::unique($pages->getTable(), 'slug')->whereNull('deleted_at')->ignore($this->id)];
 
         return $rules;
     }

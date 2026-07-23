@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -12,15 +10,14 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-if ($apiVersions = config("core.api_versions")) {
+if ($apiVersions = config('core.api_versions')) {
     foreach ($apiVersions as $version) {
         $upperCaseVersion = strtoupper($version);
-        Route::middleware(['auth:customer'])->prefix($version . '/block')->group(function () use ($upperCaseVersion) {
+        Route::middleware(['auth:api'])->prefix($version.'/block')->group(function () use ($upperCaseVersion) {
             Route::get('/{slug}', [
                 'as' => 'block.index',
-                'uses' => $upperCaseVersion . '\BlockController@index'
+                'uses' => $upperCaseVersion.'\BlockController@index',
             ]);
         });
     }
 }
-

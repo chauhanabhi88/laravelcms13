@@ -15,9 +15,6 @@
         <table class="table table-bordered table-striped table-hover text-nowrap">
             <thead>
                 <tr class="data-heading">
-                    @can('admin.language.mass_delete')
-                        <th></th>
-                    @endcan
                     @include('core::partials.sorting',['displayMassDeleteCheckbox' => false])
                     <th data-sortable="false" class="sticky-action">{{ trans('core::core.titles.actions') }}</th>
                 </tr>
@@ -25,9 +22,6 @@
             <tbody>
                 @forelse ($collection as $language)
                     <tr>
-                        @can('admin.language.mass_delete')
-                            <td>{!! normalCheckbox('selectedCategory[]','',$errors, $language->id, ['class' => "select-item", 'data-id' => $language->id]) !!}</td>
-                        @endcan
                         @foreach ($columns as $column)
                             @php 
                                 if($column['checkbox_checked'] == 0){
@@ -55,9 +49,6 @@
                             @can('admin.language.edit')
                                 <button type="button" onclick="setLocation('{{ route('admin.language.edit', updateUrlParams([$language->id])) }}');" class="btn"><span data-placement="right" data-toggle="tooltip" title="{{trans('core::core.labels.edit')}}"><i class="fas fa-edit"></i></span></button>
                             @endcan
-                            {{-- @can('admin.language.delete')
-                                <button type="button" class="btn" data-toggle="modal" data-target="#modal-delete-confirmation" data-action-target="{{ route('admin.language.delete', updateUrlParams([$language->id])) }}"><span data-placement="right" data-toggle="tooltip" title="{{trans('core::core.labels.delete')}}"><i class="fas fa-trash"></i></span></button>
-                            @endcan --}}
                             @can('admin.language.edit')
                             <span data-placement="right" data-toggle="tooltip"  title="{!! $statusOptions[$language->status] !!}">
                                 <label class="switch">

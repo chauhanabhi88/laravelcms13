@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -12,15 +10,15 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-if ($apiVersions = config("core.api_versions")) {
+if ($apiVersions = config('core.api_versions')) {
     foreach ($apiVersions as $version) {
         $upperCaseVersion = strtoupper($version);
-        Route::middleware(['auth:customer'])->prefix($version . '/contact')->group(function () use ($upperCaseVersion) {
+        Route::middleware(['auth:api'])->prefix($version.'/contact')->group(function () use ($upperCaseVersion) {
             Route::post('/save', [
                 'as' => 'contact.save',
-                'uses' => $upperCaseVersion . '\ContactController@save'
+                'uses' => $upperCaseVersion.'\ContactController@save',
+                'middleware' => 'throttle:20,1',
             ]);
         });
     }
 }
-

@@ -33,7 +33,7 @@ class Pages extends Model
             if (! isset($GLOBALS[$matches[1][$key]])) {
                 $blockKey = $matches[1][$key];
                 $blockData = $block->where('slug', $blockKey)->first();
-                $GLOBALS[$matches[1][$key]] = ($blockData ? $blockData->getContent() : $matches[1][$key]); // $blockData->getContent();
+                $GLOBALS[$matches[1][$key]] = ($blockData ? $blockData->content : $matches[1][$key]);
             }
             $string = str_replace($var_name, $GLOBALS[$matches[1][$key]], $string);
         }

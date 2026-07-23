@@ -13,7 +13,8 @@ class CityImportRequest extends FormRequest
      */
     public function rules()
     {
-        $fileTypes = settings('directory', 'import_country_type');
+        $fileTypes = (! empty(settings('directory', 'import_country_type'))) ? settings('directory', 'import_country_type') : 'xlsx';
+
         return [
             'city_import_file' => 'required|mimes:'.$fileTypes,
         ];

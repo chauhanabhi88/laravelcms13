@@ -2,15 +2,15 @@
 
 namespace Modules\Directory\Repositories\Cache;
 
-use Modules\Directory\Repositories\DirectoryCountryRepository;
 use Modules\Core\Repositories\Cache\BaseCacheDecorator;
+use Modules\Directory\Repositories\DirectoryCountryRepository;
 
 class CacheDirectoryCountryDecorator extends BaseCacheDecorator implements DirectoryCountryRepository
 {
     public function __construct(DirectoryCountryRepository $directory)
     {
         parent::__construct();
-        $this->entityName = \config("directory.cache.country");
+        $this->entityName = \config('directory.cache.country');
         $this->repository = $directory;
     }
 
@@ -33,10 +33,11 @@ class CacheDirectoryCountryDecorator extends BaseCacheDecorator implements Direc
         });
     }
 
-
     public function getAllowedCountries($flag = false, $backend = false)
     {
-        return $this->repository->getAllowedCountries($flag, $backend);
+        return $this->remember(function () use ($flag, $backend) {
+            return $this->repository->getAllowedCountries($flag, $backend);
+        });
     }
 
     public function getAllowedCountriesCode()

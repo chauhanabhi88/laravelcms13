@@ -14,7 +14,7 @@
 if ($apiVersions = config('core.api_versions')) {
     foreach ($apiVersions as $version) {
         $upperCaseVersion = strtoupper($version);
-        Route::middleware(['auth:customer'])->prefix($version.'/page')->group(function () use ($upperCaseVersion) {
+        Route::middleware(['auth:api'])->prefix($version.'/page')->group(function () use ($upperCaseVersion) {
             Route::get('/{slug}', [
                 'as' => 'page.index',
                 'uses' => $upperCaseVersion.'\PageController@index',

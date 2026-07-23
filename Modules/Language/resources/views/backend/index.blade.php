@@ -21,9 +21,6 @@
                         @can('admin.language.export')
                         <button type="button" class="btn btn-primary btn-fw" data-target="#export_translation_data" data-toggle="modal">{{ trans("core::core.buttons.export_translations") }}</button>
                         @endcan
-                        @can('admin.language.mass_delete')
-                        <button type="button" class="btn btn-danger btn-fw" id="mass-delete" data-message="{{ trans('core::core.modal.mass-delete-confirmation-message') }}" data-action-target="{{ route('admin.language.mass_delete', updateUrlParams()) }}">{{ trans('core::core.buttons.delete') }}</button>
-                        @endcan
                         @can('admin.language.create')
                         <button type="button" class="btn btn-primary btn-fw" onclick="setLocation('{{ route('admin.language.create', updateUrlParams()) }}')">{{ trans("core::core.buttons.create") }}</button>
                         @endcan

@@ -16,9 +16,8 @@ class UpdateRequest extends FormRequest
         return [
             'language.title' => 'required',
             'language.locale' => 'required',
-            'language.is_default' => 'required',
-            // 'language.status' => 'required',
-             ];
+            'language.is_default' => 'required|in:'.config('core.yes').','.config('core.no'),
+        ];
     }
 
     /**
@@ -34,7 +33,7 @@ class UpdateRequest extends FormRequest
     public function messages()
     {
         return [
-            'language.*.required' => trans("language::language.messages.required"),
+            'language.*.required' => trans('language::language.messages.required'),
         ];
     }
 }
