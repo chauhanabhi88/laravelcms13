@@ -27,20 +27,18 @@
                 @forelse ($collection as $bannergroup)
                     <tr>
                         @can('admin.bannergroup.mass_delete')
-                            
-                            <td>{{ normalCheckbox('selectedCategory[]','',$errors,false  , ['class' => "select-item", 'data-id' => $bannergroup->id ,'grid' => true])}}</td>
+
+                            <td>{{ normalCheckbox('selectedCategory[]','',$errors,$bannergroup->id  , ['class' => "select-item", 'data-id' => $bannergroup->id ,'grid' => true])}}</td>
                         @endcan
                         @foreach ($columns as $column)
-                            @php 
+                            @php
                                 if($column['checkbox_checked'] == 0){
                                     continue;
                                 }
                                 $columnCode = $column['code'];
                                 $value = $bannergroup[$columnCode] ?? null;
                             @endphp
-                            @if($columnCode=='title')
-                                <td>{{ wordWrapper($banner->title, false, 20) }}</td>
-                            @elseif(in_array($columnCode,['name','code']))
+                            @if(in_array($columnCode,['name','code']))
                                 <td>{{ wordWrapper($bannergroup[$columnCode]) }}</td>
                             @elseif($columnCode == 'created_at')
                                 <td>{{ getFormatedDate($bannergroup->created_at, getGridDateFormat()) }}</td>
