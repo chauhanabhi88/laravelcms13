@@ -2,12 +2,12 @@
 {{--
     product: a plain array DTO, so a grid never triggers queries:
     id, name, url, image, image_alt2 (second image shown on hover), price, mrp, rating, rating_count,
-    free_delivery (bool), cod (bool), badge (string|null), wishlisted (bool).
+    free_delivery (bool), cod (bool), badge (string|null), wishlisted (bool), in_stock (bool, default true).
 --}}
 @php
     $product = array_merge([
         'image' => null, 'image_alt2' => null, 'mrp' => null, 'rating' => null, 'rating_count' => null,
-        'free_delivery' => false, 'cod' => false, 'badge' => null, 'wishlisted' => false,
+        'free_delivery' => false, 'cod' => false, 'badge' => null, 'wishlisted' => false, 'in_stock' => true,
     ], (array) $product);
 @endphp
 <article {{ $attributes->class('group relative flex flex-col overflow-hidden rounded-card border border-line bg-surface transition duration-150 ease-out hover:shadow-lift') }}
@@ -29,6 +29,9 @@
             @endif
             @if ($product['badge'])
                 <span class="absolute top-2 right-2 rounded-chip bg-surface/95 px-2 py-0.5 text-[11px] font-semibold text-accent shadow-soft">{{ $product['badge'] }}</span>
+            @endif
+            @if (! $product['in_stock'])
+                <span class="absolute inset-x-0 bottom-0 bg-ink/70 py-1.5 text-center text-xs font-semibold text-white">{{ trans('theme::frontend.commerce.out_of_stock') }}</span>
             @endif
         </div>
         <div class="flex flex-1 flex-col gap-1.5 p-3">

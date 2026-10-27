@@ -8,11 +8,14 @@ import infiniteList from './components/infinite-scroll';
 import clamp from './components/clamp';
 import megaMenu from './components/mega-menu';
 import searchBox from './components/search-box';
+import listing from './components/listing';
+import recentlyViewed, { rememberRecentlyViewed } from './components/recently-viewed';
 import { dropzone, pincodeChecker, priceRange, qtyStepper } from './components/form-controls';
 
 export { fetchJson };
 
 window.fetchJson = fetchJson;
+window.rememberRecentlyViewed = rememberRecentlyViewed;
 
 document.addEventListener('alpine:init', () => {
     registerStores(Alpine);
@@ -24,6 +27,8 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('clamp', clamp);
     Alpine.data('megaMenu', megaMenu);
     Alpine.data('searchBox', searchBox);
+    Alpine.data('listing', listing);
+    Alpine.data('recentlyViewed', recentlyViewed);
     Alpine.data('qtyStepper', qtyStepper);
     Alpine.data('priceRange', priceRange);
     Alpine.data('dropzone', dropzone);
