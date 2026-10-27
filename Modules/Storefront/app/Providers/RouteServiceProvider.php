@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\Route;
 
 /**
  * Storefront routes:
- * - api.php      public read-only API (api/{version}/autocomplete, /products, /home, /recently-viewed)
+ * - api.php      public API (api/{version}/autocomplete, /products, /products/{id}, /home,
+ *                /recently-viewed, /delivery-check)
  * - backend.php  home sections, collections and the search report (/backend)
- * - front.php    "/" (homepage), /c/{slug}, /search, /s/{store}, /collection/{slug}, /recently-viewed
+ * - front.php    "/" (homepage), /c/{slug}, /search, /s/{store}, /collection/{slug},
+ *                /p/{slug}-{id} (+ /similar, /availability), /delivery-check, /recently-viewed
  */
 class RouteServiceProvider extends ServiceProvider
 {

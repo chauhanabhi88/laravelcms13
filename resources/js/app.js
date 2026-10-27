@@ -10,6 +10,8 @@ import megaMenu from './components/mega-menu';
 import searchBox from './components/search-box';
 import listing from './components/listing';
 import recentlyViewed, { rememberRecentlyViewed } from './components/recently-viewed';
+import productPage from './components/product-page';
+import lazyProductRow from './components/lazy-product-row';
 import { dropzone, pincodeChecker, priceRange, qtyStepper } from './components/form-controls';
 
 export { fetchJson };
@@ -29,6 +31,8 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('searchBox', searchBox);
     Alpine.data('listing', listing);
     Alpine.data('recentlyViewed', recentlyViewed);
+    Alpine.data('productPage', productPage);
+    Alpine.data('lazyProductRow', lazyProductRow);
     Alpine.data('qtyStepper', qtyStepper);
     Alpine.data('priceRange', priceRange);
     Alpine.data('dropzone', dropzone);

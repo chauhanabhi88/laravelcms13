@@ -144,21 +144,43 @@ export const dropzone = ({ accept = '', maxFiles = 1, maxSizeMb = 5, multiple = 
 });
 
 /**
- * Pincode serviceability shell. The endpoint (M07/M13) answers
- * { serviceable, cod, message } for GET ?pincode=&product_id=.
+ * Pincode serviceability check. The endpoint answers { serviceable, cod, message } (plus
+ * delivery_text / cod_text / return_text on the product page) for GET ?pincode=&product_id=
+ * or, with method "post", a JSON { pincode, product_id, variant_id } body. A prefilled
+ * pincode is checked on load; a variant change re-checks a shown result.
  */
-export const pincodeChecker = ({ endpoint = null, productId = null, messages = {} } = {}) => ({
+export const pincodeChecker = ({ endpoint = null, productId = null, variantId = null, method = 'get', pincode = '', messages = {} } = {}) => ({
     endpoint,
     productId,
+    variantId,
+    method,
     messages,
-    pincode: '',
+    pincode: pincode ?? '',
     loading: false,
     result: null,
     error: null,
 
+    init() {
+        if (this.endpoint && /^[1-9][0-9]{5}$/.test(this.pincode)) {
+            this.check();
+        }
+    },
+
+    setVariant(id) {
+        const next = id ?? null;
+        if (String(next) === String(this.variantId)) {
+            return;
+        }
+        this.variantId = next;
+        if (this.result?.serviceable) {
+            this.check();
+        }
+    },
+
     async check() {
         this.error = null;
         this.result = null;
+        this.pincode = String(this.pincode ?? '').replace(/\s+/g, '');
 
         if (!/^[1-9][0-9]{5}$/.test(this.pincode)) {
             this.error = this.messages.invalid ?? 'Enter a valid 6-digit pincode.';
@@ -171,14 +193,21 @@ export const pincodeChecker = ({ endpoint = null, productId = null, messages = {
 
         this.loading = true;
         try {
-            const url = new URL(this.endpoint, window.location.origin);
-            url.searchParams.set('pincode', this.pincode);
-            if (this.productId) {
-                url.searchParams.set('product_id', this.productId);
+            if (this.method === 'post') {
+                this.result = await fetchJson(this.endpoint, {
+                    method: 'POST',
+                    body: { pincode: this.pincode, product_id: this.productId, variant_id: this.variantId || null },
+                });
+            } else {
+                const url = new URL(this.endpoint, window.location.origin);
+                url.searchParams.set('pincode', this.pincode);
+                if (this.productId) {
+                    url.searchParams.set('product_id', this.productId);
+                }
+                this.result = await fetchJson(url.toString());
             }
-            this.result = await fetchJson(url.toString());
         } catch (failure) {
-            this.error = failure.errors?.pincode?.[0] ?? failure.message;
+            this.error = failure.errors?.pincode?.[0] ?? failure.errors?.variant_id?.[0] ?? failure.message;
         } finally {
             this.loading = false;
         }

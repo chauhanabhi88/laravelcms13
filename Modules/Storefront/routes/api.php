@@ -5,8 +5,9 @@
 | API Routes
 |--------------------------------------------------------------------------
 |
-| Public, read-only storefront API (api/{version}/...): autocomplete, product listing and
-| search with facets, the home page sections and recently viewed cards.
+| Public storefront API (api/{version}/...): autocomplete, product listing and search with
+| facets, the home page sections, recently viewed cards, the product page payload and the
+| delivery check.
 |
 */
 
@@ -37,7 +38,18 @@ if ($apiVersions = config('core.api_versions')) {
                     'as' => $name('recently_viewed'),
                     'uses' => $upperCaseVersion.'\RecentlyViewedController@index',
                 ]);
+
+                Route::get('/products/{id}', [
+                    'as' => $name('product.show'),
+                    'uses' => $upperCaseVersion.'\ProductController@show',
+                ])->where('id', '[0-9]+');
             });
+
+            Route::post('/delivery-check', [
+                'as' => $name('delivery_check'),
+                'uses' => $upperCaseVersion.'\DeliveryCheckController@check',
+                'middleware' => 'throttle:storefront-delivery-check',
+            ]);
         });
     }
 }
