@@ -2,8 +2,233 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source '../../Modules/*/resources/views/frontend/**/*.blade.php';
+@source '../../Modules/Pages/resources/views/errors/front/*.blade.php';
+@source '../../Modules/*/resources/views/seller/**/*.blade.php';
+@source '../../Modules/Theme/resources/views/layouts/frontend/**/*.blade.php';
+@source '../../Modules/Theme/resources/views/layouts/seller/**/*.blade.php';
+@source '../../Modules/Theme/resources/views/styleguide/**/*.blade.php';
+@source '../../Modules/Theme/resources/views/components/**/*.blade.php';
+@source '../js/**/*.js';
 
+/*
+ * Semantic design tokens. Components use these names only (bg-surface, text-ink,
+ * border-line, ...) so dark mode is a single variable swap below.
+ * Brand: teal primary, amber for deals, slate neutrals (doc 02 §7.1).
+ * Text tokens are chosen for WCAG 2.1 AA (≥ 4.5:1) on surface and canvas.
+ */
+:root {
+    --ink: oklch(0.208 0.042 265.755);
+    --ink-soft: oklch(0.372 0.044 257.287);
+    --muted: oklch(0.554 0.046 257.417);
+    --canvas: oklch(0.984 0.003 247.858);
+    --surface: oklch(1 0 0);
+    --surface-alt: oklch(0.968 0.007 247.896);
+    --line: oklch(0.929 0.013 255.508);
+    --line-strong: oklch(0.869 0.022 252.894);
+    --accent: oklch(0.511 0.096 186.391);
+    --accent-hover: oklch(0.437 0.078 188.216);
+    --accent-soft: oklch(0.984 0.014 180.72);
+    --accent-ink: oklch(1 0 0);
+    --deal: oklch(0.555 0.163 48.998);
+    --deal-soft: oklch(0.987 0.022 95.277);
+    --rating: oklch(0.527 0.154 150.069);
+    --rating-ink: oklch(1 0 0);
+    --danger: oklch(0.577 0.245 27.325);
+    --danger-soft: oklch(0.971 0.013 17.38);
+    --success: oklch(0.527 0.154 150.069);
+    --success-soft: oklch(0.982 0.018 155.826);
+    --warning: oklch(0.68 0.15 70);
+    --warning-soft: oklch(0.97 0.04 85);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --ink: oklch(0.984 0.003 247.858);
+        --ink-soft: oklch(0.869 0.022 252.894);
+        --muted: oklch(0.704 0.04 256.788);
+        --canvas: oklch(0.129 0.042 264.695);
+        --surface: oklch(0.208 0.042 265.755);
+        --surface-alt: oklch(0.279 0.041 260.031);
+        --line: oklch(0.279 0.041 260.031);
+        --line-strong: oklch(0.372 0.044 257.287);
+        --accent: oklch(0.777 0.152 181.912);
+        --accent-hover: oklch(0.855 0.138 181.071);
+        --accent-soft: oklch(0.28 0.05 186);
+        --accent-ink: oklch(0.129 0.042 264.695);
+        --deal: oklch(0.828 0.189 84.429);
+        --deal-soft: oklch(0.3 0.06 70);
+        --rating: oklch(0.627 0.194 149.214);
+        --rating-ink: oklch(0.129 0.042 264.695);
+        --danger: oklch(0.7 0.17 25);
+        --danger-soft: oklch(0.28 0.06 25);
+        --success: oklch(0.72 0.14 155);
+        --success-soft: oklch(0.27 0.05 155);
+        --warning: oklch(0.8 0.13 80);
+        --warning-soft: oklch(0.3 0.05 80);
+    }
+}
+
+@theme inline {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, 'Noto Sans', 'Noto Sans Devanagari', sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-ink: var(--ink);
+    --color-ink-soft: var(--ink-soft);
+    --color-muted: var(--muted);
+    --color-canvas: var(--canvas);
+    --color-surface: var(--surface);
+    --color-surface-alt: var(--surface-alt);
+    --color-line: var(--line);
+    --color-line-strong: var(--line-strong);
+    --color-accent: var(--accent);
+    --color-accent-hover: var(--accent-hover);
+    --color-accent-soft: var(--accent-soft);
+    --color-accent-ink: var(--accent-ink);
+    --color-deal: var(--deal);
+    --color-deal-soft: var(--deal-soft);
+    --color-rating: var(--rating);
+    --color-rating-ink: var(--rating-ink);
+    --color-danger: var(--danger);
+    --color-danger-soft: var(--danger-soft);
+    --color-success: var(--success);
+    --color-success-soft: var(--success-soft);
+    --color-warning: var(--warning);
+    --color-warning-soft: var(--warning-soft);
+
+    --shadow-soft: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 1px 3px 0 rgb(15 23 42 / 0.06);
+    --shadow-card: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 8px 24px -8px rgb(15 23 42 / 0.12);
+    --shadow-pop: 0 12px 40px -12px rgb(15 23 42 / 0.28);
+    --shadow-lift: 0 8px 24px rgb(15 23 42 / 0.1);
+}
+
+/*
+ * Brand radii as their own names (rounded-chip / rounded-card / rounded-sheet) so
+ * Tailwind's stock rounded-sm / rounded-lg, used across existing views, keep their size.
+ */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --radius-chip: 6px;
+    --radius-card: 10px;
+    --radius-sheet: 16px;
+}
+
+@utility tabular {
+    font-variant-numeric: tabular-nums;
+}
+
+@utility scrollbar-none {
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+@layer base {
+    html {
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+    }
+
+    body {
+        @apply bg-canvas font-sans text-ink;
+    }
+
+    ::selection {
+        @apply bg-accent text-accent-ink;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+
+    :focus-visible {
+        @apply outline-2 outline-offset-2 outline-accent;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            scroll-behavior: auto !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+@layer components {
+    .container-page {
+        @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+    }
+
+    /* Typography for admin-authored rich text (Summernote HTML). */
+    .prose-content {
+        @apply max-w-none text-base leading-7 text-ink-soft;
+
+        & > * + * {
+            @apply mt-5;
+        }
+
+        & h1,
+        & h2,
+        & h3,
+        & h4 {
+            @apply font-semibold tracking-tight text-ink;
+        }
+
+        & h1 {
+            @apply mt-10 text-3xl;
+        }
+
+        & h2 {
+            @apply mt-10 text-2xl;
+        }
+
+        & h3 {
+            @apply mt-8 text-xl;
+        }
+
+        & a {
+            @apply font-medium text-accent underline decoration-accent/30 underline-offset-4 hover:decoration-accent;
+        }
+
+        & ul {
+            @apply list-disc pl-6;
+        }
+
+        & ol {
+            @apply list-decimal pl-6;
+        }
+
+        & li + li {
+            @apply mt-2;
+        }
+
+        & blockquote {
+            @apply border-l-4 border-accent/40 pl-5 text-ink italic;
+        }
+
+        & img {
+            @apply h-auto max-w-full rounded-xl;
+        }
+
+        & table {
+            @apply w-full border-collapse text-sm;
+        }
+
+        & th,
+        & td {
+            @apply border border-line px-3 py-2 text-left;
+        }
+
+        & pre {
+            @apply overflow-x-auto rounded-xl bg-surface-alt p-4 text-sm;
+        }
+
+        & hr {
+            @apply border-line;
+        }
+    }
 }

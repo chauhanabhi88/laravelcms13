@@ -48,7 +48,13 @@ $sidebar = Config::get('theme.sidebar');
 
 <body class="dark-theme sidebar-dark">
     
-    <div class="custom-loader" style="display: block;"></div>
+    <div class="custom-loader" aria-hidden="true">
+        <div class="loader-spinner" role="status" aria-live="polite" aria-label="Loading">
+            <svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="25" cy="25" r="20"></circle>
+            </svg>
+        </div>
+    </div>
     @if($sidebar == 1)
     <div class="container-scroller">
         @include('theme::layouts.backend.partials.staradmin.navbar')

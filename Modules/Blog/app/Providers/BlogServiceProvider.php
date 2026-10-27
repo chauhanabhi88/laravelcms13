@@ -3,6 +3,21 @@
 namespace Modules\Blog\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Modules\Blog\Models\Blog;
+use Modules\Blog\Models\BlogCategory;
+use Modules\Blog\Models\BlogPost;
+use Modules\Blog\Models\BlogPostCategory;
+use Modules\Blog\Models\BlogPostComment;
+use Modules\Blog\Repositories\Cache\CacheBlogCategoryDecorator;
+use Modules\Blog\Repositories\Cache\CacheBlogDecorator;
+use Modules\Blog\Repositories\Cache\CacheBlogPostCategoryRelationDecorator;
+use Modules\Blog\Repositories\Cache\CacheBlogPostCommentDecorator;
+use Modules\Blog\Repositories\Cache\CacheBlogPostDecorator;
+use Modules\Blog\Repositories\Eloquent\EloquentBlogCategoryRepository;
+use Modules\Blog\Repositories\Eloquent\EloquentBlogPostCategoryRelationRepository;
+use Modules\Blog\Repositories\Eloquent\EloquentBlogPostCommentRepository;
+use Modules\Blog\Repositories\Eloquent\EloquentBlogPostRepository;
+use Modules\Blog\Repositories\Eloquent\EloquentBlogRepository;
 
 class BlogServiceProvider extends ServiceProvider
 {
@@ -23,7 +38,7 @@ class BlogServiceProvider extends ServiceProvider
         $this->registerTranslations();
         $this->registerConfig();
         $this->registerViews();
-        $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
         $this->registerBindings();
     }
 
@@ -64,8 +79,8 @@ class BlogServiceProvider extends ServiceProvider
         $sourcePath = __DIR__.'/../../resources/views';
 
         $this->publishes([
-            $sourcePath => $viewPath
-        ],'views');
+            $sourcePath => $viewPath,
+        ], 'views');
 
         $this->loadViewsFrom(array_map(function ($path) {
             return $path;
@@ -84,7 +99,7 @@ class BlogServiceProvider extends ServiceProvider
         if (is_dir($langPath)) {
             $this->loadTranslationsFrom($langPath, 'blog');
         } else {
-            $this->loadTranslationsFrom(__DIR__ .'/../../resources/lang', 'blog');
+            $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'blog');
         }
     }
 
@@ -99,83 +114,70 @@ class BlogServiceProvider extends ServiceProvider
     }
 
     private function registerBindings()
-    { 
-      
+    {
+
         $this->app->bind(
-            "Modules\Blog\Repositories\Folder4Repository",
-            function () {
-                $repository = new \Modules\Blog\Repositories\Eloquent\EloquentFolder4Repository(new \Modules\Blog\Models\Folder4);
-
-                if (! getModule("blog", "cache")) {
-                    return $repository;
-                }
-
-                return new \Modules\Blog\Repositories\Cache\CacheFolder4Decorator($repository);
-            }
-        );
-            
-		  $this->app->bind(
             "Modules\Blog\Repositories\BlogPostRepository",
             function () {
-                $repository = new \Modules\Blog\Repositories\Eloquent\EloquentBlogPostRepository(new \Modules\Blog\Models\BlogPost);
+                $repository = new EloquentBlogPostRepository(new BlogPost);
 
-                if (! getModule("blog", "cache")) {
+                if (! getModule('blog', 'cache')) {
                     return $repository;
                 }
 
-                return new \Modules\Blog\Repositories\Cache\CacheBlogPostDecorator($repository);
+                return new CacheBlogPostDecorator($repository);
             }
         );
-            
-		  $this->app->bind(
+
+        $this->app->bind(
             "Modules\Blog\Repositories\BlogCategoryRepository",
             function () {
-                $repository = new \Modules\Blog\Repositories\Eloquent\EloquentBlogCategoryRepository(new \Modules\Blog\Models\BlogCategory);
+                $repository = new EloquentBlogCategoryRepository(new BlogCategory);
 
-                if (! getModule("blog", "cache")) {
+                if (! getModule('blog', 'cache')) {
                     return $repository;
                 }
 
-                return new \Modules\Blog\Repositories\Cache\CacheBlogCategoryDecorator($repository);
+                return new CacheBlogCategoryDecorator($repository);
             }
         );
-            
-		$this->app->bind(
+
+        $this->app->bind(
             'Modules\Blog\Repositories\BlogRepository',
             function () {
-                $repository = new \Modules\Blog\Repositories\Eloquent\EloquentBlogRepository(new \Modules\Blog\Models\Blog());
+                $repository = new EloquentBlogRepository(new Blog);
 
-                if (! getModule("blog", "cache")) {
+                if (! getModule('blog', 'cache')) {
                     return $repository;
                 }
 
-                return new \Modules\Blog\Repositories\Cache\CacheBlogDecorator($repository);
+                return new CacheBlogDecorator($repository);
             }
         );
 
         $this->app->bind(
             'Modules\Blog\Repositories\BlogPostCategoryRelationRepository',
             function () {
-                $repository = new \Modules\Blog\Repositories\Eloquent\EloquentBlogPostCategoryRelationRepository(new \Modules\Blog\Models\BlogPostCategory());
+                $repository = new EloquentBlogPostCategoryRelationRepository(new BlogPostCategory);
 
-                if (! getModule("blog", "cache")) {
+                if (! getModule('blog', 'cache')) {
                     return $repository;
                 }
 
-                return new \Modules\Blog\Repositories\Cache\CacheBlogPostCategoryRelationDecorator($repository);
+                return new CacheBlogPostCategoryRelationDecorator($repository);
             }
         );
 
         $this->app->bind(
             'Modules\Blog\Repositories\BlogPostCommentRepository',
             function () {
-                $repository = new \Modules\Blog\Repositories\Eloquent\EloquentBlogPostCommentRepository(new \Modules\Blog\Models\BlogPostComment());
+                $repository = new EloquentBlogPostCommentRepository(new BlogPostComment);
 
-                if (! getModule("blog", "cache")) {
+                if (! getModule('blog', 'cache')) {
                     return $repository;
                 }
 
-                return new \Modules\Blog\Repositories\Cache\CacheBlogPostCommentDecorator($repository);
+                return new CacheBlogPostCommentDecorator($repository);
             }
         );
     }

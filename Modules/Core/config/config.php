@@ -138,4 +138,65 @@ return [
         'failed_dependancy' => 424,
     ],
 
+    /*
+    | URL prefix of the supplier (seller) panel. Guests hitting an "auth:seller" route are
+    | sent to the "seller.login" route, or to /{seller-prefix}/login until that route exists.
+    */
+    'seller-prefix' => 'supplier',
+
+    /*
+    | HasStateMachine: the actor_type written to status_history for each actor model.
+    | Unlisted models fall back to their snake_cased class name; no actor means "system".
+    */
+    'state_machine' => [
+        'actor_types' => [
+            'Modules\User\Models\User' => 'admin',
+            'Modules\Customer\Models\Customer' => 'customer',
+            'Modules\Seller\Models\SellerUser' => 'seller',
+        ],
+    ],
+
+    /*
+    | Outbound HTTP to third-party integrations: Http::integration('<name>').
+    | Requests and responses are logged to the "integrations" log channel with secrets redacted.
+    */
+    'integrations' => [
+        'timeout' => 10,
+        'connect_timeout' => 5,
+        'retries' => 3,
+        'retry_delay_ms' => 200,
+        'log_bodies' => true,
+        'log_body_limit' => 2000,
+        'redact_keys' => ['authorization', 'authkey', 'api_key', 'apikey', 'key', 'secret', 'token', 'password', 'otp', 'signature', 'pan', 'account_number'],
+    ],
+
+    /*
+    | SMS gateway behind Modules\Core\Contracts\SmsDriver: log (writes storage/logs/sms.log),
+    | fake (keeps messages in memory, for tests) or msg91. DLT template ids live per template key.
+    */
+    'sms' => [
+        'driver' => env('SMS_DRIVER', 'log'),
+        'msg91' => [
+            'endpoint' => env('MSG91_FLOW_ENDPOINT', 'https://control.msg91.com/api/v5/flow'),
+            'auth_key' => env('MSG91_AUTH_KEY'),
+            'sender_id' => env('MSG91_SENDER_ID'),
+            'templates' => [
+                'otp' => env('MSG91_OTP_TEMPLATE_ID'),
+            ],
+        ],
+    ],
+
+    /*
+    | One-time passwords (Modules\Core\Services\Otp\OtpService).
+    */
+    'otp' => [
+        'length' => 6,
+        'expires_minutes' => 5,
+        'resend_cooldown_seconds' => 30,
+        'max_attempts' => 5,
+        'max_sends_per_identifier_per_hour' => 5,
+        'max_sends_per_ip_per_hour' => 20,
+        'prune_after_hours' => 24,
+    ],
+
 ];

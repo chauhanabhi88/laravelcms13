@@ -1,0 +1,52 @@
+<?php
+
+return [
+    'titles' => [
+        'list' => 'Size Charts',
+        'catalog_size_chart' => 'Size Charts',
+        'create' => 'Create Size Chart',
+        'edit' => 'Edit Size Chart',
+        'general' => 'Size Chart Information',
+        'grid' => 'Measurements',
+    ],
+    'labels' => [
+        'list' => 'Size Chart List',
+        'filters' => 'Size Chart Filters',
+        'create' => 'Size Chart Create',
+        'edit' => 'Size Chart Edit',
+        'update_status' => 'Size Chart Update Status',
+        'delete' => 'Size Chart Delete',
+        'mass_delete' => 'Size Chart Mass Delete',
+        'name' => 'Name',
+        'unit' => 'Unit',
+        'image' => 'Measuring Guide Image',
+        'status' => 'Status',
+        'size' => 'Size',
+        'column' => 'Measurement',
+        'add_column' => 'Add measurement',
+        'add_row' => 'Add size',
+        'remove' => 'Remove',
+        'grid_help' => 'One row per size, one column per measurement (e.g. Bust, Waist, Length).',
+    ],
+    'units' => [
+        'cm' => 'Centimetres (cm)',
+        'in' => 'Inches (in)',
+    ],
+    'columns' => [
+        'id' => 'ID',
+        'name' => 'Name',
+        'unit' => 'Unit',
+        'sizes' => 'Sizes',
+        'updated_at' => 'Updated At',
+    ],
+    'messages' => [
+        'data_invalid' => 'Size chart not found.',
+        'created_success' => 'Size chart created successfully.',
+        'updated_success' => 'Size chart updated successfully.',
+        'deleted_success' => 'Size chart deleted successfully.',
+        'columns_required' => 'Add at least one measurement column.',
+        'rows_required' => 'Add at least one size.',
+        'row_size_required' => 'Every row needs a size.',
+        'row_values' => 'Every row needs a value for each measurement.',
+    ],
+];

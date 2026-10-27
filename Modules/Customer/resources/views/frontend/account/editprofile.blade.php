@@ -1,148 +1,52 @@
-@extends('theme::layouts.frontend.master')
+@extends('customer::frontend.account.layout')
 
-@section('title')
-{{ trans("customer::customer.titles.profile") }}
-@endsection
+@php
+    $avatar = $customer->profile_picture
+        ? getImageUrl(['module' => config('customer.name'), 'image' => $customer->profile_picture, 'image-type' => 'thumbnail'])
+        : null;
+    $imageTypes = settings('customer', 'image_type') ?: 'jpeg,jpg,png';
+@endphp
 
-@section('meta')
-<?php /*<meta name="{{ $pageCollection->meta_title }}" content="{{ $pageCollection->meta_description }}">*/ ?>
-@endsection
+@section('title', trans('customer::customer_front.titles.edit_profile'))
+@section('heading', trans('customer::customer_front.titles.edit_profile'))
 
-@section('content')
-<?php
+@section('account')
+    <x-theme::card>
+        <form method="POST" action="{{ frontRoute('customer.update') }}" enctype="multipart/form-data" class="space-y-6"
+            x-data="{ loading: false, preview: @js($avatar), remove: false }" x-on:submit="loading = true">
+            @csrf
 
-$first_name = isset($getCustomerInfo->first_name) && !empty($getCustomerInfo->first_name) ? ucfirst($getCustomerInfo->first_name) : '';
-$last_name = isset($getCustomerInfo->last_name) && !empty($getCustomerInfo->last_name) ? ucfirst($getCustomerInfo->last_name) : '';
-$email =  isset($getCustomerInfo->email) && !empty($getCustomerInfo->email) ? $getCustomerInfo->email : '';
-$contact_number = isset($getCustomerInfo->contact_number) && !empty($getCustomerInfo->contact_number) ? $getCustomerInfo->contact_number : '';
-$profile_img = isset($getCustomerInfo->profile_picture) && !empty($getCustomerInfo->profile_picture) ? $getCustomerInfo->profile_picture : '';
-$user_id =  isset($getCustomerInfo->id) && !empty($getCustomerInfo->id) ? $getCustomerInfo->id : '';
-
-?>
-<div class="content-wrapper my-account p-50">
-    <div class="container-wrapper section-wrapper">
-        <div class="box-container-pg">
-            <div class="left-box-top">
-                <div class="box-container-titlebar">
-                    <ul class="breadcrumbs">
-                        <li><a href="#">{{trans('customer::customer.labels.account')}}</a></li>
-                        <li><a href="#">{{trans('customer::customer.labels.edit_profile')}}</a></li>
-                    </ul>
-                    <div class="button-wrapper">
-                        <button class="border-btn" id="reset_form" onclick="setLocation('{{ route('customer.myaccount', updateUrlParams(['type' => config('core.route_type')])) }}')">Cancel</button>
-                        <button class="yellow-btn save" data-form-id="profile_form">Save Changes</button>
-                    </div>
+            <div class="flex items-center gap-5">
+                <div class="relative size-20 shrink-0 overflow-hidden rounded-full bg-surface-alt ring-4 ring-surface-alt">
+                    <img x-show="preview && ! remove" x-bind:src="preview" alt="" class="size-full object-cover" @if (! $avatar) x-cloak @endif>
+                    <span x-show="! preview || remove" @if ($avatar) x-cloak @endif class="flex size-full items-center justify-center text-muted"><x-theme::icon name="user" size="size-8" /></span>
                 </div>
-                <h2 class="page-title">Edit Profile</h2>
-            </div>
-
-            
-            {{ formStart(null,"PUT" ,'customer.profile.update' ,updateUrlParams(['type' => config('core.route_type'), encrypt_It($user_id)]), ['enctype'=>'multipart/form-data','id' => 'profile_form'])}}
-
-            <div class="left-box-wrapper edit-profile-wrapper">
-                <div class="account-profile-image">
-                    <div class="img-btn-wrp">
-                        @php
-                        $originalImageUrl = getImageUrl(['module' => config('customer.name'), 'image' => $profile_img]);
-                        $thumbnailImageUrl = getImageUrl(['image-type' => 'thumbnail', 'module' => config('customer.name'), 'image' => $profile_img]);
-                        @endphp
-                        @if($originalImageUrl && $thumbnailImageUrl)
-                        <a href="{{ $originalImageUrl }}" target="_BLANK">
-                            <img src="{{ $thumbnailImageUrl }}">
-                        </a>
-                        @else
-                        <img src="{{ asset('modules/theme/frontend/images/my-account/profile-image.png') }}">
-                        @endif
-                        {!! normalFile("profile_picture","",$errors, ["class" => "hide", 'id' => 'imageUpload', 'hide_label' => true]) !!}
-                        <div class="custom-file">
-                            <label for="imageUpload" class="alt-button customer-image" id="browse_image">{{trans('customer::customer.labels.change_picture')}}</label>
-                            {!! $errors->first("profile_picture", '<label id="email-error" class="error" for="email">:message</label>'); !!}
-                        </div>
-
-                    </div>
-                </div>
-                <div class="account-details edit-profile-form">
-                    <div class="input-row">
-                        <div class="input-field full-name">
-                            <label for="fname">{{ trans("customer::customer.labels.first_name") }}</label>
-                            {!! normalText("first_name", "customer::customer.labels.first_name", $errors, $first_name, ["class" => "form-control required", 'hide_label' => true]) !!}
-                        </div>
-                    </div>
-                    <div class="input-row">
-                        <div class="input-field lname">
-                            <label for="lname">{{ trans("customer::customer.labels.last_name") }}</label>
-                            {!! normalText("last_name", "customer::customer.labels.last_name", $errors, $last_name, ["class" => "form-control required", 'hide_label' => true]) !!}
-                        </div>
-                    </div>
-                    <div class="input-row">
-                        <div class="input-field email">
-                            <label for="email">{{ trans("customer::customer.labels.email_address") }}</label>
-                            {!! normalInputOfType("email", "email", "customer::customer.labels.email", $errors, $email, ["class" => "form-control required email", "hide_label" => true]) !!}
-                        </div>
-                    </div>
-                    <div class="input-row">
-                        <div class="input-field contact">
-                            <label for="cnumber">{{ trans("customer::customer.labels.contact_number") }}</label>
-                            {!! normalText("contact_number", "customer::customer.labels.contact_number", $errors, $contact_number, ["class" => "form-control required", 'hide_label' => true]) !!}
-                        </div>
-                    </div>
+                <div class="space-y-2">
+                    <label class="inline-flex h-9 cursor-pointer items-center rounded-lg border border-line-strong bg-surface px-3 text-sm font-medium text-ink shadow-soft hover:bg-surface-alt">
+                        {{ trans('customer::customer_front.labels.profile_picture') }}
+                        <input type="file" name="profile_picture" accept=".{{ str_replace(',', ',.', $imageTypes) }}" class="sr-only"
+                            x-on:change="const file = $event.target.files[0]; if (file) { preview = URL.createObjectURL(file); remove = false }">
+                    </label>
+                    @if ($avatar)
+                        <label class="flex items-center gap-2 text-xs text-muted">
+                            <input type="checkbox" name="remove_profile_picture" value="1" x-model="remove" class="size-3.5 accent-danger"> {{ trans('customer::customer_front.buttons.delete') }}
+                        </label>
+                    @endif
+                    <x-theme::field-error name="profile_picture" />
                 </div>
             </div>
-            {{ formEnd() }}
-        </div>
 
-    </div>
-</div>
+            <div class="grid gap-5 sm:grid-cols-2">
+                <x-theme::input name="first_name" :value="$customer->first_name" :label="trans('customer::customer_front.labels.first_name')" autocomplete="given-name" required />
+                <x-theme::input name="last_name" :value="$customer->last_name" :label="trans('customer::customer_front.labels.last_name')" autocomplete="family-name" required />
+                <x-theme::input type="email" name="email" :value="$customer->email" :label="trans('customer::customer_front.labels.email')" autocomplete="email" required />
+                <x-theme::input type="tel" name="contact_number" :value="$customer->contact_number" :label="trans('customer::customer_front.labels.contact_number')" autocomplete="tel" inputmode="numeric" required />
+            </div>
 
-@stop
-@push('js-stack')
-<script type="text/javascript">
-    function submitform() {
-        document.getElementById("profile_form").submit();
-    }
-    jQuery(document).ready(function() {
-        jQuery.validator.addMethod("email", function(value, element) {
-            return /^[+a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/i.test(value);
-        }, '{{ trans("customer::customer.messages.invalid_email") }}');
-
-        jQuery("#profile_form").validate({
-            rules: {
-                'contact_number': {
-                    number: true
-                },
-                'first_name': {
-                    maxlength: 255
-                },
-                'last_name': {
-                    maxlength: 255
-                }
-            },
-            messages: {
-                'contact_number': {
-                    number: '<?php echo trans('customer::customer.messages.number_valid') ?>'
-                },
-                'first_name': {
-                    maxlength: '<?php echo trans('customer::customer.messages.firstname_maxlength') ?>'
-                },
-                'last_name': {
-                    maxlength: '<?php echo trans('customer::customer.messages.lastname_maxlength') ?>'
-                }
-            }
-        });
-
-    });
-    $('#imageUpload').change(function(e) {
-        var fileName = e.target.files[0].name;
-        jQuery(".customer-image").html(fileName);
-    });
-</script>
-<style>
-    #imageUpload {
-        display: none;
-    }
-
-    .customer-image {
-        cursor: pointer;
-    }
-</style>
-@endpush
+            <div class="flex flex-col-reverse gap-3 border-t border-line pt-6 sm:flex-row sm:justify-end">
+                <x-theme::button variant="ghost" :href="frontRoute('customer.myaccount')">{{ trans('customer::customer_front.buttons.cancel') }}</x-theme::button>
+                <x-theme::button loading="loading">{{ trans('customer::customer_front.buttons.save') }}</x-theme::button>
+            </div>
+        </form>
+    </x-theme::card>
+@endsection

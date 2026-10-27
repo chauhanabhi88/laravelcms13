@@ -12,7 +12,6 @@
     "Directory": true,
     "ImportReport": true,
     "Language": true,
-    "LaravelPWA": false,
     "Mail": true,
     "Menu": true,
     "Pages": true,
@@ -20,5 +19,8 @@
     "Role": true,
     "Settings": true,
     "Theme": true,
-    "User": true
+    "User": true,
+    "Catalog": true,
+    "Seller": true,
+    "Product": true
 }

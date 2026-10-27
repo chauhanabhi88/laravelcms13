@@ -1,0 +1,46 @@
+<?php
+
+return [
+    'titles' => [
+        'blog' => 'Blog',
+        'intro' => 'Stories, guides and updates from our team.',
+        'category' => 'Category: :title',
+        'search_results' => 'Results for “:q”',
+        'related' => 'Keep reading',
+        'comments' => 'Comments',
+        'leave_comment' => 'Leave a comment',
+        'featured' => 'Featured',
+    ],
+    'labels' => [
+        'search' => 'Search articles',
+        'search_placeholder' => 'Search articles…',
+        'all' => 'All',
+        'by' => 'By :author',
+        'min_read' => ':minutes min read',
+        'subject' => 'Subject',
+        'comment' => 'Comment',
+        'read_more' => 'Read article',
+        'posts_count' => '{0} No articles|{1} 1 article|[2,*] :count articles',
+        'comments_count' => '{0} No comments yet|{1} 1 comment|[2,*] :count comments',
+        'anonymous' => 'Reader',
+    ],
+    'buttons' => [
+        'search' => 'Search',
+        'clear' => 'Clear',
+        'submit_comment' => 'Post comment',
+        'login_to_comment' => 'Log in to comment',
+        'view_all' => 'View all articles',
+    ],
+    'messages' => [
+        'no_posts' => 'No articles yet',
+        'no_posts_text' => 'Check back soon — new stories are on the way.',
+        'no_results' => 'Nothing matches your search',
+        'no_results_text' => 'Try a different keyword or browse all categories.',
+        'no_comments' => 'No comments yet',
+        'no_comments_text' => 'Be the first to share your thoughts.',
+        'login_to_comment' => 'Join the conversation — log in or create an account to comment.',
+        'comment_pending' => 'Thanks! Your comment was submitted and will appear once it’s approved.',
+        'comment_failed' => 'We couldn’t post your comment. Please try again.',
+        'load_failed' => 'Couldn’t load more articles.',
+    ],
+];

@@ -33,11 +33,11 @@ class AuthController extends Controller
 
         if ($user && empty($user->role_id)) {
             $this->recordFailedAttempt($request);
-            throw ValidationException::withMessages([$this->username() => __(trans('user::user.messages.user_not_any_role'))]);
+            throw ValidationException::withMessages([$this->username() => $this->messageWithAttemptsRemaining($request, 'user::user.messages.user_not_any_role')]);
         }
         if ($user && $user->status == config('core.disabled')) {
             $this->recordFailedAttempt($request);
-            throw ValidationException::withMessages([$this->username() => __(trans('user::user.messages.user_disabled'))]);
+            throw ValidationException::withMessages([$this->username() => $this->messageWithAttemptsRemaining($request, 'user::user.messages.user_disabled')]);
         }
 
         $credentials = $request->only($this->username(), 'password');
@@ -57,7 +57,7 @@ class AuthController extends Controller
         $this->recordFailedAttempt($request);
 
         throw ValidationException::withMessages([
-            $this->username() => [trans('user::user.messages.wrong_credentials')],
+            $this->username() => [$this->messageWithAttemptsRemaining($request, 'user::user.messages.wrong_credentials')],
         ]);
     }
 
@@ -86,6 +86,17 @@ class AuthController extends Controller
     protected function recordFailedAttempt(Request $request): void
     {
         RateLimiter::hit($this->throttleKey($request), (int) config('user.login_throttle.decay_seconds'));
+    }
+
+    /**
+     * Append the number of remaining login attempts (before rate limiting kicks in) to a base
+     * translation message. Call after recordFailedAttempt() so the count reflects the latest hit.
+     */
+    protected function messageWithAttemptsRemaining(Request $request, string $key): string
+    {
+        $remaining = RateLimiter::remaining($this->throttleKey($request), (int) config('user.login_throttle.max_attempts'));
+
+        return trans($key).' '.trans('user::user.messages.attempts_remaining', ['attempts' => $remaining]);
     }
 
     /**

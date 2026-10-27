@@ -1,0 +1,8 @@
+﻿circlename,regionname,divisionname,officename,pincode,officetype,delivery,district,statename,latitude,longitude
+Delhi Circle,Delhi Region,New Delhi Central Division,Connaught Place SO,110001,PO,Delivery,NEW DELHI,DELHI,28.6304,77.2177
+Delhi Circle,Delhi Region,New Delhi GPO Division,New Delhi GPO,110001,HO,Delivery,NEW DELHI,DELHI,NA,NA
+Karnataka Circle,Bangalore HQ Region,Bangalore GPO Division,Bangalore GPO,560001,HO,Delivery,BENGALURU URBAN,KARNATAKA,12.9767,77.5713
+Odisha Circle,Bhubaneswar Region,Bhubaneswar Division,Bhubaneswar GPO,751001,HO,Delivery,KHORDHA,ORISSA,20.2700,85.8400
+Maharashtra Circle,Goa Region,Goa Division,Silvassa SO,396230,PO,Delivery,DADRA & NAGAR HAVELI,THE DADRA AND NAGAR HAVELI AND DAMAN AND DIU,20.2740,73.0140
+Unknown Circle,Unknown Region,Unknown Division,Nowhere BO,400099,BO,Delivery,NOWHERE,ATLANTIS,0,0
+Broken Circle,Broken Region,Broken Division,Broken BO,12AB34,BO,Delivery,BROKEN,DELHI,NA,NA

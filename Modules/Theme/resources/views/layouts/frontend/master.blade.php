@@ -1,66 +1,59 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    @yield('meta')
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>
-        @yield('title')
-    </title>
+    <meta name="color-scheme" content="light dark">
+    <title>{{ trim($__env->yieldContent('title')) ? trim($__env->yieldContent('title')).' · '.config('app.name') : config('app.name') }}</title>
+    @yield('meta')
 
-    <link rel="stylesheet" href="{{ asset('modules/theme/frontend/css/style.css') }}">
-    <link rel="stylesheet" href="{{ asset('modules/theme/backend/staradmin/css/app.css') }}">
-    <link rel="stylesheet" href="{{ asset('modules/theme/backend/fontawesome/css/all.min.css') }}">
+    <meta name="theme-color" content="{{ config('theme.brand_color') }}">
+    <link rel="icon" href="{{ \Modules\Theme\Support\ThemeSettings::faviconUrl() }}">
+    @fonts
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    @foreach($cssFiles as $css)
-    <link media="all" type="text/css" rel="stylesheet" href="{{ asset($css) }}">
+    @foreach ($cssFiles ?? [] as $css)
+        <link media="all" type="text/css" rel="stylesheet" href="{{ asset($css) }}">
     @endforeach
-    @livewireStyles
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    @stack('head')
 </head>
 
-<body class="{{ (!empty($bodyClassName)) ? $bodyClassName : "" }}">
-    <header>
-        @include('theme::layouts.frontend.partials.header')
-    </header>
-    @include('theme::layouts.frontend.partials.notifications')
-    @yield('content')
+<body class="{{ $bodyClassName ?? '' }} flex min-h-dvh flex-col pb-16 md:pb-0">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2 focus:shadow-pop">Skip to content</a>
+
+    @include('theme::layouts.frontend.partials.header')
+
+    <main id="main" class="flex-1">
+        @yield('content')
+    </main>
+
     @include('theme::layouts.frontend.partials.footer')
+    @include('theme::layouts.frontend.partials.bottom-nav')
+    @include('theme::layouts.frontend.partials.mobile-drawer')
+    @include('theme::layouts.frontend.partials.notifications')
 
-    <script type="text/javascript" src="{{ asset('modules/theme/js/jquery.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('modules/theme/js/jquery-ui.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('modules/theme/frontend/js/bootstrap.js') }}"></script>
-    <script type="text/javascript" src="{{ asset('modules/theme/js/jquery.validate.js') }}"></script>
-
+    {{-- Seeds for the Alpine cart / wishlist stores (resources/js/components/stores.js). --}}
     <script>
-        var csrfToken = '{{ csrf_token() }}';
-        var isOnlineOfflineGridShow = <?php echo (int)config('customer.show_customer_online_offline_grid'); ?>;
-        var log_url = "{{route('customer.customer_online_offline_log',updateUrlParams(['type' => config('core.route_type')]))}}";
+        window.__cartCount = @js($cartCount ?? 0);
+        window.__wishlistIds = @js($wishlistIds ?? []);
     </script>
 
-    <script type="text/javascript" src="{{ asset('modules/core/js/frontend/custom.js') }}"></script>
-    @foreach($jsFiles as $js)
-    <script src="{{ asset($js) }}" type="text/javascript"></script>
+    @if (config('customer.show_customer_online_offline_grid') && auth('customer')->check())
+        <script>
+            window.customerPresence = {
+                url: @js(frontRoute('customer.customer_online_offline_log')),
+                interval: 60000,
+            };
+        </script>
+    @endif
+
+    @foreach ($jsFiles ?? [] as $js)
+        <script src="{{ asset($js) }}" type="text/javascript"></script>
     @endforeach
-    @livewireScripts
-    @section('scripts')
-    @show
+    @yield('scripts')
     @stack('js-stack')
-    <script>
-        jQuery(document).ready(function() {
-            jQuery.validator.addMethod("newPassword", function(value, element) {
-                var min_password_length = "{{settings('customer', 'min_password_length')}}";
-                var max_password_length = "{{!empty(settings('customer', 'max_password_length')) ? settings('customer', 'max_password_length') : 20 }}";
-                var passwordRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!\"@./`[\\]{|}\\\\~:;_<=>?'\(\)#+\,\$%\^&\*\-]).{" + min_password_length + "," + max_password_length + "}$", "m");
-                if (value.length) {
-                    return passwordRegex.test(value);
-                }
-                return true;
-            }, "{{trans('customer::customer.messages.invalid_password',['password_length'=>settings('customer', 'min_password_length'), 'max_password_length' => settings('customer', 'max_password_length')])}}");
-        });
-    </script>
 </body>
 
 </html>

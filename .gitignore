@@ -1,4 +1,5 @@
 *.log
+*.zip
 .DS_Store
 .env
 .env.backup
@@ -27,4 +28,4 @@ Homestead.yaml
 Thumbs.db
 /.claude
 CLAUDE.md
-
+requirement.md

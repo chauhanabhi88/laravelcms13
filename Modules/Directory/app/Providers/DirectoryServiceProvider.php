@@ -3,21 +3,25 @@
 namespace Modules\Directory\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Modules\Directory\Console\ImportPincodesCommand;
 use Modules\Directory\Models\DirectoryCountry;
 use Modules\Directory\Models\DirectoryCountryCity;
 use Modules\Directory\Models\DirectoryCountryState;
 use Modules\Directory\Models\DirectoryCurrencyRate;
 use Modules\Directory\Models\DirectoryCurrencySetup;
+use Modules\Directory\Models\DirectoryPincode;
 use Modules\Directory\Repositories\Cache\CacheDirectoryCountryCityDecorator;
 use Modules\Directory\Repositories\Cache\CacheDirectoryCountryDecorator;
 use Modules\Directory\Repositories\Cache\CacheDirectoryCountryStateDecorator;
 use Modules\Directory\Repositories\Cache\CacheDirectoryCurrencyRateDecorator;
 use Modules\Directory\Repositories\Cache\CacheDirectoryCurrencySetupDecorator;
+use Modules\Directory\Repositories\Cache\CacheDirectoryPincodeDecorator;
 use Modules\Directory\Repositories\Eloquent\EloquentDirectoryCountryCityRepository;
 use Modules\Directory\Repositories\Eloquent\EloquentDirectoryCountryRepository;
 use Modules\Directory\Repositories\Eloquent\EloquentDirectoryCountryStateRepository;
 use Modules\Directory\Repositories\Eloquent\EloquentDirectoryCurrencyRateRepository;
 use Modules\Directory\Repositories\Eloquent\EloquentDirectoryCurrencySetupRepository;
+use Modules\Directory\Repositories\Eloquent\EloquentDirectoryPincodeRepository;
 
 class DirectoryServiceProvider extends ServiceProvider
 {
@@ -40,6 +44,9 @@ class DirectoryServiceProvider extends ServiceProvider
         $this->registerViews();
         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
         $this->registerBindings();
+        $this->commands([
+            ImportPincodesCommand::class,
+        ]);
     }
 
     /**
@@ -173,6 +180,18 @@ class DirectoryServiceProvider extends ServiceProvider
                 }
 
                 return new CacheDirectoryCountryStateDecorator($repository);
+            }
+        );
+        $this->app->bind(
+            'Modules\Directory\Repositories\DirectoryPincodeRepository',
+            function () {
+                $repository = new EloquentDirectoryPincodeRepository(new DirectoryPincode);
+
+                if (! getModule('directory', 'cache')) {
+                    return $repository;
+                }
+
+                return new CacheDirectoryPincodeDecorator($repository);
             }
         );
     }

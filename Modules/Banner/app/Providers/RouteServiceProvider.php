@@ -2,8 +2,8 @@
 
 namespace Modules\Banner\Providers;
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -33,6 +33,16 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function map()
     {
+        if (config('core.translation_api')) {
+            Route::prefix('{locale}')
+                ->middleware(['locale'])
+                ->group(function () {
+                    $this->mapApiRoutes();
+                });
+        } else {
+            $this->mapApiRoutes();
+        }
+
         if (config('core.translation')) {
             $route = Route::prefix('{locale}')
                 ->middleware(['web', 'locale']);
@@ -43,6 +53,7 @@ class RouteServiceProvider extends ServiceProvider
             $this->mapBackendRoutes();
         });
     }
+
     /**
      * Define the "backend" routes for the application.
      *
@@ -52,10 +63,23 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapBackendRoutes()
     {
-        $adminPrefix = \Config::get("core.admin-prefix");
+        $adminPrefix = \Config::get('core.admin-prefix');
         Route::prefix($adminPrefix)
-            ->middleware(["backend"])
-            ->namespace($this->namespace . "\Backend")
-            ->group(__DIR__ . '/../../routes/backend.php');
+            ->middleware(['backend'])
+            ->namespace($this->namespace."\Backend")
+            ->group(__DIR__.'/../../routes/backend.php');
+    }
+
+    /**
+     * Define the "api" routes for the application.
+     *
+     * @return void
+     */
+    protected function mapApiRoutes()
+    {
+        Route::prefix('api')
+            ->middleware('api')
+            ->namespace($this->namespace."\Api")
+            ->group(__DIR__.'/../../routes/api.php');
     }
 }

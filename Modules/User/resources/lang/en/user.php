@@ -49,8 +49,9 @@ return [
     ],
     'messages' => [
         'user_disable' => 'Account is disabled please contact admin',
-        'wrong_credentials' => 'The email or password are incorrect',
+        'wrong_credentials' => 'The email or password are incorrect.',
         'throttled' => 'Too many login attempts. Please try again in :seconds seconds.',
+        'attempts_remaining' => 'You have :attempts login attempt(s) remaining.',
         'login_success' => 'Login Successfully!',
         'logout_success' => 'Logout Successfully!',
         'user_disabled' => 'Your account is disabled. Please contact admin.',

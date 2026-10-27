@@ -641,19 +641,56 @@ table.table thead .sorting_asc_disabled:before, table.table thead .sorting_desc_
 
 /* customer loader */
 
-.custom-loader {
-    width: 100%;
-    height: 100%;
+.custom-loader,
+#resultLoading {
     position: fixed;
-    z-index: 9999;
-    /*width: 100vw;
-    height: 100vh;*/
-    background-color: #fff;
-    background-image: url("../images/Spinner-1s-200px.gif");
-    background-repeat: no-repeat;
-    background-position: center;
-    opacity: 0.8;
+    inset: 0;
+    z-index: 99999;
     display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.custom-loader.visible,
+#resultLoading.visible {
+    display: flex !important;
+}
+
+.custom-loader .loader-spinner,
+#resultLoading .loader-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    padding: 14px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 22px 45px rgba(15, 23, 42, 0.12);
+}
+
+.custom-loader .loader-spinner svg,
+#resultLoading .loader-spinner svg {
+    width: 48px;
+    height: 48px;
+    animation: loader-rotate 1s linear infinite;
+}
+
+.custom-loader .loader-spinner circle,
+#resultLoading .loader-spinner circle {
+    stroke: #3b82f6;
+    stroke-width: 5;
+    stroke-linecap: round;
+    fill: none;
+    stroke-dasharray: 120;
+    stroke-dashoffset: 60;
+}
+
+@keyframes loader-rotate {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* setting comment */
@@ -998,14 +1035,27 @@ footer.footer {
 .menu-switch {
     position: relative;
     display: inline-block;
-    width: 40px;
-    height: 21px;
+    width: 45px;
+    height: 23px;
+    margin-bottom: 0px;
 }
 
 .menu-switch input {
     opacity: 0;
     width: 0;
     height: 0;
+}
+
+.menu-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 5px;
+    bottom: 0.24rem;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
 }
 
 .nav .nav-item, .navbar-nav .nav-item {

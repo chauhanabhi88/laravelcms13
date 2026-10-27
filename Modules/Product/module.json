@@ -1,0 +1,17 @@
+{
+    "name": "Product",
+    "alias": "product",
+    "description": "Marketplace products: variants, images, specification attributes, the inventory ledger with stock reservation, pricing rules and catalog QC moderation.",
+    "keywords": [],
+    "priority": 16,
+    "providers": [
+        "Modules\\Product\\Providers\\ProductServiceProvider"
+    ],
+    "files": [],
+    "cache": true,
+    "depends": [
+        "core",
+        "catalog",
+        "seller"
+    ]
+}

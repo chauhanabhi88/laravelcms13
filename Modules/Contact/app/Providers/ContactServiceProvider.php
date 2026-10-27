@@ -3,7 +3,9 @@
 namespace Modules\Contact\Providers;
 
 use Illuminate\Support\ServiceProvider;
-// use Modules\Contact\Http\Controllers\Livewire\ContactForm;
+use Modules\Contact\Models\Contact;
+use Modules\Contact\Repositories\Cache\CacheContactDecorator;
+use Modules\Contact\Repositories\Eloquent\EloquentContactRepository;
 
 class ContactServiceProvider extends ServiceProvider
 {
@@ -24,9 +26,8 @@ class ContactServiceProvider extends ServiceProvider
         $this->registerTranslations();
         $this->registerConfig();
         $this->registerViews();
-        $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
         $this->registerBindings();
-        // $this->registerLivewireComponent();
     }
 
     /**
@@ -66,8 +67,8 @@ class ContactServiceProvider extends ServiceProvider
         $sourcePath = __DIR__.'/../../resources/views';
 
         $this->publishes([
-            $sourcePath => $viewPath
-        ],'views');
+            $sourcePath => $viewPath,
+        ], 'views');
 
         $this->loadViewsFrom(array_map(function ($path) {
             return $path;
@@ -86,7 +87,7 @@ class ContactServiceProvider extends ServiceProvider
         if (is_dir($langPath)) {
             $this->loadTranslationsFrom($langPath, 'contact');
         } else {
-            $this->loadTranslationsFrom(__DIR__ .'/../../resources/lang', 'contact');
+            $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'contact');
         }
     }
 
@@ -105,22 +106,14 @@ class ContactServiceProvider extends ServiceProvider
         $this->app->bind(
             'Modules\Contact\Repositories\ContactRepository',
             function () {
-                $repository = new \Modules\Contact\Repositories\Eloquent\EloquentContactRepository(new \Modules\Contact\Models\Contact());
+                $repository = new EloquentContactRepository(new Contact);
 
-                if (! getModule("contact", "cache")) {
+                if (! getModule('contact', 'cache')) {
                     return $repository;
                 }
 
-                return new \Modules\Contact\Repositories\Cache\CacheContactDecorator($repository);
+                return new CacheContactDecorator($repository);
             }
         );
-    }
-
-    /**
-     * Register Livewire component
-     */
-    public function registerLivewireComponent()
-    {
-        // \Livewire::component('contact::frontend.contact-form', ContactForm::class);
     }
 }

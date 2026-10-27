@@ -17,4 +17,9 @@ return [
         'admin.state.import' => 'directory::country.permissions.state_import',
         'admin.state.export' => 'directory::country.permissions.state_export',
     ],
+    'directory::directory_pincode.titles.directory_pincode' => [
+        'admin.directory_pincode.index' => 'directory::directory_pincode.labels.list',
+        'admin.directory_pincode.filters' => 'directory::directory_pincode.labels.filters',
+        'admin.directory_pincode.edit' => 'directory::directory_pincode.labels.edit',
+    ],
 ];

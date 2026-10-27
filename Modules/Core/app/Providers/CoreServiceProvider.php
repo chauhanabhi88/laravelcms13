@@ -2,8 +2,12 @@
 
 namespace Modules\Core\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
 use Modules\Core\Cache\FileStore;
 use Modules\Core\Commands\Database\SeedCommand;
 use Modules\Core\Commands\Make\MigrationMakeCommand;
@@ -38,8 +42,14 @@ use Modules\Core\Console\CustomTranslatableCreateRequestCommand;
 use Modules\Core\Console\CustomTranslatableEntityCommand;
 use Modules\Core\Console\CustomTranslatableUpdateRequestCommand;
 use Modules\Core\Console\CustomUpdateRequestCommand;
+use Modules\Core\Console\PruneOtpCodesCommand;
+use Modules\Core\Contracts\SmsDriver;
+use Modules\Core\Drivers\Sms\FakeSmsDriver;
+use Modules\Core\Drivers\Sms\LogSmsDriver;
+use Modules\Core\Drivers\Sms\Msg91SmsDriver;
 use Modules\Core\Foundations\AssetsManager as AssetsManagerInterFace;
 use Modules\Core\Foundations\Modules\AssetsManager;
+use Modules\Core\Support\IntegrationHttp;
 
 class CoreServiceProvider extends ServiceProvider
 {
@@ -69,7 +79,10 @@ class CoreServiceProvider extends ServiceProvider
         $this->registerViews();
         $this->warnOnUnflushableCacheStore();
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        IntegrationHttp::register();
+        $this->registerRateLimiters();
         $this->commands([
+            PruneOtpCodesCommand::class,
             CronMakeCommand::class,
             CustomEntityCommand::class,
             CustomRepositoryCommand::class,
@@ -149,6 +162,39 @@ class CoreServiceProvider extends ServiceProvider
         // nwidart applies in Module::register() - before this provider runs.
         // Duplicating them here only gave two places to keep in sync.
         $this->registerCacheStore();
+        $this->registerSmsDriver();
+    }
+
+    /**
+     * Bind the SMS gateway selected by config('core.sms.driver').
+     *
+     * A singleton, so a test that swaps in FakeSmsDriver sees every message.
+     */
+    protected function registerSmsDriver(): void
+    {
+        $this->app->singleton(SmsDriver::class, function ($app): SmsDriver {
+            $driver = $app['config']->get('core.sms.driver', 'log');
+
+            return match ($driver) {
+                'log' => new LogSmsDriver,
+                'fake' => new FakeSmsDriver,
+                'msg91' => new Msg91SmsDriver((array) $app['config']->get('core.sms.msg91', [])),
+                default => throw new InvalidArgumentException("Unsupported SMS driver [{$driver}]."),
+            };
+        });
+    }
+
+    /**
+     * "throttle:otp" for the OTP request endpoints (M03, M08): 5 a minute and 20 an hour per IP.
+     *
+     * OtpService enforces its own per-number caps; this stops a single client hammering the route.
+     */
+    protected function registerRateLimiters(): void
+    {
+        RateLimiter::for('otp', fn (Request $request): array => [
+            Limit::perMinute(5)->by('otp-minute:'.$request->ip()),
+            Limit::perHour((int) config('core.otp.max_sends_per_ip_per_hour', 20))->by('otp-hour:'.$request->ip()),
+        ]);
     }
 
     /**

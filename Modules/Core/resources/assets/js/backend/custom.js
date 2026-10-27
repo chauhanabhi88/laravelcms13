@@ -346,22 +346,30 @@ if (!beenSubmitted) {
 }
 
 function loaderShow() {
-    $('.custom-loader').show();
+    $('.custom-loader').addClass('visible');
 }
 function loaderHide() {
-    $('.custom-loader').hide();
+    $('.custom-loader').removeClass('visible');
 }
 function ajaxindicatorstart(text) {
     if (jQuery('body').find('#resultLoading').attr('id') != 'resultLoading') {
-        var html = `<div id="resultLoading"><div class="spinner"><div class="dot1"></div><div class="dot2"></div></div><div class="modal-backdrop fade in"></div></div>`;
+        var html = `<div id="resultLoading" aria-hidden="true">
+            <div class="loader-spinner" role="status" aria-live="polite" aria-label="Loading">
+                <svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="25" cy="25" r="20"></circle>
+                </svg>
+            </div>
+        </div>`;
         jQuery('body').append(html);
     }
-    jQuery('#resultLoading').fadeIn(300);
+    jQuery('#resultLoading').addClass('visible').fadeIn(300);
     jQuery('body').css('cursor', 'wait');
 }
 
 function ajaxindicatorstop() {
-    jQuery('#resultLoading').fadeOut(300);
+    jQuery('#resultLoading').fadeOut(300, function () {
+        jQuery(this).removeClass('visible');
+    });
     jQuery('body').css('cursor', 'default');
 }
 

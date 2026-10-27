@@ -38,6 +38,18 @@ return [
             'report' => false,
         ],
 
+        /*
+        | KYC documents, invoices and other files that must never be publicly reachable.
+        | Not served by URL: controllers stream them after an authorisation check.
+        */
+        'private' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private'),
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

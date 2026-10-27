@@ -1,7 +1,8 @@
 <?php
 
-use Modules\User\Models\User;
 use Modules\Customer\Models\Customer;
+use Modules\Seller\Models\SellerUser;
+use Modules\User\Models\User;
 
 return [
 
@@ -19,7 +20,7 @@ return [
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'web'),
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
-        'provider' => 'api'
+        'provider' => 'api',
     ],
 
     /*
@@ -54,8 +55,19 @@ return [
         'users' => [
             'driver' => 'passport',
             'provider' => 'users',
-            'hash' => false
-        ]
+            'hash' => false,
+        ],
+
+        'customer' => [
+            'driver' => 'session',
+            'provider' => 'customer',
+        ],
+
+        // Supplier panel (M03): seller business logins, separate from admin users and customers.
+        'seller' => [
+            'driver' => 'session',
+            'provider' => 'sellers',
+        ],
     ],
 
     /*
@@ -84,6 +96,12 @@ return [
         'customer' => [
             'driver' => 'eloquent',
             'model' => Customer::class,
+        ],
+
+        // M03: login identity of a seller business (one seller has many users).
+        'sellers' => [
+            'driver' => 'eloquent',
+            'model' => SellerUser::class,
         ],
     ],
 
@@ -117,6 +135,14 @@ return [
         'customers' => [
             'provider' => 'customer',
             'table' => 'customer_password_resets',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        // M03
+        'sellers' => [
+            'provider' => 'sellers',
+            'table' => 'seller_password_resets',
             'expire' => 60,
             'throttle' => 60,
         ],

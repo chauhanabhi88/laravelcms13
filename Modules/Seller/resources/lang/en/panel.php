@@ -1,0 +1,141 @@
+<?php
+
+return [
+    'menu' => [
+        'settings' => 'Settings',
+        'business' => 'Business',
+        'bank' => 'Bank account',
+        'warehouses' => 'Pickup addresses',
+        'staff' => 'Staff',
+    ],
+
+    'dashboard' => [
+        'title' => 'Dashboard',
+        'greeting' => 'Hello, :name',
+        'kpis' => [
+            'orders_today' => 'Orders today',
+            'pending_acceptance' => 'Pending acceptance',
+            'ready_to_ship' => 'Ready to ship',
+            'returns' => 'Returns',
+            'next_payout' => 'Next payout',
+            'rating' => 'Store rating',
+        ],
+        'kpi_placeholder' => '—',
+        'kpi_hint' => 'Figures appear here once you start receiving orders.',
+        'notices' => 'Notices',
+        'next_steps' => 'Get ready to sell',
+        'steps' => [
+            'catalog' => 'Add your first catalog',
+            'catalog_text' => 'Listing tools open soon in this panel.',
+            'bank' => 'Bank account',
+            'warehouse' => 'Pickup address',
+        ],
+        'suspended' => [
+            'heading' => 'Your account is suspended',
+            'text' => 'Your listings are paused and the panel is read-only. Reason: :reason',
+        ],
+        'payout_hold' => 'Payouts are on hold until your bank account is verified.',
+        'store_link' => 'View your store page',
+    ],
+
+    'business' => [
+        'title' => 'Business details',
+        'kyc' => 'Verified details',
+        'kyc_hint' => 'These come from your verification. Contact seller support to change them.',
+        'contact' => 'Contact details',
+        'email' => 'Business email',
+        'phone' => 'Business mobile',
+        'logo' => 'Store logo',
+        'logo_hint' => 'Square image, JPG, PNG or WebP, up to 1 MB.',
+        'remove_logo' => 'Remove logo',
+        'orders' => 'Orders',
+        'auto_accept' => 'Accept new orders automatically',
+        'auto_accept_hint' => 'Orders skip the "Pending acceptance" step and move straight to "Ready to ship".',
+        'save' => 'Save changes',
+        'messages' => [
+            'saved' => 'Business details saved.',
+        ],
+    ],
+
+    'bank' => [
+        'title' => 'Bank account',
+        'current' => 'Payout account',
+        'change' => 'Change bank account',
+        'change_hint' => 'A new account is verified again and payouts are held until it passes.',
+        'retry' => 'Retry verification',
+        'history' => 'Previous accounts',
+        'none' => 'No bank account yet.',
+        'save' => 'Save bank account',
+        'messages' => [
+            'pending' => 'Bank account saved. Verification is in progress.',
+            'verified' => 'Bank account verified.',
+            'manual_review' => 'Bank account saved. Our team will review it.',
+            'failed' => 'We could not verify this account. Please check the details or upload a cancelled cheque.',
+        ],
+    ],
+
+    'warehouses' => [
+        'title' => 'Pickup addresses',
+        'add' => 'Add address',
+        'edit' => 'Edit pickup address',
+        'create' => 'New pickup address',
+        'default' => 'Default',
+        'make_default' => 'Make default',
+        'make_default_label' => 'Use as the default pickup address',
+        'delete' => 'Delete',
+        'delete_confirm' => 'Delete this pickup address?',
+        'save' => 'Save address',
+        'empty' => 'No pickup addresses yet.',
+        'messages' => [
+            'saved' => 'Pickup address saved.',
+            'default_changed' => 'Default pickup address updated.',
+            'deleted' => 'Pickup address deleted.',
+            'cannot_delete_default' => 'Make another address the default before deleting this one.',
+        ],
+    ],
+
+    'staff' => [
+        'title' => 'Staff',
+        'intro' => 'Give team members their own login. Each role opens one area of the panel.',
+        'add' => 'Add staff',
+        'create' => 'New staff login',
+        'edit' => 'Edit staff login',
+        'name' => 'Name',
+        'email' => 'Email',
+        'phone' => 'Mobile',
+        'role' => 'Role',
+        'status' => 'Status',
+        'enabled' => 'Enabled',
+        'disabled' => 'Disabled',
+        'password' => 'Password',
+        'password_hint' => 'Leave blank to keep the current password.',
+        'password_confirmation' => 'Confirm password',
+        'you' => 'You',
+        'delete' => 'Remove',
+        'delete_confirm' => 'Remove this staff login?',
+        'save' => 'Save',
+        'role_help' => [
+            'catalog' => 'Listings, prices and stock',
+            'orders' => 'Orders, shipping and pickup addresses',
+            'finance' => 'Payments, invoices and the bank account',
+        ],
+        'messages' => [
+            'created' => 'Staff login created.',
+            'updated' => 'Staff login updated.',
+            'deleted' => 'Staff login removed.',
+        ],
+    ],
+
+    'common' => [
+        'cancel' => 'Cancel',
+        'edit' => 'Edit',
+        'view' => 'View',
+        'status' => 'Status',
+        'actions' => 'Actions',
+    ],
+
+    'messages' => [
+        'read_only' => 'Your seller account is :reason, so changes are not allowed right now.',
+        'no_access' => 'Your role does not include this section. Ask the account owner for access.',
+    ],
+];

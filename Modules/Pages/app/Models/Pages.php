@@ -2,14 +2,16 @@
 
 namespace Modules\Pages\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Block\Models\Block;
 use Modules\Core\Repositories\Transaltion\Translatable;
+use Modules\Pages\Database\Factories\PagesFactory;
 
 class Pages extends Model
 {
-    use SoftDeletes, Translatable;
+    use HasFactory, SoftDeletes, Translatable;
 
     protected $translationForeignKey = 'page_id';
 
@@ -47,5 +49,10 @@ class Pages extends Model
         $publicPath = public_path('Modules/CmsPages');
 
         return str_replace('##media##', $publicPath, $this->body);
+    }
+
+    protected static function newFactory(): PagesFactory
+    {
+        return PagesFactory::new();
     }
 }

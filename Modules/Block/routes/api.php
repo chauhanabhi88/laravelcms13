@@ -21,3 +21,18 @@ if ($apiVersions = config('core.api_versions')) {
         });
     }
 }
+
+/*
+| Public, unauthenticated, read-only endpoint (api/{version}/public/blocks/...).
+*/
+if ($apiVersions = config('core.api_versions')) {
+    foreach ($apiVersions as $version) {
+        $upperCaseVersion = strtoupper($version);
+        Route::middleware('throttle:60,1')->prefix($version.'/public/blocks')->group(function () use ($upperCaseVersion, $version) {
+            Route::get('/{slug}', [
+                'as' => "api.public.{$version}.blocks.show",
+                'uses' => $upperCaseVersion.'\PublicBlockController@show',
+            ]);
+        });
+    }
+}

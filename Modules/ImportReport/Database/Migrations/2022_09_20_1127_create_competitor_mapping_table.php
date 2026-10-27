@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Modules\ImportReport\Entities\CompetitorMapping;
 
 return new class extends Migration
@@ -14,9 +14,9 @@ return new class extends Migration
      */
     public function up()
     {
-        $competitor = new CompetitorMapping();
-        $competitorTable =  $competitor->getTable();
-        
+        $competitor = new CompetitorMapping;
+        $competitorTable = $competitor->getTable();
+
         Schema::create($competitorTable, function (Blueprint $table) {
             $table->increments('id');
             $table->string('sku')->nullable();
@@ -44,10 +44,8 @@ return new class extends Migration
      */
     public function down()
     {
-        $competitor = new CompetitorMapping();
-        $competitorTable =  $competitor->getTable();
+        $competitor = new CompetitorMapping;
+        $competitorTable = $competitor->getTable();
         Schema::dropIfExists($competitorTable);
     }
-}
-
-
+};

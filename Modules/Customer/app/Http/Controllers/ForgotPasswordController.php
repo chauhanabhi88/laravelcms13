@@ -3,7 +3,11 @@
 namespace Modules\Customer\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Contracts\Auth\PasswordBroker;
+use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 
 class ForgotPasswordController extends Controller
@@ -26,11 +30,6 @@ class ForgotPasswordController extends Controller
      *
      * @return void
      */
-    public function __construct()
-    {
-        $this->middleware('guest:customer');
-    }
-
     public function showLinkRequestForm()
     {
         return view('customer::frontend.auth.forgot_password');
@@ -45,9 +44,14 @@ class ForgotPasswordController extends Controller
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.
-        $response = $this->broker()->sendResetLink(
-            $request->only('email')
-        );
+        try {
+            $response = $this->broker()->sendResetLink(
+                $request->only('email')
+            );
+        } catch (\Throwable $e) {
+            Log::error($e);
+            $response = Password::RESET_THROTTLED;
+        }
 
         return $response == Password::RESET_LINK_SENT
             ? $this->sendResetLinkResponse($request, $response)
@@ -56,18 +60,19 @@ class ForgotPasswordController extends Controller
 
     protected function sendResetLinkResponse(Request $request, $response)
     {
-        return back()->with("success", trans("customer::customer.messages.mail_sent_success"));
+        return back()->with('success', trans('customer::customer_front.messages.reset_link_sent'));
     }
 
     protected function sendResetLinkFailedResponse(Request $request, $response)
     {
-        return back()->with("success", trans("customer::customer.messages.mail_sent_error"));
+        /* Same answer as success so the form does not reveal which emails have accounts */
+        return back()->with('success', trans('customer::customer_front.messages.reset_link_sent'));
     }
 
     /**
      * password broker for customer guard.
-     * 
-     * @return \Illuminate\Contracts\Auth\PasswordBroker
+     *
+     * @return PasswordBroker
      */
     public function broker()
     {
@@ -77,8 +82,8 @@ class ForgotPasswordController extends Controller
     /**
      * Get the guard to be used during authentication
      * after password reset.
-     * 
-     * @return \Illuminate\Contracts\Auth\StatefulGuard
+     *
+     * @return StatefulGuard
      */
     public function guard()
     {
