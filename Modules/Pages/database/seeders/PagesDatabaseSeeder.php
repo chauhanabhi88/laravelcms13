@@ -2,8 +2,8 @@
 
 namespace Modules\Pages\Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Seeder;
 
 class PagesDatabaseSeeder extends Seeder
 {
@@ -16,6 +16,6 @@ class PagesDatabaseSeeder extends Seeder
     {
         Model::unguard();
 
-        // $this->call("OthersTableSeeder");
+        $this->call(StorefrontPagesSeeder::class);
     }
 }

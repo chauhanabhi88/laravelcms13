@@ -26,9 +26,9 @@ class ProfileRequest extends FormRequest
             'email' => [
                 'required',
                 'email',
-                'unique:'.$customer->getTable().',email,'.decrypt_It($this->id).',id,deleted_at,NULL',
+                'unique:'.$customer->getTable().',email,'.(int) auth('customer')->id().',id,deleted_at,NULL',
             ],
-            'profile_picture' => 'mimes:'.$imageTypes.'|max:'.$maxUpload.($minUploadSize ? '|min:'.$minUploadSize : ''),
+            'profile_picture' => 'nullable|image|mimes:'.$imageTypes.'|max:'.$maxUpload.($minUploadSize ? '|min:'.$minUploadSize : ''),
             'contact_number' => 'required|numeric',
         ];
     }

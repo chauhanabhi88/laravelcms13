@@ -1,0 +1,16 @@
+{
+    "name": "Catalog",
+    "alias": "catalog",
+    "description": "Marketplace taxonomy: category tree, brands, category-attribute mapping and size charts.",
+    "keywords": [],
+    "priority": 8,
+    "providers": [
+        "Modules\\Catalog\\Providers\\CatalogServiceProvider"
+    ],
+    "files": [],
+    "cache": true,
+    "depends": [
+        "core",
+        "attribute"
+    ]
+}

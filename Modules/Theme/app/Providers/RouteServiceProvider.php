@@ -2,8 +2,8 @@
 
 namespace Modules\Theme\Providers;
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -33,7 +33,7 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function map()
     {
-        //$this->mapApiRoutes();
+        // $this->mapApiRoutes();
         if (config('core.translation')) {
             $route = Route::prefix('{locale}')
                 ->middleware(['web', 'locale']);
@@ -43,6 +43,27 @@ class RouteServiceProvider extends ServiceProvider
         $route->group(function () {
             $this->mapBackendRoutes();
         });
+
+        if (config('core.translation_front')) {
+            $frontRoute = Route::prefix('{locale}')
+                ->middleware(['web', 'locale']);
+        } else {
+            $frontRoute = Route::middleware(['web']);
+        }
+        $frontRoute->group(function () {
+            $this->mapFrontRoutes();
+        });
+    }
+
+    /**
+     * Public routes (the dev-only component styleguide).
+     *
+     * @return void
+     */
+    protected function mapFrontRoutes()
+    {
+        Route::namespace($this->namespace)
+            ->group(__DIR__.'/../../routes/front.php');
     }
 
     /**
@@ -54,11 +75,11 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapBackendRoutes()
     {
-        $adminPrefix = \Config::get("core.admin-prefix");
+        $adminPrefix = \Config::get('core.admin-prefix');
         Route::prefix($adminPrefix)
-            ->middleware(["backend"])
-            ->namespace($this->namespace . "\Backend")
-            ->group(__DIR__ . '/../../routes/backend.php');
+            ->middleware(['backend'])
+            ->namespace($this->namespace."\Backend")
+            ->group(__DIR__.'/../../routes/backend.php');
     }
 
     /**
@@ -73,6 +94,6 @@ class RouteServiceProvider extends ServiceProvider
         Route::prefix('api')
             ->middleware('api')
             ->namespace($this->namespace)
-            ->group(__DIR__ . '/../../routes/api.php');
+            ->group(__DIR__.'/../../routes/api.php');
     }
 }

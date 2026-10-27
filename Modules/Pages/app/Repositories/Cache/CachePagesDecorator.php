@@ -2,6 +2,7 @@
 
 namespace Modules\Pages\Repositories\Cache;
 
+use Illuminate\Support\Collection;
 use Modules\Core\Repositories\Cache\BaseCacheDecorator;
 use Modules\Pages\Repositories\PagesRepository;
 
@@ -36,5 +37,19 @@ class CachePagesDecorator extends BaseCacheDecorator implements PagesRepository
         // Returns an unresolved Builder - never cached (it holds a live DB
         // connection and can't be serialised); see BaseCacheDecorator::allWithBuilder().
         return $this->repository->filter($request);
+    }
+
+    public function findPublishedBySlug(string $slug)
+    {
+        return $this->remember(function () use ($slug) {
+            return $this->repository->findPublishedBySlug($slug);
+        });
+    }
+
+    public function getPublishedBySlugs(array $slugs): Collection
+    {
+        return $this->remember(function () use ($slugs) {
+            return $this->repository->getPublishedBySlugs($slugs);
+        });
     }
 }

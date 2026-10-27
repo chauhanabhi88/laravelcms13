@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Modules\ImportReport\Entities\PrisyncVerticalReport;
 
 return new class extends Migration
@@ -14,9 +14,9 @@ return new class extends Migration
      */
     public function up()
     {
-        $prisync = new PrisyncVerticalReport();
-        $prisyncTable =  $prisync->getTable();
-        
+        $prisync = new PrisyncVerticalReport;
+        $prisyncTable = $prisync->getTable();
+
         Schema::create($prisyncTable, function (Blueprint $table) {
             $table->increments('id');
             $table->string('product_name')->nullable();
@@ -28,8 +28,8 @@ return new class extends Migration
             $table->integer('number_of_matches')->nullable();
             $table->integer('index')->nullable();
             $table->string('position')->nullable();
-            $table->string('cheapest_site',1000)->nullable();
-            $table->string('highest_site',1000)->nullable();
+            $table->string('cheapest_site', 1000)->nullable();
+            $table->string('highest_site', 1000)->nullable();
             $table->integer('minimum_price')->nullable();
             $table->integer('maximum_price')->nullable();
             $table->integer('average_price')->nullable();
@@ -53,10 +53,8 @@ return new class extends Migration
      */
     public function down()
     {
-        $prisync = new PrisyncVerticalReport();
-        $prisyncTable =  $prisync->getTable();
+        $prisync = new PrisyncVerticalReport;
+        $prisyncTable = $prisync->getTable();
         Schema::dropIfExists($prisyncTable);
     }
-}
-
-
+};

@@ -1,0 +1,16 @@
+{
+    "name": "Seller",
+    "alias": "seller",
+    "description": "Marketplace sellers: supplier accounts and logins, KYC onboarding, bank and warehouse details, admin verification and the supplier panel shell.",
+    "keywords": [],
+    "priority": 14,
+    "providers": [
+        "Modules\\Seller\\Providers\\SellerServiceProvider"
+    ],
+    "files": [],
+    "cache": true,
+    "depends": [
+        "core",
+        "directory"
+    ]
+}

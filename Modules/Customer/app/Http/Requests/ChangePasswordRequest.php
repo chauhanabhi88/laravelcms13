@@ -13,31 +13,31 @@ class ChangePasswordRequest extends FormRequest
      */
     public function rules()
     {
-        $minPasswordLength = settings('customer', 'min_password_length');
+        $minPasswordLength = settings('customer', 'min_password_length') ?: 8;
+
         return [
 
             'password' => [
                 'required',
                 'confirmed',
-                'min:' . $minPasswordLength,             // must be at least 10 characters in length
-                'max:' .  settings('customer', 'max_password_length'),
+                'min:'.$minPasswordLength,             // must be at least 10 characters in length
+                'max:'.(settings('customer', 'max_password_length') ?: 20),
                 'regex:/[a-z]/',      // must contain at least one lowercase letter
                 'regex:/[A-Z]/',      // must contain at least one uppercase letter
                 'regex:/[0-9]/',      // must contain at least one digit
-                'regex:' . config('core.special_character_regex_server'), // must contain a special character
+                'regex:'.config('core.special_character_regex_server'), // must contain a special character
             ],
-            'cpassword' => 'required|min:'.$minPasswordLength,
-            'old_password' => 'required'
+            'old_password' => ['required', 'current_password:customer'],
         ];
     }
 
     public function messages()
     {
         return [
-            'password.min' => trans('customer::customer.messages.invalid_password',['password_length'=>settings('customer', 'min_password_length'), 'max_password_length' => settings('customer', 'max_password_length')]),
-            'password.regex' => trans('customer::customer.messages.invalid_password',['password_length'=>settings('customer', 'min_password_length'), 'max_password_length' => settings('customer', 'max_password_length')]),
-            'password.max' => trans('customer::customer.messages.invalid_password',['password_length'=>settings('customer', 'min_password_length'), 'max_password_length' => settings('customer', 'max_password_length')]),
-            'old_password' => trans("customer::customer.messages.invalid_password"),
+            'password.min' => trans('customer::customer.messages.invalid_password', ['password_length' => settings('customer', 'min_password_length'), 'max_password_length' => settings('customer', 'max_password_length')]),
+            'password.regex' => trans('customer::customer.messages.invalid_password', ['password_length' => settings('customer', 'min_password_length'), 'max_password_length' => settings('customer', 'max_password_length')]),
+            'password.max' => trans('customer::customer.messages.invalid_password', ['password_length' => settings('customer', 'min_password_length'), 'max_password_length' => settings('customer', 'max_password_length')]),
+            'old_password.current_password' => trans('customer::customer.messages.old_password_invalid'),
         ];
     }
 }

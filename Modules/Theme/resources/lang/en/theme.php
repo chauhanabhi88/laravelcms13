@@ -1,54 +1,70 @@
 <?php
- return [
-    "titles" => [
-        "head_title" => "Theme",
-        "title" => "Title",
-        "content" => "Content",
-        "access_key" => "Access_key",
-        "is_enabled" => "Is Enabled",
-        "language" => "Language",
-        "create_block" => "Create Block",
-        "block_info" => "Block Information",
-        "theme" => "Layout Themes",
-        "theme_settings" => "Theme Settings"
+
+return [
+    'titles' => [
+        'head_title' => 'Theme',
+        'title' => 'Title',
+        'content' => 'Content',
+        'access_key' => 'Access_key',
+        'is_enabled' => 'Is Enabled',
+        'language' => 'Language',
+        'create_block' => 'Create Block',
+        'block_info' => 'Block Information',
+        'theme' => 'Layout Themes',
+        'theme_settings' => 'Theme Settings',
     ],
-    "buttons" => [
-        "save" => "Save",
-        "reset_settings" => "Reset Settings",
-        "reset" => "Reset",
-        "cancel" => "Cancel"
+    'buttons' => [
+        'save' => 'Save',
+        'reset_settings' => 'Reset Settings',
+        'reset' => 'Reset',
+        'cancel' => 'Cancel',
     ],
-    "labels" => [
-        "index" => "Theme Page",
-        "settheme" => "Set Theme",
-        "resettheme" => "Reset Theme",
-        "title" => "Title",
-        "content" => "Content",
-        "access_key" => "Access_key",
-        "status" => "Status",
-        "type" => "Type",
-        "logo" => "Admin Logo",
-        "sidebarCollapse" => "Sidebar Collapse",
-        "legacyStyle" => "Legacy Style",
-        "sidebarNav" => "Sidebar Nav",
-        "bodySmallText" => "Body Small Text",
-        "defualtlogo" => "Defualt logo",
-        "navbar_variants" => "Navbar Variants",
-        "dark_sidebar_variants" => "Dark Sidebar Variants",
-        "brand_logo_variants" => "Brand Logo Variants",
-        "light_sidebar_variants" => "Light Sidebar Variants",
-        "choose_file" => "Choose file"
+    'labels' => [
+        'index' => 'Theme Page',
+        'settheme' => 'Set Theme',
+        'resettheme' => 'Reset Theme',
+        'title' => 'Title',
+        'content' => 'Content',
+        'access_key' => 'Access_key',
+        'status' => 'Status',
+        'type' => 'Type',
+        'logo' => 'Admin Logo',
+        'sidebarCollapse' => 'Sidebar Collapse',
+        'legacyStyle' => 'Legacy Style',
+        'sidebarNav' => 'Sidebar Nav',
+        'bodySmallText' => 'Body Small Text',
+        'defualtlogo' => 'Defualt logo',
+        'navbar_variants' => 'Navbar Variants',
+        'dark_sidebar_variants' => 'Dark Sidebar Variants',
+        'brand_logo_variants' => 'Brand Logo Variants',
+        'light_sidebar_variants' => 'Light Sidebar Variants',
+        'choose_file' => 'Choose file',
     ],
-    "options" => [
-        "access" => [
-            "web" => "Web",
-            "mobile" => "Mobile"
-        ]
+    'options' => [
+        'access' => [
+            'web' => 'Web',
+            'mobile' => 'Mobile',
+        ],
     ],
-    "messages" => [
-        "confirm" => "Sure You Want To Reset Theme,All Theme Change Will Remove !!",
-        "updated_success" => "Themes updated successfully.",
-        "reset_success" => "Themes Reset successfully"
+    'messages' => [
+        'confirm' => 'Sure You Want To Reset Theme,All Theme Change Will Remove !!',
+        'updated_success' => 'Themes updated successfully.',
+        'reset_success' => 'Themes Reset successfully',
     ],
-    "reset_success" => "Themes Reset successfully"
+    'reset_success' => 'Themes Reset successfully',
+    'settings' => [
+        'storefront' => 'Storefront',
+        'logo_url' => ['label' => 'Logo URL', 'comment' => 'Absolute URL or path of the storefront logo. Leave empty to use the default logo.'],
+        'logo_dark_url' => ['label' => 'Dark mode logo URL', 'comment' => 'Optional logo shown when the visitor uses a dark colour scheme.'],
+        'favicon_url' => ['label' => 'Favicon URL', 'comment' => 'Leave empty to use /favicon.ico.'],
+        'show_download_app' => ['label' => 'Show "Download App"', 'comment' => 'Shown in the header and footer only when an app store link is also set.'],
+        'app_store_url' => ['label' => 'App Store URL', 'comment' => 'iOS app listing.'],
+        'play_store_url' => ['label' => 'Google Play URL', 'comment' => 'Android app listing.'],
+        'support_phone' => ['label' => 'Support phone', 'comment' => 'Shown in the storefront footer.'],
+        'support_email' => ['label' => 'Support email', 'comment' => 'Shown in the storefront footer.'],
+        'facebook_url' => ['label' => 'Facebook URL', 'comment' => ''],
+        'instagram_url' => ['label' => 'Instagram URL', 'comment' => ''],
+        'youtube_url' => ['label' => 'YouTube URL', 'comment' => ''],
+        'x_url' => ['label' => 'X URL', 'comment' => ''],
+    ],
 ];

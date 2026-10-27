@@ -73,6 +73,23 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Outbound third-party API calls made through Http::integration() (secrets redacted).
+        'integrations' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/integrations.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 14,
+            'replace_placeholders' => true,
+        ],
+
+        // LogSmsDriver output, OTP codes included: local and testing only.
+        'sms' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/sms.log'),
+            'level' => 'debug',
+            'replace_placeholders' => true,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

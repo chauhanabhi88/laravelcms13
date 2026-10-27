@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Modules\Catalog\Providers;
+
+use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Route;
+
+/**
+ * Admin taxonomy screens (backend.php) and the public read-only catalog API (api.php).
+ * The storefront category pages (/c/{slug}) belong to the Storefront module (M06).
+ */
+class RouteServiceProvider extends ServiceProvider
+{
+    /**
+     * The root namespace to assume when generating URLs to actions.
+     *
+     * @var string
+     */
+    protected $namespace = 'Modules\Catalog\Http\Controllers';
+
+    public function map(): void
+    {
+        if (config('core.translation_api')) {
+            Route::prefix('{locale}')
+                ->middleware(['locale'])
+                ->group(function (): void {
+                    $this->mapApiRoutes();
+                });
+        } else {
+            $this->mapApiRoutes();
+        }
+
+        if (config('core.translation')) {
+            $route = Route::prefix('{locale}')->middleware(['web', 'locale']);
+        } else {
+            $route = Route::middleware(['web']);
+        }
+
+        $route->group(function (): void {
+            $this->mapBackendRoutes();
+        });
+    }
+
+    protected function mapApiRoutes(): void
+    {
+        Route::prefix('api')
+            ->middleware('api')
+            ->namespace($this->namespace.'\Api')
+            ->group(__DIR__.'/../../routes/api.php');
+    }
+
+    protected function mapBackendRoutes(): void
+    {
+        Route::prefix(Config::get('core.admin-prefix'))
+            ->middleware(['backend'])
+            ->namespace($this->namespace.'\Backend')
+            ->group(__DIR__.'/../../routes/backend.php');
+    }
+}

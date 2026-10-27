@@ -1,0 +1,108 @@
+/* Catalog admin: category tree (modules/catalog/js/tree.js) */
+.catalog-tree {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.catalog-tree__list {
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+}
+
+.catalog-tree__list .catalog-tree__list {
+    padding-left: 1.25rem;
+    border-left: 1px dashed #dee2e6;
+    margin-left: .55rem;
+}
+
+.catalog-tree__node[aria-expanded="false"] > .catalog-tree__list {
+    display: none;
+}
+
+.catalog-tree__node[aria-expanded="true"] > .catalog-tree__row .catalog-tree__toggle .fa-caret-right {
+    transform: rotate(90deg);
+}
+
+.catalog-tree__row {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .2rem .35rem;
+    border-radius: 4px;
+    border-top: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+}
+
+.catalog-tree__row:hover {
+    background: #f4f6f9;
+}
+
+.catalog-tree__node.is-selected > .catalog-tree__row {
+    background: #e7f5f3;
+}
+
+.catalog-tree__node.is-dragging > .catalog-tree__row {
+    opacity: .45;
+}
+
+.catalog-tree__row.drop-before {
+    border-top-color: #0f766e;
+}
+
+.catalog-tree__row.drop-after {
+    border-bottom-color: #0f766e;
+}
+
+.catalog-tree__row.drop-inside {
+    background: #ccfbf1;
+    outline: 1px dashed #0f766e;
+}
+
+.catalog-tree__toggle {
+    width: 1.1rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #6c757d;
+    text-align: center;
+}
+
+.catalog-tree__toggle .fa-caret-right {
+    transition: transform .15s ease-out;
+}
+
+.catalog-tree__handle {
+    color: #adb5bd;
+    cursor: grab;
+}
+
+.catalog-tree__label {
+    color: inherit;
+    flex: 1 1 auto;
+}
+
+.catalog-tree__root-drop {
+    margin-top: .5rem;
+    padding: .5rem;
+    border: 1px dashed #adb5bd;
+    border-radius: 4px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.catalog-tree__root-drop.is-over {
+    border-color: #0f766e;
+    background: #ccfbf1;
+}
+
+/* Size chart grid editor */
+.size-chart-grid input {
+    min-width: 70px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .catalog-tree__toggle .fa-caret-right {
+        transition: none;
+    }
+}

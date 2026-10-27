@@ -1,0 +1,23 @@
+{
+    "name": "abhishek/catalog",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Catalog\\": "app/",
+            "Modules\\Catalog\\Database\\Factories\\": "database/factories/",
+            "Modules\\Catalog\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

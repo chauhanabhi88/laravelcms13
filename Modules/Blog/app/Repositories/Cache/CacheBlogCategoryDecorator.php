@@ -2,6 +2,8 @@
 
 namespace Modules\Blog\Repositories\Cache;
 
+use Illuminate\Support\Collection;
+use Modules\Blog\Models\BlogCategory;
 use Modules\Blog\Repositories\BlogCategoryRepository;
 use Modules\Core\Repositories\Cache\BaseCacheDecorator;
 
@@ -10,7 +12,7 @@ class CacheBlogCategoryDecorator extends BaseCacheDecorator implements BlogCateg
     public function __construct(BlogCategoryRepository $blog_category)
     {
         parent::__construct();
-        $this->entityName = \config("blog.cache.blog_category_name");
+        $this->entityName = \config('blog.cache.blog_category_name');
         $this->repository = $blog_category;
     }
 
@@ -27,21 +29,36 @@ class CacheBlogCategoryDecorator extends BaseCacheDecorator implements BlogCateg
 
     public function pagination($request)
     {
-        return $this->remember(function() use ($request) {
+        return $this->remember(function () use ($request) {
             return $this->repository->pagination($request);
         });
     }
 
     public function filter($request)
     {
-        return $this->remember(function() use ($request) {
+        return $this->remember(function () use ($request) {
             return $this->repository->filter($request);
         });
     }
 
-    public function getAllBlogCategory($flag = false) {
-        return $this->remember(function() use ($flag) {
+    public function getAllBlogCategory($flag = false)
+    {
+        return $this->remember(function () use ($flag) {
             return $this->repository->getAllBlogCategory($flag);
+        });
+    }
+
+    public function getActiveCategoriesWithPostCounts(): Collection
+    {
+        return $this->remember(function () {
+            return $this->repository->getActiveCategoriesWithPostCounts();
+        });
+    }
+
+    public function findActiveBySlug(string $slug): ?BlogCategory
+    {
+        return $this->remember(function () use ($slug) {
+            return $this->repository->findActiveBySlug($slug);
         });
     }
 }

@@ -32,7 +32,7 @@ return [
     */
     'login_throttle' => [
         'max_attempts' => 10,
-        'decay_seconds' => 120,
+        'decay_seconds' => 300,
     ],
     'master_admin_slug' => 'master_admin',
     'cache' => [

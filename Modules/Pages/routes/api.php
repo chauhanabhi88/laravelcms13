@@ -22,3 +22,18 @@ if ($apiVersions = config('core.api_versions')) {
         });
     }
 }
+
+/*
+| Public, unauthenticated, read-only endpoint (api/{version}/public/pages/...).
+*/
+if ($apiVersions = config('core.api_versions')) {
+    foreach ($apiVersions as $version) {
+        $upperCaseVersion = strtoupper($version);
+        Route::middleware('throttle:60,1')->prefix($version.'/public/pages')->group(function () use ($upperCaseVersion, $version) {
+            Route::get('/{slug}', [
+                'as' => "api.public.{$version}.pages.show",
+                'uses' => $upperCaseVersion.'\PublicPageController@show',
+            ]);
+        });
+    }
+}

@@ -88,6 +88,38 @@ Route::prefix('city')->group(function () {
     ]);
 });
 
+Route::prefix('pincode')->group(function () {
+    Route::get('/', [
+        'as' => 'admin.directory_pincode.index',
+        'uses' => 'DirectoryPincodeController@index',
+        'middleware' => 'can:admin.directory_pincode.index',
+    ]);
+
+    Route::post('/filters', [
+        'as' => 'admin.directory_pincode.filters',
+        'uses' => 'DirectoryPincodeController@filters',
+        'middleware' => 'can:admin.directory_pincode.filters',
+    ]);
+
+    Route::get('/edit/{id}', [
+        'as' => 'admin.directory_pincode.edit',
+        'uses' => 'DirectoryPincodeController@edit',
+        'middleware' => 'can:admin.directory_pincode.edit',
+    ]);
+
+    Route::put('/{id}', [
+        'as' => 'admin.directory_pincode.update',
+        'uses' => 'DirectoryPincodeController@update',
+        'middleware' => 'can:admin.directory_pincode.edit',
+    ]);
+
+    Route::post('/update_status', [
+        'as' => 'admin.directory_pincode.update_status',
+        'uses' => 'DirectoryPincodeController@updateStatus',
+        'middleware' => 'can:admin.directory_pincode.edit',
+    ]);
+});
+
 Route::prefix('state')->group(function () {
     Route::get('/export', [
         'as' => 'admin.state.export',

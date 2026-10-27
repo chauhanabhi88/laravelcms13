@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
@@ -152,7 +153,7 @@ if (! function_exists('getFormatedDate')) {
             $timezone = $defaultTimeZone;
         }
 
-        return Carbon::parse($date)->setTimezone($timezone)->format($format);
+        return Carbon::parse($date)->setTimezone($timezone ?: config('app.timezone'))->format($format);
     }
 }
 
@@ -693,6 +694,53 @@ if (! function_exists('updateUrlParams')) {
                 return $urlParam;
             }
         }
+    }
+}
+
+if (! function_exists('frontRoute')) {
+    /**
+     * URL for a public (front) route, with the locale segment injected when
+     * front translation is on. Scalars are positional route parameters; a
+     * nested array is passed as named parameters / query string.
+     *
+     * frontRoute('blog.show', [$post->slug]);
+     * frontRoute('blog.index', [['category' => 'news']]);
+     *
+     * @param  array<int|string, mixed>  $params
+     */
+    function frontRoute(string $name, array $params = []): string
+    {
+        return route($name, updateUrlParams(array_merge(['type' => config('core.route_type')], $params)));
+    }
+}
+
+if (! function_exists('isBackendRequest')) {
+    /**
+     * Whether the request targets the admin panel (backend prefix, optionally
+     * behind a locale segment) or the admin auth screens - as opposed to the
+     * public site.
+     */
+    function isBackendRequest(Request $request): bool
+    {
+        $prefix = trim((string) config('core.admin-prefix'), '/');
+
+        return $request->is($prefix, $prefix.'/*', '*/'.$prefix, '*/'.$prefix.'/*')
+            || $request->routeIs('backend_*', 'reset', 'reset.*', 'password.reset');
+    }
+}
+
+if (! function_exists('sellerLoginUrl')) {
+    /**
+     * Where a guest of the supplier panel ("auth:seller") is sent. Falls back to
+     * /{core.seller-prefix}/login until the Seller module (M03) registers "seller.login".
+     */
+    function sellerLoginUrl(): string
+    {
+        if (Route::has('seller.login')) {
+            return frontRoute('seller.login');
+        }
+
+        return url(trim((string) config('core.seller-prefix', 'supplier'), '/').'/login');
     }
 }
 

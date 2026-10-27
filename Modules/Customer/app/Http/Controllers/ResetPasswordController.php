@@ -4,12 +4,14 @@ namespace Modules\Customer\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Contracts\Auth\PasswordBroker;
+use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\Request;
-use Modules\Customer\Models\CustomerResetPassword;
-use Modules\Customer\Repositories\CustomerRepository;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Modules\Customer\Models\CustomerResetPassword;
+use Modules\Customer\Repositories\CustomerRepository;
 
 class ResetPasswordController extends Controller
 {
@@ -46,30 +48,31 @@ class ResetPasswordController extends Controller
         try {
             $token = $request->token;
             $expireTime = config('auth.passwords.customers.expire');
-            $expireTime = isset($expireTime) && !empty($expireTime) ? '+' . $expireTime . 'minutes' : '';
+            $expireTime = isset($expireTime) && ! empty($expireTime) ? '+'.$expireTime.'minutes' : '';
             $email = $request->email;
             $getTokenCreatedDate = $this->customerResetPwd->where('email', $request->email)->get()->first();
             if (empty($getTokenCreatedDate)) {
-                return redirect()->route('customer.login', updateUrlParams(['type' => config('core.route_type')]))->with('error', trans("customer::customer_front.messages.invalid_token"));
+                return redirect()->route('customer.login', updateUrlParams(['type' => config('core.route_type')]))->with('error', trans('customer::customer_front.messages.invalid_token'));
             }
             $tokenDate = date('Y-m-d H:i:s ', strtotime($expireTime, strtotime($getTokenCreatedDate->created_at)));
             $currentTime = date('Y-m-d H:i:s');
             if ($currentTime > $tokenDate) {
                 $token = $email = '';
-                return redirect()->route('customer.login', updateUrlParams(['type' => config('core.route_type')]))->with('error', trans("customer::customer_front.messages.expire_token"));
+
+                return redirect()->route('customer.login', updateUrlParams(['type' => config('core.route_type')]))->with('error', trans('customer::customer_front.messages.expire_token'));
             }
-            $getCustomerInfo = $this->customer->getLoginUserInfo();
-            return view('customer::frontend.auth.reset_password', compact('getCustomerInfo'))->with(
-                ['token' => $token, 'email' => $email]
-            );
-        } catch(\Exception $e) {
-            return redirect('customer.login', updateUrlParams());
+
+            return view('customer::frontend.auth.reset_password', ['token' => $token, 'email' => $email]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return redirect()->route('customer.login', updateUrlParams(['type' => config('core.route_type')]))->with('error', trans('customer::customer_front.messages.invalid_token'));
         }
     }
 
     public function reset(Request $request)
     {
-        $request->validate($this->rules());
+        $request->validate($this->rules(), $this->validationErrorMessages());
 
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
@@ -90,26 +93,27 @@ class ResetPasswordController extends Controller
         // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
         return $status == Password::PASSWORD_RESET
-                    ? redirect()->route("customer.login", updateUrlParams(['type' => config('core.route_type')]))->with('status', __($status))
+                    ? redirect()->route('customer.login', updateUrlParams(['type' => config('core.route_type')]))->with('success', trans('customer::customer_front.messages.password_reset'))
                     : back()->withInput($request->only('email'))
-                            ->withErrors(['email' => __($status)]);
+                        ->withErrors(['email' => __($status)]);
     }
 
     protected function rules()
     {
-        $minPasswordLength = settings('customer', 'min_password_length');
+        $minPasswordLength = settings('customer', 'min_password_length') ?: 8;
+
         return [
             'token' => 'required',
             'email' => 'required|email',
             'password' => [
                 'required',
                 'confirmed',
-                'min:' . $minPasswordLength,             // must be at least 10 characters in length
-                'max:' .  settings('customer', 'max_password_length'),
+                'min:'.$minPasswordLength,             // must be at least 10 characters in length
+                'max:'.(settings('customer', 'max_password_length') ?: 20),
                 'regex:/[a-z]/',      // must contain at least one lowercase letter
                 'regex:/[A-Z]/',      // must contain at least one uppercase letter
                 'regex:/[0-9]/',      // must contain at least one digit
-                'regex:' . config('core.special_character_regex_server'), // must contain a special character
+                'regex:'.config('core.special_character_regex_server'), // must contain a special character
             ],
         ];
     }
@@ -117,16 +121,16 @@ class ResetPasswordController extends Controller
     public function validationErrorMessages()
     {
         return [
-            'password.min' => trans('customer::customer.messages.invalid_password',['password_length'=>settings('customer', 'min_password_length'), 'max_password_length' => settings('customer', 'max_password_length')]),
-            'password.regex' => trans('customer::customer.messages.invalid_password',['password_length'=>settings('customer', 'min_password_length'), 'max_password_length' => settings('customer', 'max_password_length')]),
-            'password.max' => trans('customer::customer.messages.invalid_password',['password_length'=>settings('customer', 'min_password_length'), 'max_password_length' => settings('customer', 'max_password_length')]),
+            'password.min' => trans('customer::customer.messages.invalid_password', ['password_length' => settings('customer', 'min_password_length'), 'max_password_length' => settings('customer', 'max_password_length')]),
+            'password.regex' => trans('customer::customer.messages.invalid_password', ['password_length' => settings('customer', 'min_password_length'), 'max_password_length' => settings('customer', 'max_password_length')]),
+            'password.max' => trans('customer::customer.messages.invalid_password', ['password_length' => settings('customer', 'min_password_length'), 'max_password_length' => settings('customer', 'max_password_length')]),
         ];
     }
 
     /**
      * password broker for customer guard.
      *
-     * @return \Illuminate\Contracts\Auth\PasswordBroker
+     * @return PasswordBroker
      */
     public function broker()
     {
@@ -137,7 +141,7 @@ class ResetPasswordController extends Controller
      * Get the guard to be used during authentication
      * after password reset.
      *
-     * @return \Illuminate\Contracts\Auth\StatefulGuard
+     * @return StatefulGuard
      */
     /* public function guard()
     {

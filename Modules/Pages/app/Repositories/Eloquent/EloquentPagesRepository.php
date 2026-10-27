@@ -3,6 +3,7 @@
 namespace Modules\Pages\Repositories\Eloquent;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Modules\Core\Repositories\Eloquent\EloquentBaseRepository;
 use Modules\Pages\Models\Pages;
 use Modules\Pages\Models\PagesTranslation;
@@ -23,6 +24,28 @@ class EloquentPagesRepository extends EloquentBaseRepository implements PagesRep
     public function findBySlug($slug)
     {
         return $this->model->where('slug', $slug)->with('translations')->first();
+    }
+
+    public function findPublishedBySlug(string $slug)
+    {
+        return $this->model->where('slug', $slug)
+            ->where('status', config('core.enabled'))
+            ->withTranslation()
+            ->first();
+    }
+
+    public function getPublishedBySlugs(array $slugs): Collection
+    {
+        if (empty($slugs)) {
+            return collect();
+        }
+
+        return $this->model->whereIn('slug', $slugs)
+            ->where('status', config('core.enabled'))
+            ->withTranslation()
+            ->get()
+            ->sortBy(fn ($page) => array_search($page->slug, $slugs))
+            ->values();
     }
 
     public function sortColumns($request)

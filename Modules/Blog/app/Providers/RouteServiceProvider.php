@@ -2,8 +2,8 @@
 
 namespace Modules\Blog\Providers;
 
-use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -33,6 +33,16 @@ class RouteServiceProvider extends ServiceProvider
      */
     public function map()
     {
+        if (config('core.translation_api')) {
+            Route::prefix('{locale}')
+                ->middleware(['locale'])
+                ->group(function () {
+                    $this->mapApiRoutes();
+                });
+        } else {
+            $this->mapApiRoutes();
+        }
+
         if (config('core.translation')) {
             $route = Route::prefix('{locale}')
                 ->middleware(['web', 'locale']);
@@ -42,6 +52,44 @@ class RouteServiceProvider extends ServiceProvider
         $route->group(function () {
             $this->mapBackendRoutes();
         });
+
+        if (config('core.translation_front')) {
+            $frontRoute = Route::prefix('{locale}')
+                ->middleware(['web', 'locale']);
+        } else {
+            $frontRoute = Route::middleware(['web']);
+        }
+        $frontRoute->group(function () {
+            $this->mapFrontRoutes();
+        });
+    }
+
+    /**
+     * Define the public "front" routes for the application.
+     *
+     * @return void
+     */
+    protected function mapFrontRoutes()
+    {
+        Route::namespace($this->namespace)
+            ->group(__DIR__.'/../../routes/front.php');
+    }
+
+    /**
+     * Define the "api" routes for the application.
+     *
+     * @return void
+     */
+    protected function mapApiRoutes()
+    {
+        if (! file_exists(__DIR__.'/../../routes/api.php')) {
+            return;
+        }
+
+        Route::prefix('api')
+            ->middleware('api')
+            ->namespace($this->namespace."\Api")
+            ->group(__DIR__.'/../../routes/api.php');
     }
 
     /**
@@ -53,10 +101,10 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapBackendRoutes()
     {
-        $adminPrefix = \Config::get("core.admin-prefix");
+        $adminPrefix = \Config::get('core.admin-prefix');
         Route::prefix($adminPrefix)
-            ->middleware(["backend"])
+            ->middleware(['backend'])
             ->namespace($this->namespace."\Backend")
-            ->group(__DIR__ . '/../../routes/backend.php');
+            ->group(__DIR__.'/../../routes/backend.php');
     }
 }

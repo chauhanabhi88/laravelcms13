@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,7 +17,19 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
  // ->use(RefreshDatabase::class)
-    ->in('Feature');
+    ->in('Feature', '../Modules/*/tests/Feature');
+
+/*
+| Public frontend tests and module feature tests (each module's tests/Feature) run against
+| the "laravelcms13_testing" MySQL schema (see phpunit.xml).
+| Module migrations depend on seeded data, so that schema is a structure-only clone of the dev
+| database rather than a migrate:fresh; every test is wrapped in a rolled-back transaction.
+|
+| Refresh the clone after schema changes:
+|   mysqldump --no-data <dev_db> | mysql laravelcms13_testing
+*/
+pest()->use(DatabaseTransactions::class)
+    ->in('Feature/Frontend', '../Modules/*/tests/Feature');
 
 /*
 |--------------------------------------------------------------------------
