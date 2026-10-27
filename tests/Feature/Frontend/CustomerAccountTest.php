@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Hash;
 use Modules\Customer\Database\Factories\CustomerFactory;
 use Modules\Customer\Models\Customer;
 use Modules\Customer\Models\CustomerAddress;
+use Modules\Directory\Models\DirectoryPincode;
 
 test('a customer can log in through the session guard', function () {
     $customer = Customer::factory()->create();
@@ -17,9 +18,10 @@ test('a customer can log in through the session guard', function () {
 test('wrong credentials show a field error and keep the email', function () {
     $customer = Customer::factory()->create();
 
-    $this->from(frontRoute('customer.login'))
+    // M08: customer.login is the OTP page; the email + password form lives at customer.login.password.
+    $this->from(frontRoute('customer.login.password'))
         ->post(frontRoute('customer.loginpost'), ['email' => $customer->email, 'password' => 'not-the-password'])
-        ->assertRedirect(frontRoute('customer.login'))
+        ->assertRedirect(frontRoute('customer.login.password'))
         ->assertSessionHasErrors('email')
         ->assertSessionHasInput('email', $customer->email);
 
@@ -120,22 +122,25 @@ test('logging out requires a post request', function () {
     $this->assertGuest('customer');
 });
 
+// M08 (FR-CUS-004): the storefront address form is pincode-first with Indian address fields.
 test('a customer can add an address and make it the default', function () {
+    DirectoryPincode::factory()->create(['pincode' => '560001']);
     $customer = Customer::factory()->create();
     $existing = CustomerAddress::factory()->create(['customer_id' => $customer->id, 'is_default_address' => config('customer.is_default_address.yes')]);
 
     $this->actingAs($customer, 'customer')
         ->post(frontRoute('customer.addresses.store'), ['address' => [
-            'tag' => 'Office',
-            'street_name' => '1 Main Street',
-            'building' => 'Tower A',
-            'unit_no' => '12',
-            'postal_code' => '123456',
+            'tag' => 'work',
+            'pincode' => '560001',
+            'name' => 'Ada Lovelace',
+            'phone' => '9876543210',
+            'address_line1' => 'Tower A, Flat 12',
+            'address_line2' => '1 Main Street',
             'is_default_address' => '1',
         ]])
         ->assertRedirect(frontRoute('customer.addresses.index'));
 
-    $created = $customer->address()->where('tag', 'Office')->sole();
+    $created = $customer->address()->where('name', 'Ada Lovelace')->sole();
 
     expect((int) $created->is_default_address)->toBe((int) config('customer.is_default_address.yes'))
         ->and((int) $existing->fresh()->is_default_address)->toBe((int) config('customer.is_default_address.no'));
@@ -143,8 +148,8 @@ test('a customer can add an address and make it the default', function () {
 
 test('address fields are validated', function () {
     $this->actingAs(Customer::factory()->create(), 'customer')
-        ->post(frontRoute('customer.addresses.store'), ['address' => ['postal_code' => 'abc']])
-        ->assertSessionHasErrors(['address.street_name', 'address.building', 'address.unit_no', 'address.postal_code', 'address.tag']);
+        ->post(frontRoute('customer.addresses.store'), ['address' => ['pincode' => 'abc']])
+        ->assertSessionHasErrors(['address.pincode', 'address.name', 'address.phone', 'address.address_line1', 'address.address_line2', 'address.tag']);
 });
 
 test('a customer cannot change or delete another customer\'s address', function () {
@@ -153,9 +158,9 @@ test('a customer cannot change or delete another customer\'s address', function 
     $this->actingAs(Customer::factory()->create(), 'customer');
 
     $this->put(frontRoute('customer.addresses.update', [$address->id]), ['address' => [
-        'tag' => 'Hijacked', 'street_name' => 'x', 'building' => 'x', 'unit_no' => '1', 'postal_code' => '1',
+        'tag' => 'other', 'pincode' => '560001', 'name' => 'x', 'phone' => '9876543210', 'address_line1' => 'x', 'address_line2' => 'x',
     ]])->assertNotFound();
     $this->delete(frontRoute('customer.addresses.destroy', [$address->id]))->assertNotFound();
 
-    expect($address->fresh())->not->toBeNull()->tag->not->toBe('Hijacked');
+    expect($address->fresh())->not->toBeNull()->name->not->toBe('x');
 });

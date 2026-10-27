@@ -55,6 +55,7 @@ class HeaderComposer
             'searchPlaceholders' => $this->searchPlaceholders($categories),
             'cartUrl' => $this->links->routeUrl($header['cart_route'] ?? null),
             'wishlistUrl' => $this->links->routeUrl($header['wishlist_route'] ?? null),
+            'wishlistToggleUrl' => $this->links->routeUrl($header['wishlist_toggle_route'] ?? null),
             'accountUrl' => $this->links->routeUrl($header['account_route'] ?? null),
             'ordersUrl' => $this->links->routeUrl($header['orders_route'] ?? null)
                 ?? $this->links->routeUrl($header['account_route'] ?? null),

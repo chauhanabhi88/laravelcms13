@@ -13,6 +13,7 @@ import recentlyViewed, { rememberRecentlyViewed } from './components/recently-vi
 import productPage from './components/product-page';
 import lazyProductRow from './components/lazy-product-row';
 import { dropzone, pincodeChecker, priceRange, qtyStepper } from './components/form-controls';
+import { addressForm, otpInput, otpLogin, resendTimer, startWishlistSync } from './components/customer-account';
 
 export { fetchJson };
 
@@ -37,6 +38,11 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('priceRange', priceRange);
     Alpine.data('dropzone', dropzone);
     Alpine.data('pincodeChecker', pincodeChecker);
+    Alpine.data('otpInput', otpInput);
+    Alpine.data('resendTimer', resendTimer);
+    Alpine.data('otpLogin', otpLogin);
+    Alpine.data('addressForm', addressForm);
+    startWishlistSync(Alpine);
 
     /**
      * Progressive-enhancement form: submits via fetch when JS is on, falls back

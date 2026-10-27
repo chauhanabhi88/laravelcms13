@@ -38,4 +38,38 @@ class CustomerFactory extends Factory
     {
         return $this->state(['status' => config('core.disabled')]);
     }
+
+    /**
+     * A verified mobile number (E.164). Random unless one is given.
+     */
+    public function withPhone(?string $phone = null): static
+    {
+        return $this->state(fn (): array => [
+            'phone' => $phone ?? '+919'.fake()->unique()->numerify('#########'),
+            'phone_verified_at' => now(),
+        ]);
+    }
+
+    /**
+     * An account created by mobile OTP: phone only, no name, email or password.
+     */
+    public function otpOnly(?string $phone = null): static
+    {
+        return $this->withPhone($phone)->state([
+            'first_name' => null,
+            'last_name' => null,
+            'email' => null,
+            'email_verified_at' => null,
+            'password' => null,
+            'contact_number' => null,
+        ]);
+    }
+
+    public function reseller(?string $businessName = null): static
+    {
+        return $this->state(fn (): array => [
+            'is_reseller' => config('core.yes'),
+            'reseller_business_name' => $businessName ?? fake()->company(),
+        ]);
+    }
 }

@@ -34,10 +34,18 @@
     @include('theme::layouts.frontend.partials.mobile-drawer')
     @include('theme::layouts.frontend.partials.notifications')
 
-    {{-- Seeds for the Alpine cart / wishlist stores (resources/js/components/stores.js). --}}
+    {{-- Guests: in-page OTP login opened by the wishlist heart and other "login to continue" actions (Customer M08). --}}
+    @if (! auth('customer')->check() && view()->exists('customer::frontend.auth.partials.login-drawer'))
+        @include('customer::frontend.auth.partials.login-drawer')
+    @endif
+
+    {{-- Seeds for the Alpine cart / wishlist stores (resources/js/components/stores.js, customer-account.js). --}}
     <script>
         window.__cartCount = @js($cartCount ?? 0);
         window.__wishlistIds = @js($wishlistIds ?? []);
+        window.__wishlistToggleUrl = @js($wishlistToggleUrl ?? null);
+        window.__customerAuthenticated = @js(auth('customer')->check());
+        window.__customerLoginUrl = @js(\Illuminate\Support\Facades\Route::has('customer.login') ? frontRoute('customer.login') : null);
     </script>
 
     @if (config('customer.show_customer_online_offline_grid') && auth('customer')->check())

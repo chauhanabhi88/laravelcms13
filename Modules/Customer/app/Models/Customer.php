@@ -3,12 +3,14 @@
 namespace Modules\Customer\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Modules\Customer\Database\Factories\CustomerFactory;
 use Modules\Customer\Emails\ResetPasswordMail;
+use Modules\Customer\Support\PhoneNumber;
 
 class Customer extends Authenticatable
 {
@@ -32,7 +34,16 @@ class Customer extends Authenticatable
         'email_verified_at',
         'contact_number',
         'status',
+        'gender',
+        'date_of_birth',
+        'preferred_locale',
+        'marketing_opt_in',
     ];
+
+    /**
+     * Gender options for the profile form (FR-CUS-005); values are stored, labels come from lang.
+     */
+    public const GENDERS = ['female', 'male', 'other'];
 
     /**
      * The attributes that should be hidden for arrays.
@@ -50,6 +61,13 @@ class Customer extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'phone_verified_at' => 'datetime',
+        'date_of_birth' => 'date',
+        'deletion_requested_at' => 'datetime',
+        'is_reseller' => 'integer',
+        'marketing_opt_in' => 'integer',
+        'cod_blocked' => 'integer',
+        'rto_count' => 'integer',
     ];
 
     /**
@@ -77,6 +95,67 @@ class Customer extends Authenticatable
     public function address()
     {
         return $this->hasMany('Modules\Customer\Models\CustomerAddress', 'customer_id');
+    }
+
+    /**
+     * @return HasMany<CustomerWishlist, $this>
+     */
+    public function wishlistItems(): HasMany
+    {
+        return $this->hasMany(CustomerWishlist::class, 'customer_id');
+    }
+
+    /**
+     * @return HasMany<CustomerDataRequest, $this>
+     */
+    public function dataRequests(): HasMany
+    {
+        return $this->hasMany(CustomerDataRequest::class, 'customer_id');
+    }
+
+    public function isReseller(): bool
+    {
+        return (int) $this->is_reseller === (int) config('core.yes');
+    }
+
+    public function isCodBlocked(): bool
+    {
+        return (int) $this->cod_blocked === (int) config('core.yes');
+    }
+
+    public function isEnabled(): bool
+    {
+        return (int) $this->status === (int) config('customer.enabled_status');
+    }
+
+    /**
+     * Accounts created by OTP have no password until the customer sets one.
+     */
+    public function hasPassword(): bool
+    {
+        return filled($this->getAuthPassword());
+    }
+
+    /**
+     * New OTP accounts start without a name; they get a one-time "complete your profile" prompt.
+     */
+    public function needsProfileCompletion(): bool
+    {
+        return blank($this->first_name);
+    }
+
+    /**
+     * Name for greetings and lists: full name, else email, else the masked phone.
+     */
+    public function displayName(): string
+    {
+        $name = trim($this->first_name.' '.$this->last_name);
+
+        if ($name !== '') {
+            return $name;
+        }
+
+        return (string) ($this->email ?: PhoneNumber::display($this->phone));
     }
 
     protected static function newFactory(): CustomerFactory

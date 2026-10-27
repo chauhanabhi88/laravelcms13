@@ -9,9 +9,11 @@ use Illuminate\Support\Facades\Mail;
 use Modules\Core\Handler\Log;
 use Modules\Core\Http\Controllers\FrontendController;
 use Modules\Customer\Emails\CustomerEmailVerifyMail;
+use Modules\Customer\Events\CustomerLoggedIn;
 use Modules\Customer\Http\Requests\LoginRequest;
 use Modules\Customer\Models\Customer;
 use Modules\Customer\Repositories\CustomerLoginLogRepository;
+use Modules\Customer\Support\CustomerSettings;
 
 class LoginController extends FrontendController
 {
@@ -29,10 +31,18 @@ class LoginController extends FrontendController
         $this->redirectTo = route(config('customer.redirect_route_after_login'), updateUrlParams(['type' => config('core.route_type')]));
     }
 
+    /**
+     * Email + password form (customer.login.password). The default login is the OTP page
+     * (customer.login, OtpLoginController); this form can be switched off in settings.
+     */
     public function index(Request $request)
     {
         if (Auth::guard('customer')->check()) {
             return redirect($this->redirectTo);
+        }
+
+        if (! CustomerSettings::passwordLoginEnabled()) {
+            return redirect()->to(frontRoute('customer.login'));
         }
 
         /* ?redirect= lets pages (e.g. blog comments) send guests back after login - same host only */
@@ -46,6 +56,10 @@ class LoginController extends FrontendController
 
     public function postLogin(LoginRequest $request)
     {
+        if (! CustomerSettings::passwordLoginEnabled()) {
+            return redirect()->to(frontRoute('customer.login'));
+        }
+
         try {
             $customer = Customer::where('email', $request->email)->first();
             /* customer is not registred in our system */
@@ -56,11 +70,11 @@ class LoginController extends FrontendController
             $checkEmailInTransh = Customer::onlyTrashed()->where('email', $request->email)->get()->first();
             /* customer is not registred in our system */
             if (! $customer && empty($checkEmailInTransh)) {
-                return redirect()->route('customer.login', updateUrlParams(['type' => config('core.route_type')]))->with('error', trans('customer::customer.messages.customer_notfound_account'));
+                return redirect()->route('customer.login.password', updateUrlParams(['type' => config('core.route_type')]))->with('error', trans('customer::customer.messages.customer_notfound_account'));
             }
             /* soft deleted customer */
             if (! $customer && ! empty($checkEmailInTransh)) {
-                return redirect()->route('customer.login', updateUrlParams(['type' => config('core.route_type')]))->with('error', trans('customer::customer.messages.soft_delete_email_msg'));
+                return redirect()->route('customer.login.password', updateUrlParams(['type' => config('core.route_type')]))->with('error', trans('customer::customer.messages.soft_delete_email_msg'));
             }
 
             $status = Customer::requiresEmailVerification();
@@ -69,12 +83,12 @@ class LoginController extends FrontendController
             if ($customer && $customer->status == config('core.disabled') && $status) {
                 Mail::send(new CustomerEmailVerifyMail($customer));
 
-                return redirect()->route('customer.login', updateUrlParams(['type' => config('core.route_type')]))->with('error', trans('customer::customer.messages.customer_email_verification'));
+                return redirect()->route('customer.login.password', updateUrlParams(['type' => config('core.route_type')]))->with('error', trans('customer::customer.messages.customer_email_verification'));
             }
 
             /* Email Verification Off and Status is Disabled */
             if ($customer && $customer->status == config('core.disabled') && (! $status)) {
-                return redirect()->route('customer.login', updateUrlParams(['type' => config('core.route_type')]))->with('error', trans('customer::customer.messages.customer_disabled'));
+                return redirect()->route('customer.login.password', updateUrlParams(['type' => config('core.route_type')]))->with('error', trans('customer::customer.messages.customer_disabled'));
             }
 
             // If the class is using the ThrottlesLogins trait, we can automatically throttle
@@ -88,8 +102,13 @@ class LoginController extends FrontendController
             // }
             $credentials = $request->only($this->username(), 'password');
 
+            $previousSessionId = $request->session()->getId();
+
             if (Auth::guard('customer')->attempt($credentials, $request->boolean('remember'))) {
                 $request->session()->regenerate();
+
+                /* M10 merges the guest cart on this event (FR-CUS-009) */
+                CustomerLoggedIn::dispatch(Auth::guard('customer')->user(), $previousSessionId, CustomerLoggedIn::METHOD_PASSWORD);
 
                 // $this->clearLoginAttempts($request);
 
@@ -108,13 +127,13 @@ class LoginController extends FrontendController
             // customer surpasses their maximum number of attempts they will get locked out.
             // $this->incrementLoginAttempts($request);
 
-            return redirect()->route('customer.login', updateUrlParams(['type' => config('core.route_type')]))
+            return redirect()->route('customer.login.password', updateUrlParams(['type' => config('core.route_type')]))
                 ->withInput($request->only($this->username(), 'remember'))
                 ->withErrors([$this->username() => trans('customer::customer.messages.wrong_credentials')]);
         } catch (\Throwable $e) {
             $this->log->generateLog('error', 'LoginController_postLogin: '.$e->getMessage(), ['error' => $e->getTraceAsString()], \config('customer.customer_general_front'));
 
-            return redirect()->route('customer.login', updateUrlParams(['type' => config('core.route_type')]))->with('error', $e->getMessage());
+            return redirect()->route('customer.login.password', updateUrlParams(['type' => config('core.route_type')]))->with('error', $e->getMessage());
         }
     }
 

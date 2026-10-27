@@ -1,7 +1,7 @@
 @extends('customer::frontend.account.layout')
 
 @php
-    $fullName = trim($customer->first_name.' '.$customer->last_name) ?: $customer->email;
+    $fullName = $customer->displayName();
     $avatar = $customer->profile_picture
         ? getImageUrl(['module' => config('customer.name'), 'image' => $customer->profile_picture, 'image-type' => 'thumbnail'])
         : null;
@@ -25,7 +25,9 @@
                     @endif
                     <div>
                         <p class="text-lg font-semibold text-ink">{{ $fullName }}</p>
-                        <p class="text-sm text-muted">{{ $customer->email }}</p>
+                        @if ($customer->email)
+                            <p class="text-sm text-muted">{{ $customer->email }}</p>
+                        @endif
                     </div>
                 </div>
                 <x-theme::button variant="secondary" size="sm" :href="frontRoute('customer.profile.edit')">
@@ -35,8 +37,8 @@
 
             <dl class="mt-8 grid gap-6 border-t border-line pt-6 sm:grid-cols-2">
                 <div>
-                    <dt class="text-xs font-medium tracking-wide text-muted uppercase">{{ trans('customer::customer_front.labels.contact_number') }}</dt>
-                    <dd class="mt-1 text-sm text-ink">{{ $customer->contact_number ?: '—' }}</dd>
+                    <dt class="text-xs font-medium tracking-wide text-muted uppercase">{{ trans('customer::customer_front.profile.mobile') }}</dt>
+                    <dd class="tabular mt-1 text-sm text-ink">{{ $customer->phone ? \Modules\Customer\Support\PhoneNumber::display($customer->phone) : ($customer->contact_number ?: '—') }}</dd>
                 </div>
                 <div>
                     <dt class="text-xs font-medium tracking-wide text-muted uppercase">{{ trans('customer::customer_front.labels.member_since') }}</dt>
@@ -44,7 +46,11 @@
                 </div>
             </dl>
 
-            @if (! $customer->contact_number)
+            @if ($customer->needsProfileCompletion())
+                <x-theme::alert type="warning" class="mt-6">
+                    <a href="{{ frontRoute('customer.profile.complete') }}" class="font-medium underline">{{ trans('customer::customer_front.complete_profile.title') }}</a>
+                </x-theme::alert>
+            @elseif (! $customer->phone && ! $customer->contact_number)
                 <x-theme::alert type="warning" class="mt-6">{{ trans('customer::customer_front.messages.profile_incomplete') }}</x-theme::alert>
             @endif
         </x-theme::card>
@@ -58,9 +64,23 @@
                         <x-theme::badge>{{ $addressCount }}</x-theme::badge>
                     </a>
                 </li>
+                @if (\Illuminate\Support\Facades\Route::has('customer.wishlist.index'))
+                    <li>
+                        <a href="{{ frontRoute('customer.wishlist.index') }}" class="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-ink-soft hover:bg-surface-alt hover:text-ink">
+                            <span class="flex items-center gap-2.5"><x-theme::icon name="heart" size="size-4" /> {{ trans('customer::customer_front.wishlist.title') }}</span>
+                            <x-theme::badge>{{ $wishlistCount }}</x-theme::badge>
+                        </a>
+                    </li>
+                @endif
+                <li>
+                    <a href="{{ frontRoute('customer.reseller.edit') }}" class="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-ink-soft hover:bg-surface-alt hover:text-ink">
+                        <span class="flex items-center gap-2.5"><x-theme::icon name="store" size="size-4" /> {{ trans('customer::customer_front.reseller.title') }}</span>
+                        <x-theme::badge>{{ $customer->isReseller() ? trans('customer::customer_front.reseller.status_on') : trans('customer::customer_front.reseller.status_off') }}</x-theme::badge>
+                    </a>
+                </li>
                 <li>
                     <a href="{{ frontRoute('customer.change-password') }}" class="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-ink-soft hover:bg-surface-alt hover:text-ink">
-                        <span class="flex items-center gap-2.5"><x-theme::icon name="lock" size="size-4" /> {{ trans('customer::customer_front.titles.change_password') }}</span>
+                        <span class="flex items-center gap-2.5"><x-theme::icon name="lock" size="size-4" /> {{ $customer->hasPassword() ? trans('customer::customer_front.titles.change_password') : trans('customer::customer_front.titles.set_password') }}</span>
                         <x-theme::icon name="chevron-right" size="size-4" class="text-muted" />
                     </a>
                 </li>

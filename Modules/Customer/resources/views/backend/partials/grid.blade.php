@@ -59,6 +59,16 @@
                             <td>{{ wordWrapper($customer[$columnCode]) }}</td>
                         @elseif($columnCode == 'created_at')
                             <td>{{ getFormatedDate($customer->created_at, getGridDateFormat()) }}</td>
+                        @elseif($columnCode == 'phone')
+                            <td>{{ $customer->phone ? \Modules\Customer\Support\PhoneNumber::display($customer->phone) : '' }}</td>
+                        @elseif(in_array($columnCode, ['is_reseller', 'cod_blocked']))
+                            <td>
+                                @if((int) $value === (int) config('core.yes'))
+                                    <span class="badge {{ $columnCode == 'cod_blocked' ? 'badge-danger' : 'badge-info' }}">{{ trans('core::core.labels.yes') }}</span>
+                                @else
+                                    <span class="badge badge-light">{{ trans('core::core.labels.no') }}</span>
+                                @endif
+                            </td>
                         @else
                             <td>{{$value}}</td>
                         @endif
@@ -69,6 +79,11 @@
                                 onclick="setLocation('{{ route('admin.customer.edit', updateUrlParams([$customer->id])) }}');"
                                 class="btn"><span data-placement="right" data-toggle="tooltip"
                                     title="{{trans('core::core.labels.edit')}}"><i class="fas fa-edit"></i></span></button>
+                        @endcan
+                        @can('admin.customer.toggle_cod_block')
+                            <button type="button" class="btn" onclick="customerToggleCodBlock('{{ route('admin.customer.toggle_cod_block', updateUrlParams([$customer->id])) }}');">
+                                <span data-placement="right" data-toggle="tooltip"
+                                    title="{{ (int) $customer->cod_blocked === (int) config('core.yes') ? trans('customer::customer.labels.unblock_cod') : trans('customer::customer.labels.block_cod') }}"><i class="fas {{ (int) $customer->cod_blocked === (int) config('core.yes') ? 'fa-lock' : 'fa-money-bill-wave' }}"></i></span></button>
                         @endcan
                         @can('admin.customer.delete')
                             <button type="button" class="btn" data-toggle="modal" data-target="#modal-delete-confirmation"

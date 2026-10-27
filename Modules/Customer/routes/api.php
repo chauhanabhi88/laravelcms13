@@ -1,6 +1,8 @@
 <?php
 
+use Laravel\Passport\Http\Middleware\CheckToken;
 use Laravel\Passport\Http\Middleware\EnsureClientIsResourceOwner;
+use Modules\Customer\Services\CustomerAuthService;
 
 // Route::middleware(['auth:api', 'scope:customer'])->prefix('customer')->group(function() {
 // Route::middleware(['auth:customer', EnsureClientIsResourceOwner::using('customer')])->prefix('customer')->group(function() {
@@ -45,6 +47,67 @@ if ($apiVersions = config('core.api_versions')) {
                 'as' => 'customer_api.index',
                 'uses' => $upperCaseVersion.'\IndexController@index',
             ]);
+
+            /*
+             * M08: mobile OTP sign-in. otp/verify issues a personal access token with the
+             * "customer" scope; everything below needs that token.
+             */
+            Route::post('/otp/send', [
+                'as' => 'customer_api.otp.send',
+                'uses' => $upperCaseVersion.'\AuthController@sendOtp',
+                'middleware' => 'throttle:otp',
+            ]);
+            Route::post('/otp/verify', [
+                'as' => 'customer_api.otp.verify',
+                'uses' => $upperCaseVersion.'\AuthController@verifyOtp',
+                'middleware' => 'throttle:10,1',
+            ]);
+
+            Route::middleware(['auth:api', CheckToken::using(CustomerAuthService::API_SCOPE), 'throttle:60,1'])->group(function () use ($upperCaseVersion) {
+                Route::post('/logout', [
+                    'as' => 'customer_api.logout',
+                    'uses' => $upperCaseVersion.'\AuthController@logout',
+                ]);
+
+                Route::get('/profile', [
+                    'as' => 'customer_api.profile.show',
+                    'uses' => $upperCaseVersion.'\ProfileController@show',
+                ]);
+                Route::put('/profile', [
+                    'as' => 'customer_api.profile.update',
+                    'uses' => $upperCaseVersion.'\ProfileController@update',
+                ]);
+
+                Route::get('/addresses', [
+                    'as' => 'customer_api.addresses.index',
+                    'uses' => $upperCaseVersion.'\AddressController@index',
+                ]);
+                Route::post('/addresses', [
+                    'as' => 'customer_api.addresses.store',
+                    'uses' => $upperCaseVersion.'\AddressController@store',
+                ]);
+                Route::put('/addresses/{address}', [
+                    'as' => 'customer_api.addresses.update',
+                    'uses' => $upperCaseVersion.'\AddressController@update',
+                ])->where('address', '[0-9]+');
+                Route::delete('/addresses/{address}', [
+                    'as' => 'customer_api.addresses.destroy',
+                    'uses' => $upperCaseVersion.'\AddressController@destroy',
+                ])->where('address', '[0-9]+');
+
+                Route::get('/wishlist', [
+                    'as' => 'customer_api.wishlist.index',
+                    'uses' => $upperCaseVersion.'\WishlistController@index',
+                ]);
+                Route::post('/wishlist', [
+                    'as' => 'customer_api.wishlist.store',
+                    'uses' => $upperCaseVersion.'\WishlistController@store',
+                ]);
+                Route::delete('/wishlist/{product}', [
+                    'as' => 'customer_api.wishlist.destroy',
+                    'uses' => $upperCaseVersion.'\WishlistController@destroy',
+                ])->where('product', '[0-9]+');
+            });
         });
 
         // Route::middleware(['auth:api', EnsureClientIsResourceOwner::using('customer')])->prefix($version."/customer")->group(function() use($upperCaseVersion) {

@@ -10,6 +10,18 @@ return [
     'redirect_route_after_login' => 'customer.myaccount',
     /*
     |--------------------------------------------------------------------------
+    | Marketplace account rules (M08)
+    |--------------------------------------------------------------------------
+    | default_login: "otp" (customer.login is the mobile/email OTP page; the
+    | email + password form lives at customer.login.password).
+    | Email OTP and password login can be switched off under Settings > Customer.
+    */
+    'default_login' => 'otp',
+    'max_addresses' => 20,
+    'max_wishlist_items' => 500,
+    'deletion_grace_days' => 7,
+    /*
+    |--------------------------------------------------------------------------
     | Define which route the user should be redirected to after accessing
     | a resource that requires to be logged in
     |--------------------------------------------------------------------------
