@@ -19,6 +19,26 @@ return [
             'label' => 'Pinned trending searches',
             'comment' => 'Comma separated. Shown first in the search box suggestions, before the most searched terms.',
         ],
+        'transit_days' => [
+            'label' => 'Delivery transit days',
+            'comment' => 'JSON: days in transit from the seller\'s warehouse by relationship (same_city, same_state, metro_metro, roi, special). Used for the estimated delivery date until courier integration.',
+        ],
+        'metro_city_ids' => [
+            'label' => 'Metro city IDs',
+            'comment' => 'Comma-separated city IDs treated as metros, in addition to pincodes whose zone is "metro".',
+        ],
+        'special_zone_state_ids' => [
+            'label' => 'Special delivery zone state IDs',
+            'comment' => 'Comma-separated state IDs (e.g. North East, J&K, Ladakh, islands) with longer transit, in addition to pincodes in the ne_jk / special zones.',
+        ],
+        'low_stock_display_threshold' => [
+            'label' => '"Only N left" threshold',
+            'comment' => 'The product page shows "Only N left" at or below this many units.',
+        ],
+        'similar_price_band_percent' => [
+            'label' => 'Similar products price band (%)',
+            'comment' => 'Similar products cost within plus or minus this percentage of the product\'s price.',
+        ],
     ],
 
     'home' => [

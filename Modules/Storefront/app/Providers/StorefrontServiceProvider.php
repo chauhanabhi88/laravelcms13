@@ -17,8 +17,13 @@ use Modules\Product\Events\ProductStatusChanged;
 use Modules\Seller\Events\SellerReactivated;
 use Modules\Seller\Events\SellerSuspended;
 use Modules\Storefront\Console\AggregateSearchTermsCommand;
+use Modules\Storefront\Console\FlushProductViewsCommand;
 use Modules\Storefront\Console\ReindexProductsCommand;
+use Modules\Storefront\Contracts\CartEntryPoint;
+use Modules\Storefront\Contracts\DeliveryEstimator;
 use Modules\Storefront\Contracts\ProductSearchEngine;
+use Modules\Storefront\Contracts\ReviewSummaryProvider;
+use Modules\Storefront\Contracts\WishlistStateProvider;
 use Modules\Storefront\Listeners\IndexProductOnChange;
 use Modules\Storefront\Listeners\RemoveProductFromIndex;
 use Modules\Storefront\Listeners\SyncCategoryPaths;
@@ -32,6 +37,10 @@ use Modules\Storefront\Repositories\Eloquent\EloquentProductCollectionRepository
 use Modules\Storefront\Repositories\HomeSectionRepository;
 use Modules\Storefront\Repositories\ProductCollectionRepository;
 use Modules\Storefront\Services\Search\ProductSearch;
+use Modules\Storefront\Support\NullCartEntryPoint;
+use Modules\Storefront\Support\NullReviewSummaryProvider;
+use Modules\Storefront\Support\NullWishlistStateProvider;
+use Modules\Storefront\Support\PincodeMatrixDeliveryEstimator;
 use Modules\Storefront\Support\StorefrontCache;
 
 class StorefrontServiceProvider extends ServiceProvider
@@ -51,9 +60,10 @@ class StorefrontServiceProvider extends ServiceProvider
         Event::listen(CatalogTreeChanged::class, SyncCategoryPaths::class);
 
         RateLimiter::for('storefront-autocomplete', fn (Request $request): Limit => Limit::perSecond(30, 10)->by($request->ip()));
+        RateLimiter::for('storefront-delivery-check', fn (Request $request): Limit => Limit::perMinute(20)->by($request->ip()));
 
         if ($this->app->runningInConsole()) {
-            $this->commands([ReindexProductsCommand::class, AggregateSearchTermsCommand::class]);
+            $this->commands([ReindexProductsCommand::class, AggregateSearchTermsCommand::class, FlushProductViewsCommand::class]);
         }
     }
 
@@ -64,6 +74,14 @@ class StorefrontServiceProvider extends ServiceProvider
 
         $this->app->singleton(StorefrontCache::class);
         $this->app->bindIf(ProductSearchEngine::class, ProductSearch::class);
+
+        // Product page extension points (M07): later modules rebind these (M13 delivery
+        // estimates, M16 reviews, M08 wishlist, M10 cart); bindIf keeps their bindings when
+        // they register first.
+        $this->app->bindIf(DeliveryEstimator::class, PincodeMatrixDeliveryEstimator::class);
+        $this->app->bindIf(ReviewSummaryProvider::class, NullReviewSummaryProvider::class);
+        $this->app->bindIf(WishlistStateProvider::class, NullWishlistStateProvider::class);
+        $this->app->bindIf(CartEntryPoint::class, NullCartEntryPoint::class);
     }
 
     protected function registerConfig(): void

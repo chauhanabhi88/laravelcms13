@@ -135,11 +135,63 @@ return [
     ],
 
     /*
+    | Product page (M07). The variant payload caps "available" at max_available_shown, so
+    | the real stock is never exposed. Similar / more-from-seller rows are cached per product.
+    | Axes whose attribute code is listed here render as colour swatches (as do axes whose
+    | options carry a hex code or images).
+    */
+    'pdp' => [
+        'max_available_shown' => 10,
+        'similar_limit' => 12,
+        'similar_cache_ttl' => 3600,
+        'swatch_attribute_codes' => ['colour', 'color'],
+    ],
+
+    /*
+    | Delivery estimate (pincode matrix, until M13): extra days added to the earliest date to
+    | show a range per relationship, and the date format ("Thu, 30 Oct").
+    */
+    'delivery' => [
+        'range_days' => [
+            'same_city' => 0,
+            'same_state' => 0,
+            'metro_metro' => 1,
+            'roi' => 1,
+            'special' => 2,
+        ],
+        'date_format' => 'D, j M',
+    ],
+
+    /*
+    | Product view counting: user agents matching this pattern are not counted; a visitor's
+    | repeat views of a product within dedupe_minutes count once. Counts collect in the cache
+    | and storefront:flush-views adds them to product.view_count.
+    */
+    'views' => [
+        'bot_pattern' => '/bot|crawl|spider|slurp|mediapartners|facebookexternalhit|whatsapp|preview|headless|lighthouse|pingdom|curl|wget|python|java\/|okhttp|^$/i',
+        'dedupe_minutes' => 60,
+        'cache_ttl' => 86400,
+    ],
+
+    /*
     | Fallbacks for admin > Settings > Storefront, read through Modules\Storefront\Support\StorefrontSettings.
     */
     'defaults' => [
         'show_out_of_stock' => 1,
         'trending_terms_manual' => '',
         'free_delivery_badge' => 1,
+        'transit_days' => [
+            'same_city' => 2,
+            'same_state' => 3,
+            'metro_metro' => 4,
+            'roi' => 5,
+            'special' => 8,
+        ],
+        'metro_city_ids' => '',
+        'special_zone_state_ids' => '',
+        'low_stock_display_threshold' => 5,
+        'similar_price_band_percent' => 30,
+        // Until the Order module's settings('order', 'cod_max_value') exists (M12).
+        'cod_max_value' => '5000',
     ],
 ];
