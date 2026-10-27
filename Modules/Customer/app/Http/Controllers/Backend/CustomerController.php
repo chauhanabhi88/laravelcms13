@@ -13,6 +13,7 @@ use Modules\Customer\Http\Requests\UpdateRequest;
 use Modules\Customer\Models\Customer;
 use Modules\Customer\Models\CustomerAddress;
 use Modules\Customer\Repositories\CustomerRepository;
+use Modules\Customer\Support\PhoneNumber;
 
 class CustomerController extends BackendController
 {
@@ -298,7 +299,22 @@ class CustomerController extends BackendController
                 throw new \Exception(trans('customer::customer.messages.data_invalid'));
             }
             $params = $request->all();
-            $checkEmailInTransh = Customer::onlyTrashed()->where('email', $params['customer']['email'])->get()->first();
+
+            /* M08 columns are not mass assignable: phone (normalised to E.164), reseller flag and name - only when sent */
+            $marketplace = [];
+            if (array_key_exists('phone', $params['customer'])) {
+                $marketplace['phone'] = PhoneNumber::normalise($params['customer']['phone']);
+            }
+            if (array_key_exists('is_reseller', $params['customer'])) {
+                $marketplace['is_reseller'] = (int) $params['customer']['is_reseller'] === (int) config('core.yes') ? config('core.yes') : config('core.no');
+            }
+            if (array_key_exists('reseller_business_name', $params['customer'])) {
+                $marketplace['reseller_business_name'] = filled($params['customer']['reseller_business_name']) ? trim($params['customer']['reseller_business_name']) : null;
+            }
+            unset($params['customer']['phone'], $params['customer']['is_reseller'], $params['customer']['reseller_business_name']);
+            $params['customer']['email'] = filled($params['customer']['email'] ?? null) ? $params['customer']['email'] : null;
+
+            $checkEmailInTransh = $params['customer']['email'] === null ? null : Customer::onlyTrashed()->where('email', $params['customer']['email'])->get()->first();
 
             /* customer is  registred in our system but added in softdelete */
             if (! empty($checkEmailInTransh)) {
@@ -335,6 +351,14 @@ class CustomerController extends BackendController
                 $params['customer']['profile_picture'] = $imageParams['profile_picture'];
             }
             $this->customer->update($customer, $params['customer']);
+
+            if (array_key_exists('phone', $marketplace) && $customer->phone !== $marketplace['phone']) {
+                $marketplace['phone_verified_at'] = null;
+            }
+            if ($marketplace !== []) {
+                $customer->forceFill($marketplace)->save();
+            }
+
             if (isset($params['snc']) && $params['snc']) {
                 return redirect()->route('admin.customer.edit', updateUrlParams([$id]))->withInput(['tab' => '#custom-tabs-three-address-tab'])->with('success', trans('customer::customer.messages.updated_success'));
             }
@@ -378,6 +402,23 @@ class CustomerController extends BackendController
             $this->customer->flushCache(config('customer.cache.deleted_customer_name'));
 
             return redirect()->route('admin.customer.index', updateUrlParams())->with('success', trans('customer::customer.messages.deleted_success'));
+        } catch (\Throwable $e) {
+            return redirect()->route('admin.customer.index', updateUrlParams())->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Block or allow Cash on Delivery for one customer (M08; the M12 COD risk rules also set it).
+     */
+    public function toggleCodBlock(Request $request)
+    {
+        try {
+            $customer = Customer::query()->findOrFail((int) $request->route('id'));
+            $blocked = ! $customer->isCodBlocked();
+            $customer->forceFill(['cod_blocked' => $blocked ? config('core.yes') : config('core.no')])->save();
+            $this->customer->flushCache(config('customer.cache.name'));
+
+            return redirect()->back()->with('success', trans('customer::customer.messages.'.($blocked ? 'cod_blocked' : 'cod_unblocked')));
         } catch (\Throwable $e) {
             return redirect()->route('admin.customer.index', updateUrlParams())->with('error', $e->getMessage());
         }

@@ -44,6 +44,7 @@ return [
         'wishlist' => 'Wishlist',
         'profile' => 'Profile',
         'open_profile_menu' => 'Open profile menu',
+        'reseller' => 'Reseller mode',
     ],
     'footer' => [
         'pages' => 'Company',

@@ -12,6 +12,7 @@ use Modules\Customer\Http\Requests\ChangePasswordRequest;
 use Modules\Customer\Http\Requests\ProfileRequest;
 use Modules\Customer\Models\Customer;
 use Modules\Customer\Repositories\CustomerRepository;
+use Modules\Customer\Services\WishlistService;
 
 class CustomerController extends FrontendController
 {
@@ -45,8 +46,9 @@ class CustomerController extends FrontendController
     {
         $customer = Auth::guard('customer')->user();
         $addressCount = $customer->address()->count();
+        $wishlistCount = app(WishlistService::class)->count($customer);
 
-        return view('customer::frontend.account.myaccount', compact('customer', 'addressCount'));
+        return view('customer::frontend.account.myaccount', compact('customer', 'addressCount', 'wishlistCount'));
     }
 
     /**
@@ -56,6 +58,7 @@ class CustomerController extends FrontendController
     {
         return view('customer::frontend.account.editprofile', [
             'customer' => Auth::guard('customer')->user(),
+            'languages' => (array) $this->getLanguageOptions(),
         ]);
     }
 
@@ -71,7 +74,19 @@ class CustomerController extends FrontendController
                 throw new \Exception(trans('customer::customer.messages.data_invalid'));
             }
 
-            $params = $request->only('first_name', 'last_name', 'email', 'contact_number');
+            $params = $request->only('first_name', 'last_name', 'email', 'gender', 'date_of_birth', 'preferred_locale');
+            $params['email'] = filled($params['email'] ?? null) ? strtolower($params['email']) : null;
+            foreach (['gender', 'date_of_birth', 'preferred_locale'] as $optional) {
+                $params[$optional] = filled($params[$optional] ?? null) ? $params[$optional] : null;
+            }
+
+            /* Deprecated field and the marketing checkbox: only touched when the form sends them */
+            if ($request->has('contact_number')) {
+                $params['contact_number'] = $request->input('contact_number');
+            }
+            if ($request->has('marketing_opt_in')) {
+                $params['marketing_opt_in'] = (int) $request->input('marketing_opt_in');
+            }
 
             if ($request->boolean('remove_profile_picture') && $customer->profile_picture) {
                 $this->customer->setUploadParams([
@@ -103,7 +118,9 @@ class CustomerController extends FrontendController
 
     public function changePassword()
     {
-        return view('customer::frontend.account.changepassword');
+        return view('customer::frontend.account.changepassword', [
+            'hasPassword' => Auth::guard('customer')->user()->hasPassword(),
+        ]);
     }
 
     /**
@@ -117,7 +134,7 @@ class CustomerController extends FrontendController
                 throw new \Exception(trans('customer::customer.messages.data_invalid'));
             }
 
-            if (Hash::check($request->input('password'), $customer->password)) {
+            if ($customer->hasPassword() && Hash::check($request->input('password'), $customer->password)) {
                 return redirect()->route('customer.change-password', updateUrlParams(['type' => config('core.route_type')]))
                     ->withErrors(['password' => trans('customer::customer.messages.password_exist')]);
             }

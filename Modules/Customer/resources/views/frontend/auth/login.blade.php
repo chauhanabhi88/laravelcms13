@@ -25,6 +25,12 @@
 
         <x-theme::button class="w-full" size="lg" loading="loading">{{ trans('customer::customer_front.buttons.login') }}</x-theme::button>
     </form>
+
+    <div class="mt-6 border-t border-line pt-5 text-center text-sm">
+        <a href="{{ frontRoute('customer.login') }}" class="inline-flex items-center gap-1.5 font-medium text-accent hover:text-accent-hover">
+            <x-theme::icon name="smartphone" size="size-4" /> {{ trans('customer::customer_front.otp.title') }}
+        </a>
+    </div>
 @endsection
 
 @section('footer')

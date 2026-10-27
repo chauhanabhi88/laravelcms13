@@ -9,15 +9,16 @@ return [
         'admin.customer.edit' => 'customer::customer.labels.edit',
         'admin.customer.delete' => 'customer::customer.labels.delete',
         'admin.customer.mass_delete' => 'customer::customer.labels.mass_delete',
-        'admin.customer.deletedCustomer'=>'customer::customer.labels.deleted_customer',
+        'admin.customer.deletedCustomer' => 'customer::customer.labels.deleted_customer',
         'admin.customer.deletedcustomerfilters' => 'customer::customer.labels.deleted_customer_filter',
         'admin.deletedCustomer.delete' => 'customer::customer.permissions.permanant_delete',
         'admin.deletedCustomer.mass_delete' => 'customer::customer.labels.deleted_customer_mass_delete',
         'admin.customer.mass_restore' => 'customer::customer.labels.deleted_customer_mass_restore',
         'admin.customer.restore' => 'customer::customer.labels.deleted_customer_restore',
-        'admin.customer.address'    =>  'customer::customer.permissions.add_new_address', 
-        'admin.address.get_address' =>  'customer::customer.permissions.get_address',
-        'admin.address.delete'  =>  'customer::customer.permissions.delete_address',
+        'admin.customer.address' => 'customer::customer.permissions.add_new_address',
+        'admin.address.get_address' => 'customer::customer.permissions.get_address',
+        'admin.address.delete' => 'customer::customer.permissions.delete_address',
+        'admin.customer.toggle_cod_block' => 'customer::customer.permissions.toggle_cod_block',
 
         'admin.customer.group.index' => 'customer::customer_group.labels.list',
         'admin.customer.group.filters' => 'customer::customer_group.labels.filters',
@@ -28,10 +29,10 @@ return [
 
         'admin.customerLog.index' => 'customer::customer_online_offline.labels.customer_online_log_list',
         'admin.customerLog.filters' => 'customer::customer_online_offline.labels.customer_online_log_filters',
-        //'admin.customerLog.refreshGrid' => 'customer::customer_online_offline.labels.customer_online_refreshGrid',
+        // 'admin.customerLog.refreshGrid' => 'customer::customer_online_offline.labels.customer_online_refreshGrid',
 
         'admin.customerloginlog.index' => 'customer::customer.labels.customer_login_log_list',
-        'admin.customerloginlog.filters' => 'customer::customer.labels.customer_login_log_filters', 
-        'admin.customerloginlog.export' => 'customer::customer.labels.customer_login_log_export'
-    ]
+        'admin.customerloginlog.filters' => 'customer::customer.labels.customer_login_log_filters',
+        'admin.customerloginlog.export' => 'customer::customer.labels.customer_login_log_export',
+    ],
 ];

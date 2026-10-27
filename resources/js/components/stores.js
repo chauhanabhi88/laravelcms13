@@ -58,6 +58,17 @@ export default function registerStores(Alpine) {
             this.ids = new Set(ids.map(String));
         },
 
+        /**
+         * Set one product's state without announcing it (server answers, rollbacks).
+         */
+        apply(id, on) {
+            const key = String(id);
+            const ids = new Set(this.ids);
+
+            on ? ids.add(key) : ids.delete(key);
+            this.ids = ids;
+        },
+
         get count() {
             return this.ids.size;
         },

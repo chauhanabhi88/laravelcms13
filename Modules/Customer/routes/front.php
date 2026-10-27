@@ -12,8 +12,30 @@
 */
 
 Route::prefix('customer')->group(function () {
+    /**
+     * Login or sign up with a mobile / email OTP (M08). "customer.login" is the OTP page so the
+     * guest redirects and existing links land there; the password form moved to /login/password.
+     */
     Route::get('/login', [
         'as' => 'customer.login',
+        'uses' => 'OtpLoginController@show',
+    ]);
+    Route::post('/login/otp/send', [
+        'as' => 'customer.otp.send',
+        'uses' => 'OtpLoginController@send',
+        'middleware' => 'throttle:otp',
+    ]);
+    Route::get('/login/otp/verify', [
+        'as' => 'customer.otp.verify.form',
+        'uses' => 'OtpLoginController@verifyForm',
+    ]);
+    Route::post('/login/otp/verify', [
+        'as' => 'customer.otp.verify',
+        'uses' => 'OtpLoginController@verify',
+        'middleware' => 'throttle:10,1',
+    ]);
+    Route::get('/login/password', [
+        'as' => 'customer.login.password',
         'uses' => 'LoginController@index',
     ]);
     Route::post('/login', [
@@ -113,6 +135,66 @@ Route::prefix('customer')->group(function () {
         Route::delete('/{address}', [
             'as' => 'customer.addresses.destroy',
             'uses' => 'CustomerAddressController@destroy',
+        ]);
+    });
+
+    /**
+     * M08 account pages: profile completion, wishlist, reseller mode, account deletion
+     */
+    Route::middleware('auth:customer')->group(function () {
+        Route::get('/complete-profile', [
+            'as' => 'customer.profile.complete',
+            'uses' => 'ProfileCompletionController@show',
+        ]);
+        Route::post('/complete-profile', [
+            'as' => 'customer.profile.complete.store',
+            'uses' => 'ProfileCompletionController@store',
+        ]);
+        Route::get('/complete-profile/skip', [
+            'as' => 'customer.profile.complete.skip',
+            'uses' => 'ProfileCompletionController@skip',
+        ]);
+
+        Route::get('/wishlist', [
+            'as' => 'customer.wishlist.index',
+            'uses' => 'WishlistController@index',
+        ]);
+        Route::post('/wishlist/toggle', [
+            'as' => 'customer.wishlist.toggle',
+            'uses' => 'WishlistController@toggle',
+            'middleware' => 'throttle:60,1',
+        ]);
+        Route::delete('/wishlist/{product}', [
+            'as' => 'customer.wishlist.destroy',
+            'uses' => 'WishlistController@destroy',
+        ])->where('product', '[0-9]+');
+
+        Route::get('/reseller', [
+            'as' => 'customer.reseller.edit',
+            'uses' => 'ResellerController@edit',
+        ]);
+        Route::post('/reseller', [
+            'as' => 'customer.reseller.update',
+            'uses' => 'ResellerController@update',
+        ]);
+
+        Route::get('/delete-account', [
+            'as' => 'customer.deletion.create',
+            'uses' => 'AccountDeletionController@create',
+        ]);
+        Route::post('/delete-account/code', [
+            'as' => 'customer.deletion.code',
+            'uses' => 'AccountDeletionController@sendCode',
+            'middleware' => 'throttle:otp',
+        ]);
+        Route::post('/delete-account', [
+            'as' => 'customer.deletion.store',
+            'uses' => 'AccountDeletionController@store',
+            'middleware' => 'throttle:10,1',
+        ]);
+        Route::post('/delete-account/cancel', [
+            'as' => 'customer.deletion.cancel',
+            'uses' => 'AccountDeletionController@cancel',
         ]);
     });
 });

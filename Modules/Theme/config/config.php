@@ -36,6 +36,7 @@ return [
         'cart_route' => 'cart.index',
         'orders_route' => 'customer.orders.index',
         'wishlist_route' => 'customer.wishlist.index',
+        'wishlist_toggle_route' => 'customer.wishlist.toggle',
         'account_route' => 'customer.myaccount',
         'sell' => ['route' => 'seller.landing', 'page' => 'sell-with-us'],
     ],

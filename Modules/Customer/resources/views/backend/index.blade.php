@@ -47,6 +47,14 @@
 
 @push('js-stack')
 <script type="text/javascript">
+  /* M08: block / unblock Cash on Delivery (the grid sits inside the filter form, so post a standalone form) */
+  window.customerToggleCodBlock = function(url) {
+    var form = jQuery('<form method="POST"></form>').attr('action', url);
+    form.append(jQuery('<input type="hidden" name="_token">').val('{{ csrf_token() }}'));
+    jQuery('body').append(form);
+    form.trigger('submit');
+  };
+
   var status;
   jQuery(document).on('change', '.status', function() {
     var id = $(this).attr('data-id');

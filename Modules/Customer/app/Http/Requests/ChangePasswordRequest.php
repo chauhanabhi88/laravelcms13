@@ -27,7 +27,10 @@ class ChangePasswordRequest extends FormRequest
                 'regex:/[0-9]/',      // must contain at least one digit
                 'regex:'.config('core.special_character_regex_server'), // must contain a special character
             ],
-            'old_password' => ['required', 'current_password:customer'],
+            // Accounts created by OTP have no password yet: they set one without a current password.
+            'old_password' => auth('customer')->user()?->hasPassword() === false
+                ? ['nullable']
+                : ['required', 'current_password:customer'],
         ];
     }
 

@@ -100,6 +100,29 @@ class EloquentCustomerRepository extends EloquentBaseRepository implements Custo
                 'options' => ['label' => trans('core::core.labels.status'), 'class' => 'custom-select'],
             ],
             [
+                'type' => 'text',
+                'name' => 'phone',
+                'row' => '2',
+                'value' => $request->get('phone', getSessionFilter(config('customer.cache.name'), 'phone')),
+                'options' => ['placeholder' => trans('customer::customer.labels.phone'), 'class' => 'form-control'],
+            ],
+            [
+                'type' => 'select',
+                'row' => '2',
+                'name' => 'is_reseller',
+                'value' => $request->get('is_reseller', getSessionFilter(config('customer.cache.name'), 'is_reseller')),
+                'select_options' => $this->getYesNoOptions(true),
+                'options' => ['label' => trans('customer::customer.labels.is_reseller'), 'class' => 'custom-select'],
+            ],
+            [
+                'type' => 'select',
+                'row' => '2',
+                'name' => 'cod_blocked',
+                'value' => $request->get('cod_blocked', getSessionFilter(config('customer.cache.name'), 'cod_blocked')),
+                'select_options' => $this->getYesNoOptions(true),
+                'options' => ['label' => trans('customer::customer.labels.cod_blocked'), 'class' => 'custom-select'],
+            ],
+            [
                 'type' => 'date_range',
                 'row' => '1',
                 'name' => ['created_at_from', 'created_at_to'],
@@ -178,6 +201,19 @@ class EloquentCustomerRepository extends EloquentBaseRepository implements Custo
         $whereCond = $request->get('status', getSessionFilter(config('customer.cache.name'), 'status'));
         if ($whereCond !== null) {
             $collection->where('status', $whereCond);
+        }
+
+        /* M08 filters: mobile digits (any part), reseller, COD blocked */
+        $whereCond = $request->get('phone', getSessionFilter(config('customer.cache.name'), 'phone'));
+        if ($whereCond !== null && ($digits = preg_replace('/\D+/', '', (string) $whereCond)) !== '') {
+            $collection->where('phone', 'LIKE', '%'.$digits.'%');
+        }
+
+        foreach (['is_reseller', 'cod_blocked'] as $flag) {
+            $whereCond = $request->get($flag, getSessionFilter(config('customer.cache.name'), $flag));
+            if ($whereCond !== null && $whereCond !== '') {
+                $collection->where($flag, (int) $whereCond);
+            }
         }
 
         $whereCond = $request->get('created_at_from', getSessionFilter(config('customer.cache.name'), 'created_at_from'));

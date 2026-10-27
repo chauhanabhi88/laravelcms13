@@ -1,8 +1,9 @@
 <?php
-$maxUploadServer = (int)(ini_get('upload_max_filesize')) > (int)(ini_get('post_max_size')) ? (int)(ini_get('post_max_size')) : (int)(ini_get('upload_max_filesize'));
+
+$maxUploadServer = (int) (ini_get('upload_max_filesize')) > (int) (ini_get('post_max_size')) ? (int) (ini_get('post_max_size')) : (int) (ini_get('upload_max_filesize'));
 
 return [
-    "customer::customer.settings.customer" => [
+    'customer::customer.settings.customer' => [
         'max_upload_size' => [
             'label' => 'customer::customer.settings.max_upload.label',
             'type' => 'number',
@@ -17,7 +18,7 @@ return [
             'type' => 'text',
             'placeholder' => 'customer::customer.settings.image_type.label',
             'storage' => 'db',
-            'comment' => 'customer::customer.settings.image_type.comment'
+            'comment' => 'customer::customer.settings.image_type.comment',
         ],
         'min_password_length' => [
             'label' => 'customer::customer.settings.min_password_length.label',
@@ -51,21 +52,33 @@ return [
             'label' => 'customer::customer.settings.email_verification_after_registration',
             'type' => 'select',
             'options' => getStatusOption(),
-            'storage' => 'db'
+            'storage' => 'db',
         ],
         'phone_verification' => [
             'label' => 'customer::customer.settings.phone_verification_after_registration',
             'type' => 'select',
             'options' => getStatusOption(),
-            'storage' => 'db'
+            'storage' => 'db',
         ],
         'multi_device_login' => [
             'label' => 'customer::customer.settings.multi_device_login',
             'type' => 'select',
             'options' => getStatusOption(),
-            'storage' => 'db'
+            'storage' => 'db',
         ],
-    ]
-]
-
-?>
+        'enable_email_otp' => [
+            'label' => 'customer::customer.settings.enable_email_otp.label',
+            'type' => 'select',
+            'options' => getStatusOption(),
+            'storage' => 'db',
+            'comment' => 'customer::customer.settings.enable_email_otp.comment',
+        ],
+        'enable_password_login' => [
+            'label' => 'customer::customer.settings.enable_password_login.label',
+            'type' => 'select',
+            'options' => getStatusOption(),
+            'storage' => 'db',
+            'comment' => 'customer::customer.settings.enable_password_login.comment',
+        ],
+    ],
+];

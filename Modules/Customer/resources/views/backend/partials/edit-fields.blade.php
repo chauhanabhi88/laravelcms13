@@ -28,7 +28,7 @@ $viewPassword = !empty(settings('core', 'view_password')) ? settings('core', 'vi
                                 {{ normalText("customer[first_name]","customer::customer.labels.first_name", $errors,$customer->first_name,["class" => "form-control required"])}}
                             </div>
                             <div class="col-md-6">
-                                {{ normalText("customer[last_name]","customer::customer.labels.last_name", $errors,$customer->last_name,["class" => "form-control required"])}}
+                                {{ normalText("customer[last_name]","customer::customer.labels.last_name", $errors,$customer->last_name,["class" => "form-control"])}}
                             </div>
                         </div>
 
@@ -68,10 +68,10 @@ $viewPassword = !empty(settings('core', 'view_password')) ? settings('core', 'vi
 
                         <div class="row">
                             <div class="col-md-6">
-                                <label for="email">{{trans('customer::customer.labels.email')}} *</label>
+                                <label for="email">{{trans('customer::customer.labels.email')}}{{ $customer->phone ? '' : ' *' }}</label>
                                 <div class="form-group">
                                     <div class="input-group email-div">
-                                        <input type="email" class="form-control required" value="{{$customer->email}}" name="customer[email]" placeholder="{{trans('customer::customer.labels.password')}}">
+                                        <input type="email" class="form-control" value="{{ old('customer.email', $customer->email) }}" name="customer[email]" placeholder="{{trans('customer::customer.labels.email')}}">
                                         @if((settings('core', 'email_verification') == config('core.yes')))
                                         @if((!empty($customer->email_verified_at)))
                                         <div class="input-group-append">
@@ -95,8 +95,53 @@ $viewPassword = !empty(settings('core', 'view_password')) ? settings('core', 'vi
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <label for="contact_number">{{trans('customer::customer.labels.contact_number')}} *</label>
-                                {{ normalText("customer[contact_number]","customer::customer.labels.contact_number", $errors,$customer->contact_number,["class" => "form-control number required", "hide_label" => "true"])}}
+                                <label for="contact_number">{{trans('customer::customer.labels.contact_number')}}</label>
+                                {{ normalText("customer[contact_number]","customer::customer.labels.contact_number", $errors,$customer->contact_number,["class" => "form-control number", "hide_label" => "true"])}}
+                            </div>
+                        </div>
+
+                        {{-- M08: mobile sign-in identity, reseller mode and COD risk --}}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="customer_phone">{{ trans('customer::customer.labels.phone') }}</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend"><span class="input-group-text">+91</span></div>
+                                        <input type="tel" id="customer_phone" class="form-control @error('customer.phone') is-invalid @enderror" name="customer[phone]" maxlength="14"
+                                            value="{{ old('customer.phone', \Modules\Customer\Support\PhoneNumber::national($customer->phone)) }}">
+                                    </div>
+                                    <small class="form-text text-muted">{{ trans('customer::customer.labels.phone_help') }}</small>
+                                    @error('customer.phone')
+                                        <span class="error invalid-feedback d-block">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="customer_is_reseller">{{ trans('customer::customer.labels.is_reseller') }}</label>
+                                    <select id="customer_is_reseller" name="customer[is_reseller]" class="custom-select">
+                                        <option value="{{ config('core.no') }}" @selected((int) old('customer.is_reseller', $customer->is_reseller) !== (int) config('core.yes'))>{{ trans('core::core.labels.no') }}</option>
+                                        <option value="{{ config('core.yes') }}" @selected((int) old('customer.is_reseller', $customer->is_reseller) === (int) config('core.yes'))>{{ trans('core::core.labels.yes') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                {{ normalText("customer[reseller_business_name]","customer::customer.labels.reseller_business_name", $errors,$customer->reseller_business_name,["class" => "form-control", "maxlength" => 120])}}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="d-block">{{ trans('customer::customer.labels.cod_blocked') }}</label>
+                                <span class="badge {{ $customer->isCodBlocked() ? 'badge-danger' : 'badge-success' }}">{{ $customer->isCodBlocked() ? trans('core::core.labels.yes') : trans('core::core.labels.no') }}</span>
+                                @can('admin.customer.toggle_cod_block')
+                                    <button type="button" class="btn btn-sm btn-outline-secondary ml-2" onclick="customerToggleCodBlock('{{ route('admin.customer.toggle_cod_block', updateUrlParams([$customer->id])) }}')">
+                                        {{ $customer->isCodBlocked() ? trans('customer::customer.labels.unblock_cod') : trans('customer::customer.labels.block_cod') }}
+                                    </button>
+                                @endcan
+                            </div>
+                            <div class="col-md-6">
+                                <label class="d-block">{{ trans('customer::customer.labels.rto_count') }}</label>
+                                <span>{{ (int) $customer->rto_count }}</span>
                             </div>
                         </div>
 
@@ -168,16 +213,16 @@ $viewPassword = !empty(settings('core', 'view_password')) ? settings('core', 'vi
                     lettersOnly: true
                 },
                 'customer[last_name]': {
-                    required: true,
+                    required: false,
                     maxlength: 255,
                     lettersOnly: true
                 },
                 'customer[email]': {
-                    required: true,
+                    required: @js(! $customer->phone),
                     basicEmail: true
                 },
                 'customer[contact_number]': {
-                    required: true,
+                    required: false,
                     minlength: 8,
                     maxlength: 10
                 },
@@ -218,6 +263,13 @@ $viewPassword = !empty(settings('core', 'view_password')) ? settings('core', 'vi
                 }
             },
         });
+
+        window.customerToggleCodBlock = function(url) {
+            var form = jQuery('<form method="POST"></form>').attr('action', url);
+            form.append(jQuery('<input type="hidden" name="_token">').val(@js(csrf_token())));
+            jQuery('body').append(form);
+            form.trigger('submit');
+        };
 
         jQuery.validator.addMethod("lettersOnly", function(value, element) {
             return this.optional(element) || /^[A-Za-z\s]+$/.test(value);
