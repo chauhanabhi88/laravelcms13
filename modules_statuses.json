@@ -22,5 +22,6 @@
     "User": true,
     "Catalog": true,
     "Seller": true,
-    "Product": true
+    "Product": true,
+    "Storefront": true
 }

@@ -12,7 +12,7 @@ use Modules\Core\Providers\Concerns\MapsSellerRoutes;
 /**
  * Seller routes:
  * - backend.php  admin KYC queue and seller management (/backend)
- * - front.php    public "Sell with Us" landing (/supplier) and store page (/s/{slug})
+ * - front.php    public "Sell with Us" landing (/supplier); the store page is Storefront's (M06)
  * - account.php  supplier sign-in, registration, password reset and the onboarding wizard:
  *                /supplier, "web" only (the wizard adds "auth:seller" itself)
  * - seller.php   the supplier panel (MapsSellerRoutes: auth:seller + seller.active)

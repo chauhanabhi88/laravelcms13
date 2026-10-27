@@ -1,0 +1,19 @@
+{
+    "name": "Storefront",
+    "alias": "storefront",
+    "description": "Buyer-facing discovery: configurable home page, category listings, full-text search with filters and autocomplete, collections, the public store page, search analytics and recently viewed products.",
+    "keywords": [],
+    "priority": 18,
+    "providers": [
+        "Modules\\Storefront\\Providers\\StorefrontServiceProvider"
+    ],
+    "files": [],
+    "cache": true,
+    "depends": [
+        "core",
+        "catalog",
+        "seller",
+        "product",
+        "theme"
+    ]
+}

@@ -19,6 +19,7 @@ use Modules\Core\Repositories\Transaltion\Translatable;
 use Modules\Core\Support\Money;
 use Modules\Product\Database\Factories\ProductFactory;
 use Modules\Product\Enums\ProductStatus;
+use Modules\Product\Events\ProductStatusChanged;
 use Modules\Seller\Models\Seller;
 
 /**
@@ -83,6 +84,19 @@ class Product extends MarketplaceModel
         'live' => ['paused', 'blocked'],
         'paused' => ['live', 'blocked'],
         'blocked' => ['pending_qc'],
+    ];
+
+    /**
+     * Every transition announces ProductStatusChanged (to-status => event class).
+     *
+     * @var array<string, class-string>
+     */
+    protected array $transitionEvents = [
+        'pending_qc' => ProductStatusChanged::class,
+        'live' => ProductStatusChanged::class,
+        'rejected' => ProductStatusChanged::class,
+        'paused' => ProductStatusChanged::class,
+        'blocked' => ProductStatusChanged::class,
     ];
 
     protected $table = 'product';

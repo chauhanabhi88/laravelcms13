@@ -32,7 +32,7 @@ return [
     */
     'header' => [
         'search_route' => 'storefront.search',
-        'suggest_route' => 'storefront.search.suggest',
+        'suggest_route' => 'storefront_api.autocomplete',
         'cart_route' => 'cart.index',
         'orders_route' => 'customer.orders.index',
         'wishlist_route' => 'customer.wishlist.index',
