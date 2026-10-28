@@ -9,6 +9,7 @@ use Modules\Product\Models\Product;
 use Modules\Seller\Models\SellerUser;
 use Modules\Storefront\Contracts\CartEntryPoint;
 use Modules\Storefront\Models\CustomerRecentView;
+use Modules\Storefront\Support\NullCartEntryPoint;
 use Modules\Storefront\Support\StorefrontUrls;
 
 require_once __DIR__.'/../Helpers.php';
@@ -117,6 +118,8 @@ test('a signed-in customer\'s view is recorded as recently viewed', function () 
 });
 
 test('the null cart hides the buy buttons outside local environments', function () {
+    // The Cart module (M10) binds the real entry point; this checks the Storefront's fallback.
+    app()->instance(CartEntryPoint::class, new NullCartEntryPoint);
     ['product' => $product] = pdpProduct();
 
     $this->get(StorefrontUrls::product($product->slug, $product->id))

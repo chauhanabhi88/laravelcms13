@@ -1,0 +1,21 @@
+{
+    "name": "Cart",
+    "alias": "cart",
+    "description": "Multi-vendor cart: guest (cookie) and customer carts grouped by seller, live revalidation of price/stock/status, price summary with delivery and COD fee adjustments, save for later, Buy Now, guest-cart merge on login, mini-cart drawer and abandoned-cart reminders.",
+    "keywords": [],
+    "priority": 32,
+    "providers": [
+        "Modules\\Cart\\Providers\\CartServiceProvider"
+    ],
+    "files": [],
+    "cache": false,
+    "depends": [
+        "core",
+        "customer",
+        "seller",
+        "product",
+        "storefront",
+        "notification",
+        "theme"
+    ]
+}

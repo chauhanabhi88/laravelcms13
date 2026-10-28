@@ -7,7 +7,8 @@
     $canBuy = $page->isInStock();
 @endphp
 @if ($cart->isAvailable())
-    <form id="pdp-cart-form" method="post" action="{{ $cart->addUrl() }}" x-on:submit="requireSelection($event)" class="mt-6 hidden gap-3 md:flex">
+    {{-- data-cart-add: the Cart module's script sends Add to Cart with fetch and opens the mini-cart. --}}
+    <form id="pdp-cart-form" method="post" action="{{ $cart->addUrl() }}" x-on:submit="requireSelection($event)" data-cart-add class="mt-6 hidden gap-3 md:flex">
         @csrf
         <input type="hidden" name="variant_id" value="{{ $page->selectedVariant?->id }}" x-bind:value="selectedVariant?.id ?? ''">
         <input type="hidden" name="quantity" value="1">
