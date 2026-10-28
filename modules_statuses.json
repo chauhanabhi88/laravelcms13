@@ -26,5 +26,6 @@
     "Storefront": true,
     "Notification": true,
     "Cart": true,
-    "Payment": true
+    "Payment": true,
+    "Order": true
 }

@@ -1,0 +1,158 @@
+<?php
+
+return [
+    'title' => 'Checkout',
+
+    'steps' => [
+        'cart' => 'Cart',
+        'address' => 'Address',
+        'payment' => 'Payment',
+        'summary' => 'Summary',
+    ],
+
+    'address' => [
+        'heading' => 'Where should we deliver?',
+        'saved' => 'Saved addresses',
+        'none' => 'You have no saved address yet. Add one below.',
+        'add_new' => 'Add a new address',
+        'deliver_here' => 'Deliver here',
+        'continue' => 'Continue to payment',
+        'limit_reached' => 'You have reached the limit of saved addresses. Remove one from your address book to add another.',
+        'not_serviceable' => 'We do not deliver these items to this pincode yet. Remove them or change the address.',
+        'billing_note' => 'Your saved address is used as the billing address.',
+    ],
+
+    'reseller' => [
+        'toggle' => 'Selling to a customer?',
+        'toggle_text' => 'Ship straight to your customer and set the price they pay. We collect it on delivery and you keep the difference.',
+        'end_customer' => 'Your customer\'s details',
+        'prices' => 'Final price for your customer',
+        'price_hint' => 'Between :min and :max',
+        'you_earn' => 'Your margin',
+        'margin_note_cod' => 'Your margin is credited to your earnings after the return window closes.',
+        'margin_note_prepaid' => 'You pay the selling price online and collect from your customer yourself.',
+        'not_reseller' => 'Turn on reseller mode in your account to sell to your own customers.',
+        'price_invalid' => 'Enter a valid price.',
+        'price_below' => 'The price cannot be below the selling price of :price.',
+        'price_above' => 'The price cannot be above :max.',
+        'ships_to_customer' => 'Ships to your customer',
+        'fields' => [
+            'name' => 'Customer name',
+            'phone' => 'Customer mobile number',
+            'address_line1' => 'House / flat, building',
+            'address_line2' => 'Area, street',
+            'landmark' => 'Landmark',
+            'pincode' => 'Pincode',
+        ],
+    ],
+
+    'payment' => [
+        'heading' => 'How would you like to pay?',
+        'prepaid' => 'UPI, cards, net banking or wallets',
+        'prepaid_text' => 'Pay securely online. You choose the method on the next screen.',
+        'cod' => 'Cash on Delivery',
+        'cod_text' => 'Pay when your order arrives.',
+        'cod_fee' => 'A handling fee of :fee applies.',
+        'cod_otp' => 'We will send a code to confirm this order.',
+        'cod_unavailable' => 'Not available for this order',
+        'continue' => 'Continue to summary',
+    ],
+
+    'summary' => [
+        'heading' => 'Review your order',
+        'deliver_to' => 'Delivering to',
+        'pay_with' => 'Payment',
+        'change' => 'Change',
+        'package' => 'Package :number of :total',
+        'sold_by' => 'Sold by :store',
+        'delivery_by' => 'Delivery by :date',
+        'place_order' => 'Place order',
+        'placing' => 'Placing your order…',
+        'customer_pays' => 'Your customer pays',
+        'collect' => 'Amount collected on delivery',
+        'terms' => 'By placing the order you agree to our terms of use and return policy.',
+    ],
+
+    'success' => [
+        'title' => 'Order placed',
+        'heading' => 'Thank you! Your order is placed.',
+        'cancelled_heading' => 'This order was cancelled',
+        'order_no' => 'Order number',
+        'cod_ready' => 'Please keep :amount ready to pay on delivery.',
+        'paid' => 'Paid :amount online.',
+        'delivery_by' => 'Package :number: delivery by :date',
+        'delivery_soon' => 'Package :number: we will share the delivery date soon',
+        'continue_shopping' => 'Continue shopping',
+        'view_order' => 'View order',
+    ],
+
+    'orders' => [
+        'title' => 'My orders',
+        'empty' => 'No orders yet',
+        'empty_text' => 'When you place an order, it shows up here.',
+        'placed_on' => 'Placed on :date',
+        'total' => 'Total',
+        'items' => '{1} :count item|[2,*] :count items',
+        'view' => 'View details',
+        'detail_title' => 'Order :order_no',
+        'package' => 'Package :number',
+        'qty' => 'Qty :count',
+        'arriving_by' => 'Arriving by :date',
+        'delivered_on' => 'Delivered on :date',
+        'cancelled_on' => 'Cancelled on :date',
+        'shipping_address' => 'Shipping address',
+        'price_details' => 'Price details',
+        'payment' => 'Payment',
+        'pay_now' => 'Complete payment',
+        'confirm_cod' => 'Confirm with code',
+    ],
+
+    'cancel' => [
+        'button' => 'Cancel items',
+        'cancel_order' => 'Cancel order',
+        'heading' => 'Cancel items',
+        'choose_items' => 'Choose what to cancel',
+        'reason' => 'Reason',
+        'comment' => 'Anything else? (optional)',
+        'submit' => 'Confirm cancellation',
+        'refund_note' => 'Online payments are refunded to the original payment method in 5–7 working days.',
+        'done' => '{1} 1 item was cancelled.|[2,*] :count items were cancelled.',
+        'default_reason' => 'Cancelled',
+        'late_capture' => 'Payment received after the order was cancelled',
+        'reasons' => [
+            'changed_mind' => 'Changed my mind',
+            'ordered_by_mistake' => 'Ordered by mistake',
+            'better_price' => 'Found a better price',
+            'delivery_too_late' => 'Delivery date is too late',
+            'other' => 'Other',
+        ],
+        'reasons_system' => [
+            'payment_window_expired' => 'Payment was not completed in time',
+            'cod_otp_expired' => 'Cash on Delivery was not confirmed in time',
+        ],
+    ],
+
+    'cod_risk' => [
+        'open_orders' => 'Cash on Delivery is available for up to :count undelivered orders at a time. Please pay online for this one.',
+    ],
+
+    'account' => [
+        'deletion_blocked' => 'You have an order on its way. You can delete your account once it is delivered or cancelled.',
+    ],
+
+    'messages' => [
+        'placed' => 'Order :order_no placed.',
+    ],
+
+    'errors' => [
+        'cart_not_ready' => 'Some items in your cart need your attention before checkout.',
+        'address_required' => 'Choose a delivery address.',
+        'unserviceable' => 'We cannot deliver some items to this address yet. Remove them or choose another address.',
+        'payment_required' => 'Choose how you would like to pay.',
+        'cod_not_allowed' => 'Cash on Delivery is not available for this order.',
+        'price_changed' => 'A price in your order changed. Please review the new total before placing the order.',
+        'out_of_stock' => 'Sorry, an item sold out while you were checking out. Please review your cart.',
+        'not_cancellable' => 'This order can no longer be cancelled because it has been handed over for delivery.',
+        'nothing_to_cancel' => 'There is nothing left to cancel.',
+    ],
+];

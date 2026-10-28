@@ -504,6 +504,32 @@ class PaymentService
     }
 
     /**
+     * The order was cancelled before it was paid (M12): close its open, unpaid payments
+     * (prepaid created/attempted, COD pending) so the pay page and the expiry sweep leave them
+     * alone. Fires no PaymentFailed. Captured or collected payments are left for a refund.
+     *
+     * @return int payments cancelled
+     */
+    public function cancelForOrder(int $salesOrderId, string $reason): int
+    {
+        return DB::transaction(function () use ($salesOrderId, $reason): int {
+            $open = Payment::query()
+                ->forOrder($salesOrderId)
+                ->whereIn('status', [...Payment::OPEN_PREPAID_STATUSES, Payment::STATUS_PENDING])
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($open as $payment) {
+                $payment->failure_reason = mb_substr($reason, 0, 255);
+                $payment->transitionTo(Payment::STATUS_CANCELLED, $reason);
+            }
+
+            return $open->count();
+        });
+    }
+
+    /**
      * The courier collected the cash (Logistics, M13).
      */
     public function markCodCollected(Payment $payment, ?Model $actor = null): Payment

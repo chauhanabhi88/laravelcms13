@@ -1,0 +1,25 @@
+{
+    "name": "Order",
+    "alias": "order",
+    "description": "Checkout and orders: address, reseller margin, payment and summary steps, idempotent place-order with row locks and stock reservation, one seller order per supplier with price/tax/commission snapshots, order state machines, payment hand-off, cancellations with refunds, COD risk rules, invoice numbering, customer order pages, admin order screens and the checkout/orders API.",
+    "keywords": [],
+    "priority": 34,
+    "providers": [
+        "Modules\\Order\\Providers\\OrderServiceProvider"
+    ],
+    "files": [],
+    "cache": false,
+    "depends": [
+        "core",
+        "customer",
+        "directory",
+        "seller",
+        "catalog",
+        "product",
+        "storefront",
+        "cart",
+        "payment",
+        "notification",
+        "theme"
+    ]
+}
