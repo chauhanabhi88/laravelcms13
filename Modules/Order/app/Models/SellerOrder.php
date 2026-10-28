@@ -36,15 +36,23 @@ use Modules\Seller\Models\SellerWarehouse;
  * @property string|null $invoice_no
  * @property Carbon|null $invoice_date
  * @property Carbon|null $sla_dispatch_by
+ * @property Carbon|null $sla_warned_at
  * @property Carbon|null $expected_delivery_at
  * @property Carbon|null $accepted_at
+ * @property int $awb_failures
  * @property Carbon|null $packed_at
+ * @property Carbon|null $label_generated_at
  * @property Carbon|null $shipped_at
  * @property Carbon|null $delivered_at
  * @property Carbon|null $cancelled_at
  * @property string|null $cancel_reason
  * @property string|null $cancelled_by
  * @property Carbon|null $return_window_ends_at
+ * @property string|null $receipt_condition
+ * @property Carbon|null $receipt_confirmed_at
+ * @property string|null $receipt_confirmed_by
+ * @property string|null $receipt_note
+ * @property list<string>|null $receipt_photos
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -184,15 +192,23 @@ class SellerOrder extends MarketplaceModel
         'invoice_no',
         'invoice_date',
         'sla_dispatch_by',
+        'sla_warned_at',
         'expected_delivery_at',
         'accepted_at',
+        'awb_failures',
         'packed_at',
+        'label_generated_at',
         'shipped_at',
         'delivered_at',
         'cancelled_at',
         'cancel_reason',
         'cancelled_by',
         'return_window_ends_at',
+        'receipt_condition',
+        'receipt_confirmed_at',
+        'receipt_confirmed_by',
+        'receipt_note',
+        'receipt_photos',
     ];
 
     /**
@@ -210,13 +226,18 @@ class SellerOrder extends MarketplaceModel
             'delivery_charge_share' => MoneyCast::class,
             'invoice_date' => 'date',
             'sla_dispatch_by' => 'datetime',
+            'sla_warned_at' => 'datetime',
             'expected_delivery_at' => 'datetime',
             'accepted_at' => 'datetime',
+            'awb_failures' => 'integer',
             'packed_at' => 'datetime',
+            'label_generated_at' => 'datetime',
             'shipped_at' => 'datetime',
             'delivered_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'return_window_ends_at' => 'datetime',
+            'receipt_confirmed_at' => 'datetime',
+            'receipt_photos' => 'array',
         ];
     }
 
@@ -253,6 +274,14 @@ class SellerOrder extends MarketplaceModel
     }
 
     /**
+     * @return HasMany<SalesOrderDocument, $this>
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(SalesOrderDocument::class, 'seller_order_id')->orderByDesc('id');
+    }
+
+    /**
      * @param  Builder<SellerOrder>  $query
      */
     public function scopeForSeller(Builder $query, int $sellerId): void
@@ -279,6 +308,27 @@ class SellerOrder extends MarketplaceModel
     public function isPreShipment(): bool
     {
         return in_array($this->status, self::PRE_SHIPMENT_STATUSES, true);
+    }
+
+    /**
+     * Accepted by the seller but the courier booking (AWB) has not gone through yet.
+     */
+    public function isAwaitingAwb(): bool
+    {
+        return $this->status === self::STATUS_PENDING_ACCEPTANCE && $this->accepted_at !== null;
+    }
+
+    public function hasLabel(): bool
+    {
+        return $this->label_generated_at !== null;
+    }
+
+    /**
+     * Back with the seller (RTO) and its condition not confirmed yet.
+     */
+    public function awaitsReceipt(): bool
+    {
+        return $this->status === self::STATUS_RTO_DELIVERED && $this->receipt_confirmed_at === null;
     }
 
     public function isSlaBreached(?Carbon $now = null): bool

@@ -39,4 +39,9 @@ return [
         'admin.ndr.filters' => 'logistics::ndr_case.labels.filters',
         'admin.ndr.act' => 'logistics::ndr_case.labels.act',
     ],
+    'logistics::pickup_batch.titles.pickup_batches' => [
+        'admin.pickup_batch.index' => 'logistics::pickup_batch.labels.list',
+        'admin.pickup_batch.filters' => 'logistics::pickup_batch.labels.filters',
+        'admin.pickup_batch.show' => 'logistics::pickup_batch.labels.show',
+    ],
 ];

@@ -26,6 +26,7 @@ use Modules\Order\Models\SellerOrder;
  * @property int|null $return_request_id
  * @property int|null $courier_id
  * @property int|null $courier_rule_id
+ * @property int|null $pickup_batch_id
  * @property string|null $strategy
  * @property string|null $carrier_id
  * @property string|null $carrier_name
@@ -165,6 +166,7 @@ class Shipment extends MarketplaceModel
         'return_request_id',
         'courier_id',
         'courier_rule_id',
+        'pickup_batch_id',
         'strategy',
         'carrier_id',
         'carrier_name',
@@ -211,6 +213,7 @@ class Shipment extends MarketplaceModel
             'return_request_id' => 'integer',
             'courier_id' => 'integer',
             'courier_rule_id' => 'integer',
+            'pickup_batch_id' => 'integer',
             'cod_amount' => MoneyCast::class,
             'weight_grams' => 'integer',
             'charged_weight_grams' => 'integer',
@@ -252,6 +255,14 @@ class Shipment extends MarketplaceModel
     public function rule(): BelongsTo
     {
         return $this->belongsTo(CourierRule::class, 'courier_rule_id');
+    }
+
+    /**
+     * @return BelongsTo<PickupBatch, $this>
+     */
+    public function pickupBatch(): BelongsTo
+    {
+        return $this->belongsTo(PickupBatch::class, 'pickup_batch_id');
     }
 
     /**

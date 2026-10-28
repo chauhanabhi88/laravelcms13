@@ -26,11 +26,23 @@
             <x-theme::alert type="warning">{{ trans('seller::panel.dashboard.payout_hold') }}</x-theme::alert>
         @endif
 
+        @if (! empty($orderKpis['sla_breached']) && Route::has('seller.order.index'))
+            <x-theme::alert type="warning">
+                {{ trans_choice('seller::panel.dashboard.sla_breached', $orderKpis['sla_breached'], ['count' => $orderKpis['sla_breached']]) }}
+                <a href="{{ frontRoute('seller.order.index', [['tab' => 'pending', 'sla' => 'breached']]) }}" class="ml-1 font-semibold underline">{{ trans('seller::panel.dashboard.view_orders') }}</a>
+            </x-theme::alert>
+        @endif
+
+        {{-- Order counts come from the Order module (M14, $orderKpis); placeholders until then. --}}
         <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.orders_today')" :value="$placeholder" icon="package" />
-            <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.pending_acceptance')" :value="$placeholder" icon="clock" />
-            <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.ready_to_ship')" :value="$placeholder" icon="truck" />
-            <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.returns')" :value="$placeholder" icon="rotate-ccw" />
+            <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.orders_today')" :value="$orderKpis['orders_today'] ?? $placeholder" icon="package"
+                :href="isset($orderKpis) && Route::has('seller.order.index') ? frontRoute('seller.order.index') : null" />
+            <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.pending_acceptance')" :value="$orderKpis['pending_acceptance'] ?? $placeholder" icon="clock"
+                :href="isset($orderKpis) && Route::has('seller.order.index') ? frontRoute('seller.order.index', [['tab' => 'pending']]) : null" />
+            <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.ready_to_ship')" :value="$orderKpis['ready_to_ship'] ?? $placeholder" icon="truck"
+                :href="isset($orderKpis) && Route::has('seller.order.index') ? frontRoute('seller.order.index', [['tab' => 'ready']]) : null" />
+            <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.returns')" :value="$orderKpis['returns'] ?? $placeholder" icon="rotate-ccw"
+                :href="isset($orderKpis) && Route::has('seller.order.index') ? frontRoute('seller.order.index', [['tab' => 'returns']]) : null" />
             <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.next_payout')" :value="$placeholder" icon="wallet" />
             <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.rating')"
                 :value="$seller->rating_count > 0 ? number_format((float) $seller->rating_avg, 1).' ★' : $placeholder" icon="star" />

@@ -126,9 +126,45 @@
                         <dt class="col-sm-5">{{ trans('order::seller_order.labels.cancel_reason') }}</dt>
                         <dd class="col-sm-7">{{ $sellerOrder->cancel_reason }} ({{ $sellerOrder->cancelled_by }})</dd>
                     @endif
+                    @if ($sellerOrder->label_generated_at)
+                        <dt class="col-sm-5">{{ trans('order::seller_order.labels.label_printed') }}</dt>
+                        <dd class="col-sm-7">{{ $date($sellerOrder->label_generated_at) }}</dd>
+                    @endif
+                    @if ($sellerOrder->receipt_confirmed_at)
+                        <dt class="col-sm-5">{{ trans('order::seller_order.labels.receipt') }}</dt>
+                        <dd class="col-sm-7">{{ trans('order::fulfilment.receipt.conditions.'.$sellerOrder->receipt_condition) }} ({{ $sellerOrder->receipt_confirmed_by }}, {{ $date($sellerOrder->receipt_confirmed_at) }})@if ($sellerOrder->receipt_note)<br><small>{{ $sellerOrder->receipt_note }}</small>@endif</dd>
+                    @endif
                 </dl>
             </div>
         </div>
+
+        @can('admin.seller_order.force_status')
+            @if ($forceStatuses !== [])
+                <div class="card card-warning card-outline mb-3">
+                    <div class="card-header"><strong>{{ trans('order::seller_order.labels.force_status') }}</strong></div>
+                    <div class="card-body">
+                        <p class="text-muted small">{{ trans('order::seller_order.labels.force_status_hint') }}</p>
+                        <form method="POST" action="{{ route('admin.seller_order.force_status', updateUrlParams([$sellerOrder->id])) }}">
+                            @csrf
+                            <div class="form-group">
+                                <label for="force-status">{{ trans('order::seller_order.labels.new_status') }}</label>
+                                <select id="force-status" name="status" class="form-control" required>
+                                    @foreach ($forceStatuses as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('status') === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="force-reason">{{ trans('order::seller_order.labels.reason') }}</label>
+                                <textarea id="force-reason" name="reason" class="form-control" rows="2" maxlength="255" required>{{ old('reason') }}</textarea>
+                                @error('reason')<small class="text-danger">{{ $message }}</small>@enderror
+                            </div>
+                            <button type="submit" class="btn btn-warning btn-sm">{{ trans('order::seller_order.labels.force_status_submit') }}</button>
+                        </form>
+                    </div>
+                </div>
+            @endif
+        @endcan
     </div>
 </div>
 @stop

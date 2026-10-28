@@ -74,3 +74,9 @@ Route::prefix('seller-order')->group(function () {
         'middleware' => 'can:admin.seller_order.show',
     ])->where('id', '[0-9]+');
 });
+
+Route::post('seller-order/{id}/force-status', [
+    'as' => 'admin.seller_order.force_status',
+    'uses' => 'SellerOrderController@forceStatus',
+    'middleware' => 'can:admin.seller_order.force_status',
+])->where('id', '[0-9]+');

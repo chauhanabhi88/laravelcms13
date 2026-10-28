@@ -7,15 +7,19 @@ namespace Modules\Order\Providers;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
+use Modules\Core\Providers\Concerns\MapsSellerRoutes;
 
 /**
  * Order routes:
  * - api.php      api/{version}/checkout/summary|place, api/{version}/orders[/{orderNo}[/cancel]]
  * - backend.php  orders and seller orders admin (/backend/sales-order, /backend/seller-order)
  * - front.php    /checkout..., /checkout/success/{orderNo}, /customer/orders...
+ * - seller.php   supplier order desk (/supplier/orders..., M14)
  */
 class RouteServiceProvider extends ServiceProvider
 {
+    use MapsSellerRoutes;
+
     /**
      * The root namespace to assume when generating URLs to actions.
      *
@@ -54,6 +58,8 @@ class RouteServiceProvider extends ServiceProvider
         $frontRoute->group(function (): void {
             Route::namespace($this->namespace)->group(__DIR__.'/../../routes/front.php');
         });
+
+        $this->mapSellerRoutes();
     }
 
     protected function mapApiRoutes(): void

@@ -49,6 +49,7 @@ class SendOrderPlacedNotifications
                     'order_no' => $sellerOrder->sub_order_no,
                     'item_count' => $sellerOrder->items->sum('quantity'),
                     'dispatch_by' => $sellerOrder->sla_dispatch_by?->translatedFormat('D, j M, g:i A') ?? '',
+                    'url' => frontRoute('seller.order.show', [$sellerOrder->sub_order_no]),
                 ]);
             } catch (Throwable $e) {
                 report($e);

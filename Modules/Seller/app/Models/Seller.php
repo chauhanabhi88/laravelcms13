@@ -50,6 +50,7 @@ use Modules\User\Models\User;
  * @property string|null $status_reason
  * @property string|null $suspended_reason
  * @property int $auto_accept_orders
+ * @property string|null $label_format
  * @property string $rating_avg
  * @property int $rating_count
  * @property int $follower_count
@@ -111,6 +112,7 @@ class Seller extends MarketplaceModel
         'status_reason',
         'suspended_reason',
         'auto_accept_orders',
+        'label_format',
         'payout_hold',
     ];
 

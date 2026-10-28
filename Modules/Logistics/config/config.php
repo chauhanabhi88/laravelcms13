@@ -11,6 +11,7 @@ return [
         'courier_rule' => 'CourierRule',
         'shipment' => 'Shipment',
         'ndr_case' => 'NdrCase',
+        'pickup_batch' => 'PickupBatch',
     ],
 
     /*
