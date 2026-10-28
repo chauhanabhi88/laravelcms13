@@ -104,12 +104,13 @@ class StorefrontSettings
     }
 
     /**
-     * Highest order value eligible for Cash on Delivery: the Order module's setting once it
-     * exists (M12), else the storefront default.
+     * Highest order value eligible for Cash on Delivery: Settings > Payment (M11), else an
+     * Order module setting, else the storefront default.
      */
     public static function codMaxValue(): Money
     {
-        $value = self::read('order', 'cod_max_value');
+        $value = self::read('payment', 'cod_max_value');
+        $value = is_numeric($value) ? $value : self::read('order', 'cod_max_value');
 
         return Money::of(is_numeric($value) ? (string) $value : (string) config('storefront.defaults.cod_max_value'));
     }

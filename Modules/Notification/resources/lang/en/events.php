@@ -44,5 +44,7 @@ return [
         'seller' => ['submitted' => 'Supplier application submitted'],
         'webhook' => ['failed' => 'Webhook failed'],
         'payout' => ['failed' => 'Payout failed'],
+        'refund' => ['failed' => 'Refund failed'],
+        'payment' => ['recon_mismatch' => 'Settlement mismatches found'],
     ],
 ];

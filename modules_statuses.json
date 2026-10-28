@@ -25,5 +25,6 @@
     "Product": true,
     "Storefront": true,
     "Notification": true,
-    "Cart": true
+    "Cart": true,
+    "Payment": true
 }
