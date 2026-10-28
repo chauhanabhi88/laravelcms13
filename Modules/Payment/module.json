@@ -1,0 +1,19 @@
+{
+    "name": "Payment",
+    "alias": "payment",
+    "description": "Payments: PaymentGateway contract with razorpay, cod and fake drivers, Razorpay Standard Checkout with signature verification, idempotent webhooks, payment window and retry, COD eligibility and OTP confirmation, refunds, admin transactions/refunds/webhooks screens and daily settlement reconciliation.",
+    "keywords": [],
+    "priority": 33,
+    "providers": [
+        "Modules\\Payment\\Providers\\PaymentServiceProvider"
+    ],
+    "files": [],
+    "cache": false,
+    "depends": [
+        "core",
+        "customer",
+        "directory",
+        "notification",
+        "theme"
+    ]
+}

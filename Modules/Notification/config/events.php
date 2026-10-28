@@ -52,4 +52,6 @@ return [
     'admin.seller.submitted' => ['audience' => 'admin', 'channels' => ['mail', 'database'], 'category' => 'transactional', 'icon' => 'store', 'vars' => ['store', 'seller_code'], 'admin_permission' => 'admin.seller_application.index'],
     'admin.webhook.failed' => ['audience' => 'admin', 'channels' => ['mail', 'database'], 'category' => 'transactional', 'icon' => 'info', 'vars' => ['provider', 'event_id', 'error'], 'admin_permission' => 'admin.notification_log.index'],
     'admin.payout.failed' => ['audience' => 'admin', 'channels' => ['mail', 'database'], 'category' => 'transactional', 'icon' => 'banknote', 'vars' => ['payout_no', 'store', 'error'], 'admin_permission' => 'admin.notification_log.index'],
+    'admin.refund.failed' => ['audience' => 'admin', 'channels' => ['mail', 'database'], 'category' => 'transactional', 'icon' => 'banknote', 'vars' => ['order_no', 'amount', 'error'], 'admin_permission' => 'admin.payment_refund.index'],
+    'admin.payment.recon_mismatch' => ['audience' => 'admin', 'channels' => ['mail', 'database'], 'category' => 'transactional', 'icon' => 'banknote', 'vars' => ['date', 'count'], 'admin_permission' => 'admin.payment_recon.index'],
 ];

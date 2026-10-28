@@ -174,6 +174,18 @@ class NotificationTemplateSeeder extends Seeder
             'subject' => 'Payout ##payout_no## failed',
             'mail' => '<p>The payout <strong>##payout_no##</strong> to ##store## failed.</p><p>Error: ##error##</p>',
         ],
+        'admin.refund.failed' => [
+            'title' => 'Refund failed: {{order_no}}',
+            'text' => 'A refund of Rs {{amount}} for order {{order_no}} failed. {{error}}',
+            'subject' => 'Refund failed for order ##order_no##',
+            'mail' => '<p>A refund of <strong>Rs ##amount##</strong> for order <strong>##order_no##</strong> failed.</p><p>Error: ##error##</p><p><a href="##url##">Open the refunds screen</a></p>',
+        ],
+        'admin.payment.recon_mismatch' => [
+            'title' => 'Settlement mismatches on {{date}}',
+            'text' => '{{count}} settled entries for {{date}} do not match our records.',
+            'subject' => 'Razorpay settlement mismatches on ##date##',
+            'mail' => '<p>The settlement reconciliation for <strong>##date##</strong> found <strong>##count##</strong> entries that do not match our payments or refunds.</p><p><a href="##url##">Review the mismatches</a></p>',
+        ],
     ];
 
     public function run(): void
