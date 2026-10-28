@@ -1,0 +1,60 @@
+<?php
+
+return [
+    'titles' => [
+        'seller_orders' => 'Seller orders',
+        'list' => 'Seller orders',
+        'show' => 'Seller order :sub_order_no',
+        'items' => 'Items',
+        'history' => 'Status history',
+        'details' => 'Details',
+    ],
+
+    'labels' => [
+        'list' => 'List',
+        'filters' => 'Filter',
+        'show' => 'View',
+        'back' => 'Back',
+        'status' => 'Status',
+        'sla' => 'Dispatch SLA',
+        'sla_breached' => 'Breached',
+        'created_at' => 'Created',
+        'seller_search' => 'Seller code or store',
+        'search' => 'Sub-order or invoice no',
+        'order' => 'Order',
+        'seller' => 'Seller',
+        'warehouse' => 'Warehouse',
+        'customer' => 'Customer',
+        'subtotal' => 'Subtotal',
+        'tax' => 'Tax',
+        'commission' => 'Commission',
+        'delivery_share' => 'Delivery share',
+        'dispatch_by' => 'Dispatch by',
+        'expected_delivery' => 'Expected delivery',
+        'invoice' => 'Invoice',
+        'cancel_reason' => 'Cancel reason',
+        'cancelled_by' => 'Cancelled by',
+        'date' => 'Date',
+        'from' => 'From',
+        'to' => 'To',
+        'actor' => 'By',
+        'reason' => 'Reason',
+    ],
+
+    'columns' => [
+        'id' => 'ID',
+        'sub_order_no' => 'Sub-order No',
+        'seller' => 'Seller',
+        'status' => 'Status',
+        'items_subtotal' => 'Subtotal',
+        'tax_total' => 'Tax',
+        'commission_total' => 'Commission',
+        'sla_dispatch_by' => 'Dispatch By',
+        'invoice_no' => 'Invoice',
+        'created_at' => 'Created At',
+    ],
+
+    'messages' => [
+        'not_found' => 'Seller order not found.',
+    ],
+];
