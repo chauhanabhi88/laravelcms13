@@ -24,5 +24,6 @@
     "Seller": true,
     "Product": true,
     "Storefront": true,
-    "Notification": true
+    "Notification": true,
+    "Cart": true
 }

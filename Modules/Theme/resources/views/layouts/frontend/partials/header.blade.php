@@ -51,7 +51,7 @@
                     <x-theme::icon name="chevron-down" size="size-4" class="text-muted" />
                 </button>
                 <div id="profile-menu" x-show="open" x-cloak x-transition.origin.top.right
-                    class="absolute right-0 mt-2 w-72 overflow-hidden rounded-card border border-line bg-surface p-1.5 shadow-pop">
+                    class="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-card border border-line bg-surface p-1.5 shadow-pop">
                     @if ($currentCustomer)
                         <p class="truncate px-3 pt-2 pb-2.5 text-sm font-semibold text-ink">
                             {{ trans('theme::frontend.account.greeting', ['name' => $currentCustomer->first_name ?: $currentCustomer->email]) }}

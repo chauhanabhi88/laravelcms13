@@ -1,0 +1,23 @@
+{
+    "name": "abhishek/cart",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Cart\\": "app/",
+            "Modules\\Cart\\Database\\Factories\\": "database/factories/",
+            "Modules\\Cart\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

@@ -15,6 +15,7 @@ import lazyProductRow from './components/lazy-product-row';
 import { dropzone, pincodeChecker, priceRange, qtyStepper } from './components/form-controls';
 import { addressForm, otpInput, otpLogin, resendTimer, startWishlistSync } from './components/customer-account';
 import notificationBell from './components/notification-bell';
+import { cartPage, miniCart, startCartForms } from './components/cart';
 
 export { fetchJson };
 
@@ -44,7 +45,10 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('otpLogin', otpLogin);
     Alpine.data('addressForm', addressForm);
     Alpine.data('notificationBell', notificationBell);
+    Alpine.data('cartPage', cartPage);
+    Alpine.data('miniCart', miniCart);
     startWishlistSync(Alpine);
+    startCartForms();
 
     /**
      * Progressive-enhancement form: submits via fetch when JS is on, falls back

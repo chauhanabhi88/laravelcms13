@@ -39,6 +39,11 @@
         @include('customer::frontend.auth.partials.login-drawer')
     @endif
 
+    {{-- Mini-cart drawer opened after Add to Cart (Cart M10). --}}
+    @if (view()->exists('cart::frontend.partials.mini-cart-drawer'))
+        @include('cart::frontend.partials.mini-cart-drawer')
+    @endif
+
     {{-- Seeds for the Alpine cart / wishlist stores (resources/js/components/stores.js, customer-account.js). --}}
     <script>
         window.__cartCount = @js($cartCount ?? 0);
