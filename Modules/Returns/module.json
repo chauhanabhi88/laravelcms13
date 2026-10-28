@@ -1,0 +1,25 @@
+{
+    "name": "Returns",
+    "alias": "returns",
+    "description": "Order tracking and after-sales: My Orders timeline and invoice download, return and exchange requests with eligibility, reason codes, photos and refund details, auto-approval, reverse pickups through Logistics, QC by the seller, refunds through Payment (on pickup for trusted customers or after QC), exchange orders, RTO refunds, seller claims, the admin returns console and the returns API.",
+    "keywords": [],
+    "priority": 36,
+    "providers": [
+        "Modules\\Returns\\Providers\\ReturnsServiceProvider"
+    ],
+    "files": [],
+    "cache": false,
+    "depends": [
+        "core",
+        "customer",
+        "seller",
+        "product",
+        "catalog",
+        "storefront",
+        "payment",
+        "order",
+        "logistics",
+        "notification",
+        "theme"
+    ]
+}

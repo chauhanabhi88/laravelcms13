@@ -28,5 +28,6 @@
     "Cart": true,
     "Payment": true,
     "Order": true,
-    "Logistics": true
+    "Logistics": true,
+    "Returns": true
 }

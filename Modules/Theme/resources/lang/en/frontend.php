@@ -41,6 +41,7 @@ return [
         'hello' => 'Hello!',
         'guest_prompt' => 'Sign in to see your orders, wishlist and saved addresses.',
         'my_orders' => 'My orders',
+        'my_returns' => 'Returns & exchanges',
         'wishlist' => 'Wishlist',
         'profile' => 'Profile',
         'open_profile_menu' => 'Open profile menu',

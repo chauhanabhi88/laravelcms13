@@ -81,13 +81,15 @@ class ShipmentService
             $order = SalesOrder::query()->findOrFail($locked->sales_order_id);
             $package = $this->package($items);
             $warehouse = $locked->warehouse_id !== null ? SellerWarehouse::query()->find($locked->warehouse_id) : null;
+            // A package with nothing to collect (an exchange's replacement, M15) ships prepaid.
+            $cod = $order->isCod() ? $this->codAmount($order, $locked, $items) : Money::zero();
 
             $shipment = Shipment::query()->create([
                 'seller_order_id' => $locked->id,
                 'direction' => Shipment::DIRECTION_FORWARD,
                 'status' => Shipment::STATUS_CREATED,
-                'payment_mode' => $order->isCod() ? Shipment::PAYMENT_COD : Shipment::PAYMENT_PREPAID,
-                'cod_amount' => $order->isCod() ? $this->codAmount($order, $locked, $items) : Money::zero(),
+                'payment_mode' => $cod->isPositive() ? Shipment::PAYMENT_COD : Shipment::PAYMENT_PREPAID,
+                'cod_amount' => $cod,
                 'weight_grams' => $package['weight_grams'],
                 'length_cm' => $package['length_cm'],
                 'breadth_cm' => $package['breadth_cm'],
@@ -268,12 +270,15 @@ class ShipmentService
     /**
      * A reverse shipment (customer → seller) for returned items (M15), booked with the forward
      * shipment's courier, or the first active courier that supports reverse pickups.
+     * $pickupAddress (name, phone, address_line1/2, landmark, pincode, city_name, state_name)
+     * replaces the order's shipping address as the collection point.
      *
      * @param  array<int, int>  $quantities  sales_order_item_id => quantity
+     * @param  array<string, mixed>|null  $pickupAddress
      *
      * @throws ShipmentException|CourierException
      */
-    public function createReverse(SellerOrder $sellerOrder, array $quantities, ?int $returnRequestId = null): Shipment
+    public function createReverse(SellerOrder $sellerOrder, array $quantities, ?int $returnRequestId = null, ?array $pickupAddress = null): Shipment
     {
         $forward = Shipment::query()->forward()->where('seller_order_id', $sellerOrder->id)->with('courier')->orderByDesc('id')->first();
         $courier = $forward?->courier !== null && $forward->courier->supportsReverse() && $forward->courier->isActive()
@@ -287,7 +292,7 @@ class ShipmentService
         $items = SalesOrderItem::query()->where('seller_order_id', $sellerOrder->id)->whereKey(array_keys($quantities))->get();
         $package = $this->package($items, $quantities);
 
-        $reverse = DB::transaction(function () use ($sellerOrder, $courier, $items, $quantities, $package, $returnRequestId): Shipment {
+        $reverse = DB::transaction(function () use ($sellerOrder, $courier, $items, $quantities, $package, $returnRequestId, $pickupAddress): Shipment {
             $reverse = Shipment::query()->create([
                 'seller_order_id' => $sellerOrder->id,
                 'direction' => Shipment::DIRECTION_REVERSE,
@@ -296,6 +301,7 @@ class ShipmentService
                 'status' => Shipment::STATUS_CREATED,
                 'payment_mode' => Shipment::PAYMENT_PREPAID,
                 'cod_amount' => Money::zero(),
+                'pickup_address' => $pickupAddress === [] ? null : $pickupAddress,
                 'needs_attention' => (int) config('core.no'),
             ] + $package);
 
@@ -312,6 +318,60 @@ class ShipmentService
         $reverse->forceFill(['provider_order_id' => $provider->orderId, 'provider_shipment_id' => $provider->shipmentId])->save();
 
         return $reverse;
+    }
+
+    /**
+     * Assign the reverse shipment's AWB and ask for the pickup (M15). The manual driver leaves
+     * the AWB to Logistics Ops (the shipment is flagged); a courier error flags it and is
+     * rethrown. A refused pickup request is only reported: the courier's own scheduling or Ops
+     * follow up.
+     *
+     * @throws ShipmentException|CourierException
+     */
+    public function bookReverse(Shipment $reverse, ?Model $actor = null): Shipment
+    {
+        $reverse->refresh()->loadMissing('courier');
+
+        if ($reverse->direction !== Shipment::DIRECTION_REVERSE || $reverse->courier === null) {
+            throw new ShipmentException(trans('logistics::shipment.messages.no_reverse_courier'), 'no_courier');
+        }
+
+        if ($reverse->isBooked() || $reverse->status !== Shipment::STATUS_CREATED) {
+            return $reverse;
+        }
+
+        $driver = $this->drivers->for($reverse->courier);
+
+        try {
+            $awb = $driver->assignAwb($reverse, null);
+        } catch (CourierException $e) {
+            $this->alerts->flag($reverse, trans('logistics::shipment.attention.courier_error', ['error' => $e->getMessage()]));
+
+            throw $e;
+        }
+
+        if (! $awb->assigned()) {
+            $this->alerts->flag($reverse, trans('logistics::shipment.attention.awb_pending'));
+
+            return $reverse->refresh();
+        }
+
+        $this->saveAwb($reverse, $awb, null);
+        $this->tracking->moveTo($reverse, Shipment::STATUS_AWB_ASSIGNED, $actor);
+
+        try {
+            $date = Carbon::tomorrow();
+            $result = $driver->schedulePickup([$reverse->refresh()], $date->isSunday() ? $date->addDay() : $date);
+
+            if ($result->scheduled) {
+                $this->tracking->moveTo($reverse, Shipment::STATUS_PICKUP_SCHEDULED, $actor);
+                $reverse->forceFill(['pickup_scheduled_at' => $result->scheduledAt ?? $date])->save();
+            }
+        } catch (CourierException $e) {
+            report($e);
+        }
+
+        return $reverse->refresh();
     }
 
     /**

@@ -18,6 +18,7 @@ return [
         'delivery_failed' => 'Delivery attempt failed',
     ],
     'return' => [
+        'requested' => 'Return requested',
         'approved' => 'Return approved',
         'picked_up' => 'Return picked up',
         'rejected' => 'Return rejected',
@@ -49,5 +50,6 @@ return [
         'refund' => ['failed' => 'Refund failed'],
         'payment' => ['recon_mismatch' => 'Settlement mismatches found'],
         'shipment' => ['attention' => 'Shipment needs attention'],
+        'return' => ['review' => 'Return to review', 'claim' => 'Seller claim raised'],
     ],
 ];

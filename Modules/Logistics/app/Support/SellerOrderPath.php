@@ -54,6 +54,11 @@ final class SellerOrderPath
             $path = array_shift($queue);
             $last = $path[count($path) - 1];
 
+            // Leaving return_requested is the Returns module's call (M15), never a courier scan's.
+            if ($last === SellerOrder::STATUS_RETURN_REQUESTED) {
+                continue;
+            }
+
             foreach ($graph[$last] ?? [] as $next) {
                 if ($next === SellerOrder::STATUS_CANCELLED || isset($seen[$next])) {
                     continue;

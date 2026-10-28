@@ -29,6 +29,7 @@ return [
     'order.delivered' => ['audience' => 'customer', 'channels' => ['push', 'database', 'mail'], 'category' => 'transactional', 'icon' => 'check', 'vars' => ['order_no']],
     'order.cancelled' => ['audience' => 'customer', 'channels' => ['sms', 'mail', 'database'], 'category' => 'transactional', 'icon' => 'x', 'vars' => ['order_no', 'reason']],
     'order.delivery_failed' => ['audience' => 'customer', 'channels' => ['sms', 'push', 'database'], 'category' => 'transactional', 'icon' => 'truck', 'vars' => ['order_no', 'reason', 'attempts']],
+    'return.requested' => ['audience' => 'customer', 'channels' => ['push', 'database', 'mail'], 'category' => 'transactional', 'icon' => 'rotate-ccw', 'vars' => ['return_no', 'order_no', 'type']],
     'return.approved' => ['audience' => 'customer', 'channels' => ['sms', 'push', 'database', 'mail'], 'category' => 'transactional', 'icon' => 'package', 'vars' => ['return_no', 'order_no', 'pickup_date']],
     'return.picked_up' => ['audience' => 'customer', 'channels' => ['push', 'database'], 'category' => 'transactional', 'icon' => 'truck', 'vars' => ['return_no']],
     'return.rejected' => ['audience' => 'customer', 'channels' => ['push', 'database', 'mail'], 'category' => 'transactional', 'icon' => 'x', 'vars' => ['return_no', 'reason']],
@@ -58,4 +59,6 @@ return [
     'admin.refund.failed' => ['audience' => 'admin', 'channels' => ['mail', 'database'], 'category' => 'transactional', 'icon' => 'banknote', 'vars' => ['order_no', 'amount', 'error'], 'admin_permission' => 'admin.payment_refund.index'],
     'admin.payment.recon_mismatch' => ['audience' => 'admin', 'channels' => ['mail', 'database'], 'category' => 'transactional', 'icon' => 'banknote', 'vars' => ['date', 'count'], 'admin_permission' => 'admin.payment_recon.index'],
     'admin.shipment.attention' => ['audience' => 'admin', 'channels' => ['mail', 'database'], 'category' => 'transactional', 'icon' => 'truck', 'vars' => ['order_no', 'reason'], 'admin_permission' => 'admin.shipment.index'],
+    'admin.return.review' => ['audience' => 'admin', 'channels' => ['database'], 'category' => 'transactional', 'icon' => 'rotate-ccw', 'vars' => ['return_no', 'order_no', 'reason'], 'admin_permission' => 'admin.return_request.approve'],
+    'admin.return.claim' => ['audience' => 'admin', 'channels' => ['mail', 'database'], 'category' => 'transactional', 'icon' => 'rotate-ccw', 'vars' => ['order_no', 'store', 'reason'], 'admin_permission' => 'admin.return_claim.decide'],
 ];

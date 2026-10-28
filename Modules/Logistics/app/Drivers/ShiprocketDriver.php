@@ -156,6 +156,10 @@ class ShiprocketDriver implements CourierDriver
             $payload['courier_id'] = $carrierId;
         }
 
+        if ($shipment->direction === Shipment::DIRECTION_REVERSE) {
+            $payload['is_return'] = 1;
+        }
+
         $body = $this->client->post('/v1/external/courier/assign/awb', $payload);
         $data = (array) data_get($body, 'response.data', []);
         $awb = $data['awb_code'] ?? null;
@@ -314,6 +318,11 @@ class ShiprocketDriver implements CourierDriver
 
         if ($customer === null || $warehouse === null) {
             throw new CourierException(trans('logistics::logistics.errors.no_shipping_address'), 'invalid_order');
+        }
+
+        // The customer may hand the return over at another saved address in the same pincode (M15).
+        if (is_array($reverse->pickup_address) && filled($reverse->pickup_address['address_line1'] ?? null)) {
+            $customer = (new SalesOrderAddress)->forceFill(array_intersect_key($reverse->pickup_address + $customer->only(['name', 'phone']), array_flip(['name', 'phone', 'address_line1', 'address_line2', 'pincode', 'city_name', 'state_name'])));
         }
 
         $quantities = $reverse->items->pluck('quantity', 'sales_order_item_id');
