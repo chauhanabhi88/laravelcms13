@@ -7,6 +7,7 @@ namespace Modules\Theme\Composers;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Modules\Theme\Contracts\CartCountProvider;
+use Modules\Theme\Contracts\NotificationBellProvider;
 use Modules\Theme\Contracts\WishlistProvider;
 use Modules\Theme\Support\MegaMenu;
 use Modules\Theme\Support\StorefrontLinks;
@@ -23,6 +24,7 @@ class HeaderComposer
         protected CartCountProvider $cart,
         protected WishlistProvider $wishlist,
         protected StorefrontLinks $links,
+        protected NotificationBellProvider $notifications,
     ) {}
 
     public function compose(View $view): void
@@ -49,6 +51,7 @@ class HeaderComposer
             'currentCustomer' => $customer,
             'megaMenu' => $categories,
             'cartCount' => $this->cart->count(),
+            'notificationBell' => $customer ? $this->notifications->forCustomer() : null,
             'wishlistIds' => array_values($this->wishlist->ids()),
             'searchUrl' => $this->links->routeUrl($header['search_route'] ?? null),
             'searchSuggestUrl' => $this->links->routeUrl($header['suggest_route'] ?? null),

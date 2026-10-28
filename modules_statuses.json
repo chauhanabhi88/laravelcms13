@@ -23,5 +23,6 @@
     "Catalog": true,
     "Seller": true,
     "Product": true,
-    "Storefront": true
+    "Storefront": true,
+    "Notification": true
 }

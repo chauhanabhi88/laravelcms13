@@ -3,6 +3,7 @@
         ['route' => 'customer.myaccount', 'icon' => 'user', 'label' => trans('theme::frontend.account.my_account')],
         ['route' => config('theme.header.orders_route'), 'icon' => 'package', 'label' => trans('theme::frontend.account.my_orders')],
         ['route' => config('theme.header.wishlist_route'), 'icon' => 'heart', 'label' => trans('theme::frontend.account.wishlist')],
+        ['route' => 'customer.notifications.index', 'icon' => 'bell', 'label' => trans('theme::frontend.account.notifications')],
         ['route' => 'customer.profile.edit', 'icon' => 'pencil', 'label' => trans('theme::frontend.account.edit_profile')],
         ['route' => 'customer.addresses.index', 'icon' => 'map-pin', 'label' => trans('theme::frontend.account.addresses')],
         ['route' => 'customer.reseller.edit', 'icon' => 'store', 'label' => trans('theme::frontend.account.reseller')],

@@ -17,17 +17,21 @@
         <p class="truncate text-sm font-semibold text-ink">{{ $sellerStoreName ?? trim($__env->yieldContent('store_name')) ?: trans('theme::seller.panel_name') }}</p>
     </div>
 
-    @php
-        $bellTag = $sellerNotificationsUrl ? 'a' : 'span';
-    @endphp
-    <{{ $bellTag }} @if ($sellerNotificationsUrl) href="{{ $sellerNotificationsUrl }}" @endif
-        class="relative flex size-10 items-center justify-center rounded-lg text-ink-soft hover:bg-surface-alt hover:text-ink"
-        aria-label="{{ trans_choice('theme::seller.notifications', (int) ($sellerUnreadCount ?? 0), ['count' => (int) ($sellerUnreadCount ?? 0)]) }}">
-        <x-theme::icon name="bell" />
-        @if (($sellerUnreadCount ?? 0) > 0)
-            <span class="absolute top-2 right-2 size-2 rounded-full bg-danger" aria-hidden="true"></span>
-        @endif
-    </{{ $bellTag }}>
+    @if ($sellerNotificationBell ?? null)
+        @include('theme::layouts.frontend.partials.notification-bell', ['bell' => $sellerNotificationBell, 'bellId' => 'seller-notification-bell'])
+    @else
+        @php
+            $bellTag = $sellerNotificationsUrl ? 'a' : 'span';
+        @endphp
+        <{{ $bellTag }} @if ($sellerNotificationsUrl) href="{{ $sellerNotificationsUrl }}" @endif
+            class="relative flex size-10 items-center justify-center rounded-lg text-ink-soft hover:bg-surface-alt hover:text-ink"
+            aria-label="{{ trans_choice('theme::seller.notifications', (int) ($sellerUnreadCount ?? 0), ['count' => (int) ($sellerUnreadCount ?? 0)]) }}">
+            <x-theme::icon name="bell" />
+            @if (($sellerUnreadCount ?? 0) > 0)
+                <span class="absolute top-2 right-2 size-2 rounded-full bg-danger" aria-hidden="true"></span>
+            @endif
+        </{{ $bellTag }}>
+    @endif
 
     <div x-data="{ open: false }" x-on:click.outside="open = false" x-on:keydown.escape="open = false" class="relative">
         <button type="button" x-on:click="open = ! open" x-bind:aria-expanded="open ? 'true' : 'false'" aria-expanded="false" aria-controls="seller-profile-menu"

@@ -9,8 +9,9 @@ use Illuminate\Support\Facades\Http;
 use Modules\Core\Contracts\SmsDriver;
 
 /**
- * MSG91 Flow API. Each template key maps to a DLT-registered template id in
- * config('core.sms.msg91.templates'); $vars are passed as the template's variables.
+ * MSG91 Flow API. A template key listed in config('core.sms.msg91.templates') maps to its
+ * DLT-registered template id; any other key is used as the template id itself (the
+ * notification hub passes provider_template_id). $vars are the template's variables.
  */
 class Msg91SmsDriver implements SmsDriver
 {
@@ -21,7 +22,8 @@ class Msg91SmsDriver implements SmsDriver
 
     public function send(string $to, string $templateKey, array $vars = []): SmsResult
     {
-        $templateId = $this->config['templates'][$templateKey] ?? null;
+        $templates = (array) ($this->config['templates'] ?? []);
+        $templateId = array_key_exists($templateKey, $templates) ? $templates[$templateKey] : $templateKey;
 
         if (empty($this->config['auth_key']) || empty($templateId)) {
             return SmsResult::failed("MSG91 is not configured for the [{$templateKey}] template.");
