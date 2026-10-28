@@ -115,6 +115,15 @@ class NotificationTemplateSeeder extends Seeder
             'text' => 'Order {{order_no}} must be dispatched by {{dispatch_by}} to avoid cancellation.',
             'sms' => '{{app_name}}: order {{order_no}} must be dispatched by {{dispatch_by}} to avoid auto-cancellation.',
         ],
+        'seller.order.sla_cancelled' => [
+            'title' => 'Order {{order_no}} cancelled',
+            'text' => 'Order {{order_no}} was cancelled because it was not dispatched in time.',
+            'sms' => '{{app_name}}: order {{order_no}} was cancelled because it was not dispatched in time.',
+        ],
+        'seller.labels.ready' => [
+            'title' => 'Labels ready',
+            'text' => 'Labels and packing slips for {{count}} order(s) are ready to download.',
+        ],
         'seller.product.approved' => [
             'title' => 'Listing approved',
             'text' => '{{product_name}} passed quality check and is now live.',

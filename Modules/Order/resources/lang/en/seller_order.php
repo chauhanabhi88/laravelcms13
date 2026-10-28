@@ -39,6 +39,13 @@ return [
         'to' => 'To',
         'actor' => 'By',
         'reason' => 'Reason',
+        'force_status' => 'Force status',
+        'force_status_hint' => 'Ops override: moves the seller order along its normal state machine and records your reason in the history. Cancel through the order screen instead, so stock and refunds are handled.',
+        'force_status_submit' => 'Change status',
+        'new_status' => 'New status',
+        'awb' => 'AWB',
+        'label_printed' => 'Label printed',
+        'receipt' => 'RTO receipt',
     ],
 
     'columns' => [
@@ -56,5 +63,7 @@ return [
 
     'messages' => [
         'not_found' => 'Seller order not found.',
+        'status_forced' => 'Status changed to :status.',
+        'status_not_allowed' => 'A seller order cannot move from :from to :to.',
     ],
 ];

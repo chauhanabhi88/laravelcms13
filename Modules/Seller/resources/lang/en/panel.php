@@ -36,6 +36,8 @@ return [
         ],
         'payout_hold' => 'Payouts are on hold until your bank account is verified.',
         'store_link' => 'View your store page',
+        'sla_breached' => '{1} 1 order is past its dispatch deadline and will be cancelled soon.|[2,*] :count orders are past their dispatch deadline and will be cancelled soon.',
+        'view_orders' => 'View orders',
     ],
 
     'business' => [

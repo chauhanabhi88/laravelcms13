@@ -39,6 +39,8 @@ return [
     // Seller
     'seller.order.new' => ['audience' => 'seller', 'channels' => ['sms', 'database', 'mail'], 'category' => 'order_alerts', 'icon' => 'package', 'vars' => ['order_no', 'item_count', 'dispatch_by'], 'seller_roles' => ['orders']],
     'seller.sla.warning' => ['audience' => 'seller', 'channels' => ['sms', 'database'], 'category' => 'transactional', 'icon' => 'clock', 'vars' => ['order_no', 'dispatch_by'], 'seller_roles' => ['orders']],
+    'seller.order.sla_cancelled' => ['audience' => 'seller', 'channels' => ['sms', 'database'], 'category' => 'transactional', 'icon' => 'x', 'vars' => ['order_no', 'reason'], 'seller_roles' => ['orders']],
+    'seller.labels.ready' => ['audience' => 'seller', 'channels' => ['database'], 'category' => 'transactional', 'icon' => 'download', 'vars' => ['count'], 'seller_roles' => ['orders']],
     'seller.product.approved' => ['audience' => 'seller', 'channels' => ['database', 'mail'], 'category' => 'transactional', 'icon' => 'check', 'vars' => ['product_name'], 'seller_roles' => ['catalog']],
     'seller.product.rejected' => ['audience' => 'seller', 'channels' => ['database', 'mail'], 'category' => 'transactional', 'icon' => 'x', 'vars' => ['product_name', 'reason'], 'seller_roles' => ['catalog']],
     'seller.upload.completed' => ['audience' => 'seller', 'channels' => ['database'], 'category' => 'transactional', 'icon' => 'upload', 'vars' => ['upload_id', 'success', 'failed'], 'seller_roles' => ['catalog']],

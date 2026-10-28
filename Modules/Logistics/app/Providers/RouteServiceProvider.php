@@ -7,16 +7,20 @@ namespace Modules\Logistics\Providers;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
+use Modules\Core\Providers\Concerns\MapsSellerRoutes;
 
 /**
  * Logistics routes:
  * - api.php      api/{version}/orders/{orderNo}/tracking
- * - backend.php  couriers, rules + simulator, shipments, NDR (/backend/logistics/...)
+ * - backend.php  couriers, rules + simulator, shipments, NDR, pickup batches (/backend/logistics/...)
  * - front.php    /track and /track/{awbOrOrderNo} (public, throttled)
  * - webhook.php  /webhooks/shiprocket (token-verified, no session or CSRF)
+ * - seller.php   supplier manifests / pickup batches (/supplier/orders/manifests..., M14)
  */
 class RouteServiceProvider extends ServiceProvider
 {
+    use MapsSellerRoutes;
+
     /**
      * The root namespace to assume when generating URLs to actions.
      *
@@ -60,6 +64,8 @@ class RouteServiceProvider extends ServiceProvider
         $frontRoute->group(function (): void {
             Route::namespace($this->namespace)->group(__DIR__.'/../../routes/front.php');
         });
+
+        $this->mapSellerRoutes();
     }
 
     protected function mapApiRoutes(): void

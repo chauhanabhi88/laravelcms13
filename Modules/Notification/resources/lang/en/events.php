@@ -32,8 +32,9 @@ return [
         'abandoned' => 'Abandoned cart',
     ],
     'seller' => [
-        'order' => ['new' => 'New order'],
+        'order' => ['new' => 'New order', 'sla_cancelled' => 'Order cancelled for missed dispatch'],
         'sla' => ['warning' => 'Dispatch SLA warning'],
+        'labels' => ['ready' => 'Labels ready'],
         'product' => ['approved' => 'Listing approved', 'rejected' => 'Listing rejected'],
         'upload' => ['completed' => 'Bulk upload finished'],
         'low_stock' => ['digest' => 'Low stock digest'],

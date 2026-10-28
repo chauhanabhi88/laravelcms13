@@ -60,5 +60,25 @@ return [
             'label' => 'Customers may cancel packed orders',
             'comment' => 'Whether customers can still cancel once the seller has packed the order (before pickup).',
         ],
+        'label_format' => [
+            'label' => 'Default label paper',
+            'comment' => 'Paper size of packing slips and tax invoices in a label batch. Suppliers may choose their own in their order settings.',
+        ],
+        'sla_grace_hours' => [
+            'label' => 'Dispatch grace period (hours)',
+            'comment' => 'Hours after the dispatch deadline before an order not yet picked up is cancelled automatically and refunded.',
+        ],
+        'auto_confirm_return_days' => [
+            'label' => 'Auto-confirm RTO receipt after (days)',
+            'comment' => 'An RTO package the supplier has not confirmed within this many days is treated as received in good condition.',
+        ],
+        'reseller_white_label' => [
+            'label' => 'Reseller name as sender',
+            'comment' => 'On reseller orders, the packing slip shows the reseller as the sender so the end customer does not see the supplier.',
+        ],
+        'include_own_invoice' => [
+            'label' => 'Add our tax invoice to label batches',
+            'comment' => 'Include the marketplace tax invoice with every packing slip, even when the courier label already carries one.',
+        ],
     ],
 ];

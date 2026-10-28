@@ -198,3 +198,29 @@ Route::prefix('logistics/ndr')->group(function () {
         'middleware' => 'can:admin.ndr.act',
     ])->where('id', '[0-9]+');
 });
+
+Route::prefix('logistics/pickup-batch')->group(function () {
+    Route::get('/', [
+        'as' => 'admin.pickup_batch.index',
+        'uses' => 'PickupBatchController@index',
+        'middleware' => 'can:admin.pickup_batch.index',
+    ]);
+
+    Route::post('/filters', [
+        'as' => 'admin.pickup_batch.filters',
+        'uses' => 'PickupBatchController@filters',
+        'middleware' => 'can:admin.pickup_batch.filters',
+    ]);
+
+    Route::get('/{id}', [
+        'as' => 'admin.pickup_batch.show',
+        'uses' => 'PickupBatchController@show',
+        'middleware' => 'can:admin.pickup_batch.show',
+    ])->where('id', '[0-9]+');
+
+    Route::get('/{id}/manifest', [
+        'as' => 'admin.pickup_batch.download',
+        'uses' => 'PickupBatchController@download',
+        'middleware' => 'can:admin.pickup_batch.show',
+    ])->where('id', '[0-9]+');
+});

@@ -14,5 +14,6 @@ return [
         'admin.seller_order.index' => 'order::seller_order.labels.list',
         'admin.seller_order.filters' => 'order::seller_order.labels.filters',
         'admin.seller_order.show' => 'order::seller_order.labels.show',
+        'admin.seller_order.force_status' => 'order::seller_order.labels.force_status',
     ],
 ];
