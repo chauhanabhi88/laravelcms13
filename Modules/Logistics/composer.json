@@ -1,0 +1,23 @@
+{
+    "name": "abhishek/logistics",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Logistics\\": "app/",
+            "Modules\\Logistics\\Database\\Factories\\": "database/factories/",
+            "Modules\\Logistics\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "name": "Logistics",
+    "alias": "logistics",
+    "description": "Logistics and courier routing: courier master with CourierDriver contract (shiprocket, manual, fake), rule-based courier assignment, shipments per seller order, live serviceability and EDD, tracking webhook and polling with status mapping to seller-order transitions, customer timeline and public tracking page, NDR cases, RTO flow, logistics charges, pickup location sync and admin screens.",
+    "keywords": [],
+    "priority": 35,
+    "providers": [
+        "Modules\\Logistics\\Providers\\LogisticsServiceProvider"
+    ],
+    "files": [],
+    "cache": false,
+    "depends": [
+        "core",
+        "customer",
+        "directory",
+        "seller",
+        "catalog",
+        "product",
+        "storefront",
+        "payment",
+        "order",
+        "notification",
+        "theme"
+    ]
+}

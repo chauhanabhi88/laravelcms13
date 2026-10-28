@@ -1,0 +1,10 @@
+{
+    "order_id": 451234567,
+    "shipment_id": 449876543,
+    "status": "NEW",
+    "status_code": 1,
+    "onboarding_completed_now": 0,
+    "awb_code": "",
+    "courier_company_id": "",
+    "courier_name": ""
+}

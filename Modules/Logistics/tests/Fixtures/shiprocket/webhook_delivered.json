@@ -1,0 +1,18 @@
+{
+    "awb": "SR141123456789",
+    "courier_name": "Swift Express Surface",
+    "current_status": "DELIVERED",
+    "current_status_id": 7,
+    "shipment_status": "DELIVERED",
+    "shipment_status_id": 7,
+    "current_timestamp": "2026-10-31 14:05:00",
+    "order_id": "SUB-PLACEHOLDER",
+    "sr_order_id": 451234567,
+    "etd": "2026-11-02 18:00:00",
+    "scans": [
+        {"date": "2026-10-29 10:15:00", "status": "PKD", "activity": "Shipment picked up", "location": "Bengaluru", "sr-status": "42", "sr-status-label": "PICKED UP"},
+        {"date": "2026-10-31 08:30:00", "status": "OFD", "activity": "Out for delivery", "location": "Mumbai", "sr-status": "17", "sr-status-label": "OUT FOR DELIVERY"},
+        {"date": "2026-10-31 14:05:00", "status": "DLVD", "activity": "Delivered", "location": "Mumbai", "sr-status": "7", "sr-status-label": "DELIVERED"}
+    ],
+    "is_return": 0
+}

@@ -27,5 +27,6 @@
     "Notification": true,
     "Cart": true,
     "Payment": true,
-    "Order": true
+    "Order": true,
+    "Logistics": true
 }

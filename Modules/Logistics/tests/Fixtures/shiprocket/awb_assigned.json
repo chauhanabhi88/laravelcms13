@@ -1,0 +1,18 @@
+{
+    "awb_assign_status": 1,
+    "response": {
+        "data": {
+            "courier_company_id": 43,
+            "awb_code": "SR141123456789",
+            "cod": 1,
+            "order_id": 451234567,
+            "shipment_id": 449876543,
+            "awb_code_status": 1,
+            "assigned_date_time": {"date": "2026-10-28 11:02:00.000000"},
+            "applied_weight": 0.5,
+            "courier_name": "Swift Express Surface",
+            "transporter_id": "",
+            "transporter_name": ""
+        }
+    }
+}

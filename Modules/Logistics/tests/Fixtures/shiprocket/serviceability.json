@@ -1,0 +1,11 @@
+{
+    "status": 200,
+    "data": {
+        "recommended_courier_company_id": 43,
+        "available_courier_companies": [
+            {"courier_company_id": 43, "courier_name": "Swift Express Surface", "rate": 72.5, "cod_charges": 30, "estimated_delivery_days": "4", "etd": "Nov 02, 2026", "cod": 1},
+            {"courier_company_id": 51, "courier_name": "Budget Cargo", "rate": 58, "cod_charges": 25, "estimated_delivery_days": "6", "etd": "Nov 04, 2026", "cod": 1},
+            {"courier_company_id": 77, "courier_name": "Air Priority", "rate": 110, "cod_charges": 35, "estimated_delivery_days": "2", "etd": "Oct 31, 2026", "cod": 0}
+        ]
+    }
+}

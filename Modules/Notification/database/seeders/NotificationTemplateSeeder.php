@@ -57,6 +57,11 @@ class NotificationTemplateSeeder extends Seeder
             'subject' => 'Your order ##order_no## is delivered',
             'mail' => '<p>Hi ##recipient_name##,</p><p>Your order <strong>##order_no##</strong> has been delivered. If something is not right, you can request a return from your orders page.</p><p><a href="##url##">View order</a></p>',
         ],
+        'order.delivery_failed' => [
+            'title' => 'Delivery attempt failed',
+            'text' => 'The courier could not deliver order {{order_no}} ({{reason}}). Tell us how to proceed from your order page.',
+            'sms' => 'We could not deliver your {{app_name}} order {{order_no}} ({{reason}}). Choose re-attempt, update address or cancel: {{url}}',
+        ],
         'order.cancelled' => [
             'title' => 'Order {{order_no}} cancelled',
             'text' => 'Your order was cancelled. {{reason}}',
@@ -185,6 +190,12 @@ class NotificationTemplateSeeder extends Seeder
             'text' => '{{count}} settled entries for {{date}} do not match our records.',
             'subject' => 'Razorpay settlement mismatches on ##date##',
             'mail' => '<p>The settlement reconciliation for <strong>##date##</strong> found <strong>##count##</strong> entries that do not match our payments or refunds.</p><p><a href="##url##">Review the mismatches</a></p>',
+        ],
+        'admin.shipment.attention' => [
+            'title' => 'Shipment needs attention: {{order_no}}',
+            'text' => 'The shipment of {{order_no}} needs Logistics Ops: {{reason}}',
+            'subject' => 'Shipment of ##order_no## needs attention',
+            'mail' => '<p>The shipment of <strong>##order_no##</strong> could not continue automatically.</p><p>Reason: ##reason##</p><p><a href="##url##">Open the shipment</a></p>',
         ],
     ];
 

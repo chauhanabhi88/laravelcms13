@@ -1,0 +1,52 @@
+<?php
+
+return [
+    'tracking' => [
+        'title' => 'Track your order',
+        'heading' => 'Track your order',
+        'intro' => 'Enter your order number, sub-order number or the courier tracking number (AWB).',
+        'placeholder' => 'e.g. ORD-2610-000123 or AWB',
+        'submit' => 'Track',
+        'result_title' => 'Tracking :reference',
+        'package' => 'Package :no',
+        'courier' => 'Courier',
+        'awb' => 'Tracking no.',
+        'edd' => 'Expected delivery',
+        'courier_link' => 'Track on the courier website',
+        'scans' => 'Shipment updates',
+        'no_scans' => 'No courier updates yet.',
+        'not_found' => 'We could not find a shipment for this number.',
+    ],
+    'timeline' => [
+        'steps' => [
+            'ordered' => 'Ordered',
+            'packed' => 'Packed',
+            'shipped' => 'Shipped',
+            'out_for_delivery' => 'Out for Delivery',
+            'delivered' => 'Delivered',
+        ],
+        'branches' => [
+            'cancelled' => 'Cancelled',
+            'delivery_failed' => 'Delivery attempt failed',
+            'returning' => 'Returning to seller',
+            'returned' => 'Returned to seller',
+        ],
+        'attempts' => '{1} :count delivery attempt|[2,*] :count delivery attempts',
+        'scan_status' => [
+            'created' => 'Order received',
+            'awb_assigned' => 'Courier assigned',
+            'label_generated' => 'Packed',
+            'pickup_scheduled' => 'Pickup scheduled',
+            'picked_up' => 'Picked up',
+            'in_transit' => 'In transit',
+            'out_for_delivery' => 'Out for delivery',
+            'delivered' => 'Delivered',
+            'ndr' => 'Delivery attempt failed',
+            'rto_initiated' => 'Returning to seller',
+            'rto_in_transit' => 'Returning to seller',
+            'rto_delivered' => 'Returned to seller',
+            'cancelled' => 'Cancelled',
+            'lost' => 'Shipment issue',
+        ],
+    ],
+];
