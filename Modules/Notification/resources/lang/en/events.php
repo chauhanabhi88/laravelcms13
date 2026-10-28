@@ -15,6 +15,7 @@ return [
         'out_for_delivery' => 'Out for delivery',
         'delivered' => 'Order delivered',
         'cancelled' => 'Order cancelled',
+        'delivery_failed' => 'Delivery attempt failed',
     ],
     'return' => [
         'approved' => 'Return approved',
@@ -46,5 +47,6 @@ return [
         'payout' => ['failed' => 'Payout failed'],
         'refund' => ['failed' => 'Refund failed'],
         'payment' => ['recon_mismatch' => 'Settlement mismatches found'],
+        'shipment' => ['attention' => 'Shipment needs attention'],
     ],
 ];

@@ -43,5 +43,9 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Never reach the real courier API from tests (Logistics, M13). -->
+        <env name="SHIPROCKET_EMAIL" value=""/>
+        <env name="SHIPROCKET_PASSWORD" value=""/>
+        <env name="SHIPROCKET_WEBHOOK_TOKEN" value=""/>
     </php>
 </phpunit>
