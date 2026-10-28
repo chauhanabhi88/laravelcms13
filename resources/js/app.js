@@ -14,6 +14,7 @@ import productPage from './components/product-page';
 import lazyProductRow from './components/lazy-product-row';
 import { dropzone, pincodeChecker, priceRange, qtyStepper } from './components/form-controls';
 import { addressForm, otpInput, otpLogin, resendTimer, startWishlistSync } from './components/customer-account';
+import notificationBell from './components/notification-bell';
 
 export { fetchJson };
 
@@ -42,6 +43,7 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('resendTimer', resendTimer);
     Alpine.data('otpLogin', otpLogin);
     Alpine.data('addressForm', addressForm);
+    Alpine.data('notificationBell', notificationBell);
     startWishlistSync(Alpine);
 
     /**

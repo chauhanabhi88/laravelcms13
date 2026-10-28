@@ -7,6 +7,7 @@ namespace Modules\Theme\Composers;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Modules\Theme\Contracts\NotificationBellProvider;
 use Modules\Theme\Support\StorefrontLinks;
 use Modules\Theme\Support\ThemeSettings;
 
@@ -16,7 +17,10 @@ use Modules\Theme\Support\ThemeSettings;
  */
 class SellerLayoutComposer
 {
-    public function __construct(protected StorefrontLinks $links) {}
+    public function __construct(
+        protected StorefrontLinks $links,
+        protected NotificationBellProvider $notifications,
+    ) {}
 
     public function compose(View $view): void
     {
@@ -34,10 +38,15 @@ class SellerLayoutComposer
      */
     protected function resolve(): array
     {
+        $sellerUser = $this->sellerUser();
+        $bell = $sellerUser ? $this->notifications->forSeller() : null;
+
         return [
             'siteName' => config('app.name'),
             'logoUrl' => ThemeSettings::logoUrl(),
-            'sellerUser' => $this->sellerUser(),
+            'sellerUser' => $sellerUser,
+            'sellerNotificationBell' => $bell,
+            'sellerUnreadCount' => (int) ($bell['count'] ?? 0),
             'sellerMenu' => $this->menu(),
             'sellerDashboardUrl' => $this->links->routeUrl('seller.dashboard'),
             'sellerNotificationsUrl' => $this->links->routeUrl('seller.notifications.index'),

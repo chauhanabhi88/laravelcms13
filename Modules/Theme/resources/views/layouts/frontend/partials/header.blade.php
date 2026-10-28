@@ -72,6 +72,10 @@
                 </div>
             </div>
 
+            @if ($notificationBell ?? null)
+                @include('theme::layouts.frontend.partials.notification-bell', ['bell' => $notificationBell, 'bellId' => 'header-notification-bell'])
+            @endif
+
             @php
                 $cartTag = $cartUrl ? 'a' : 'span';
             @endphp

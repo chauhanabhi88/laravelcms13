@@ -10,6 +10,7 @@ use Modules\Theme\Composers\HeaderComposer;
 use Modules\Theme\Composers\SellerLayoutComposer;
 use Modules\Theme\Contracts\CartCountProvider;
 use Modules\Theme\Contracts\MegaMenuProvider;
+use Modules\Theme\Contracts\NotificationBellProvider;
 use Modules\Theme\Contracts\WishlistProvider;
 use Modules\Theme\Models\Theme;
 use Modules\Theme\Repositories\Cache\CacheThemeDecorator;
@@ -17,6 +18,7 @@ use Modules\Theme\Repositories\Eloquent\EloquentThemeRepository;
 use Modules\Theme\Support\MegaMenu;
 use Modules\Theme\Support\NullCartCountProvider;
 use Modules\Theme\Support\NullMegaMenuProvider;
+use Modules\Theme\Support\NullNotificationBellProvider;
 use Modules\Theme\Support\NullWishlistProvider;
 use Modules\Theme\Support\StorefrontLinks;
 
@@ -56,14 +58,15 @@ class ThemeServiceProvider extends ServiceProvider
     }
 
     /**
-     * Null providers until Catalog (M02), Customer wishlist (M08) and Cart (M10) bind real ones.
-     * "If" bindings so a module that registers earlier still wins.
+     * Null providers until Catalog (M02), Customer wishlist (M08), Notification (M09) and
+     * Cart (M10) bind real ones. "If" bindings so a module that registers earlier still wins.
      */
     protected function registerStorefrontBindings(): void
     {
         $this->app->bindIf(MegaMenuProvider::class, NullMegaMenuProvider::class);
         $this->app->bindIf(CartCountProvider::class, NullCartCountProvider::class);
         $this->app->bindIf(WishlistProvider::class, NullWishlistProvider::class);
+        $this->app->bindIf(NotificationBellProvider::class, NullNotificationBellProvider::class);
         $this->app->bindIf(MegaMenu::class);
         $this->app->scopedIf(StorefrontLinks::class);
     }

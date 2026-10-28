@@ -424,7 +424,10 @@ class FileStore implements CanFlushLocks, LockProvider, Store
     protected function unserialize($value)
     {
         if ($this->serializableClasses !== null) {
-            return unserialize($value, ['allowed_classes' => $this->serializableClasses]);
+            // A restricted list (Laravel 13 default: false) would turn every cached model of
+            // the repository decorators into __PHP_Incomplete_Class; CacheClassPolicy lets the
+            // app's own data classes through and keeps everything else blocked.
+            return unserialize($value, ['allowed_classes' => CacheClassPolicy::allowedClasses((string) $value, $this->serializableClasses)]);
         }
 
         return unserialize($value);

@@ -1,0 +1,19 @@
+{
+    "name": "Notification",
+    "alias": "notification",
+    "description": "Multi-channel notification hub: event catalogue, SMS/push/in-app/WhatsApp templates (email reuses Mail templates), recipient preferences, delivery log, customer and seller inbox bells.",
+    "keywords": [],
+    "priority": 30,
+    "providers": [
+        "Modules\\Notification\\Providers\\NotificationServiceProvider"
+    ],
+    "files": [],
+    "cache": true,
+    "depends": [
+        "core",
+        "mail",
+        "customer",
+        "seller",
+        "theme"
+    ]
+}

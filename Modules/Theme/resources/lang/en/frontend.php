@@ -45,6 +45,17 @@ return [
         'profile' => 'Profile',
         'open_profile_menu' => 'Open profile menu',
         'reseller' => 'Reseller mode',
+        'notifications' => 'Notifications',
+    ],
+    'bell' => [
+        'label' => '{0} Notifications|{1} Notifications, :count unread|[2,*] Notifications, :count unread',
+        'title' => 'Notifications',
+        'mark_all_read' => 'Mark all as read',
+        'view_all' => 'View all',
+        'empty' => 'You are all caught up.',
+        'loading' => 'Loading…',
+        'failed' => 'Could not load notifications. Try again.',
+        'unread' => 'Unread',
     ],
     'footer' => [
         'pages' => 'Company',
