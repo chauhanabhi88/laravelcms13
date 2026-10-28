@@ -18,6 +18,7 @@ use Modules\Order\Console\SnapshotSellerQualityCommand;
 use Modules\Order\Console\WarnSlaBreachesCommand;
 use Modules\Order\Contracts\FulfilmentLogistics;
 use Modules\Order\Contracts\LedgerPoster;
+use Modules\Order\Contracts\OrderReturns;
 use Modules\Order\Contracts\ShipmentPlanner;
 use Modules\Order\Events\OrderCancelled;
 use Modules\Order\Events\OrderConfirmed;
@@ -51,6 +52,7 @@ use Modules\Order\Repositories\SellerOrderRepository;
 use Modules\Order\Services\CodRiskService;
 use Modules\Order\Support\NullFulfilmentLogistics;
 use Modules\Order\Support\NullLedgerPoster;
+use Modules\Order\Support\NullOrderReturns;
 use Modules\Order\Support\NullShipmentPlanner;
 use Modules\Order\Support\OrderAccountDeletionGuard;
 use Modules\Order\Support\OrderCustomerHistory;
@@ -104,10 +106,11 @@ class OrderServiceProvider extends ServiceProvider
         $this->app->bind(CustomerOrderHistory::class, OrderCustomerHistory::class);
         $this->app->bind(AccountDeletionGuard::class, OrderAccountDeletionGuard::class);
 
-        // Logistics (M13) and Finance (M17) bind the real implementations.
+        // Logistics (M13), Returns (M15) and Finance (M17) bind the real implementations.
         $this->app->bindIf(ShipmentPlanner::class, NullShipmentPlanner::class);
         $this->app->bindIf(LedgerPoster::class, NullLedgerPoster::class);
         $this->app->bindIf(FulfilmentLogistics::class, NullFulfilmentLogistics::class);
+        $this->app->bindIf(OrderReturns::class, NullOrderReturns::class);
 
         // FR-ORD-009 rules on top of the Payment module's COD eligibility checks.
         $this->app->tag([CodRiskService::class], CodEligibilityService::RISK_CHECK_TAG);

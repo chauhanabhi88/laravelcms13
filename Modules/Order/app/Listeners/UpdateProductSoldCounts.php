@@ -17,7 +17,8 @@ class UpdateProductSoldCounts implements ShouldQueue
 {
     public function handle(SellerOrderStatusChanged $event): void
     {
-        if ($event->to !== SellerOrder::STATUS_DELIVERED) {
+        // A package returning to "delivered" after a closed return (M15) was counted already.
+        if ($event->to !== SellerOrder::STATUS_DELIVERED || $event->from === SellerOrder::STATUS_RETURN_REQUESTED) {
             return;
         }
 

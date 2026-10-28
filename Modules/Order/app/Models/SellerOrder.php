@@ -153,7 +153,8 @@ class SellerOrder extends MarketplaceModel
         self::STATUS_NDR => [self::STATUS_OUT_FOR_DELIVERY, self::STATUS_RTO_INITIATED],
         self::STATUS_RTO_INITIATED => [self::STATUS_RTO_DELIVERED],
         self::STATUS_DELIVERED => [self::STATUS_RETURN_REQUESTED, self::STATUS_COMPLETED],
-        self::STATUS_RETURN_REQUESTED => [self::STATUS_RETURNED],
+        // Back to delivered when the open returns end with items still with the customer (M15).
+        self::STATUS_RETURN_REQUESTED => [self::STATUS_RETURNED, self::STATUS_DELIVERED],
     ];
 
     /**

@@ -548,6 +548,29 @@ class OrderFulfillmentService
     }
 
     /**
+     * The seller order's tax invoice PDF on the documents disk for the customer's download
+     * (FR-RET-001), generated now when the label batch has not stored it yet. Null before the
+     * invoice number exists (accepted orders only) and for cancelled orders.
+     */
+    public function invoicePath(SellerOrder $sellerOrder): ?string
+    {
+        if ($sellerOrder->invoice_no === null || $sellerOrder->isCancelled()) {
+            return null;
+        }
+
+        $this->storeTaxInvoice($sellerOrder);
+
+        $document = SalesOrderDocument::query()
+            ->where('seller_order_id', $sellerOrder->id)
+            ->where('type', SalesOrderDocument::TYPE_TAX_INVOICE)
+            ->where('number', $sellerOrder->invoice_no)
+            ->orderByDesc('id')
+            ->first();
+
+        return $document !== null ? $this->documentPath($document) : null;
+    }
+
+    /**
      * Lock the order and stamp its acceptance (stays pending_acceptance until the AWB).
      *
      * @throws OrderException

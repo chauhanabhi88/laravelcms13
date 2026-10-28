@@ -1,0 +1,23 @@
+{
+    "name": "abhishek/returns",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Returns\\": "app/",
+            "Modules\\Returns\\Database\\Factories\\": "database/factories/",
+            "Modules\\Returns\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

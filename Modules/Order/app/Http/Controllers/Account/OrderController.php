@@ -9,44 +9,74 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Modules\Customer\Models\Customer;
+use Modules\Order\Contracts\FulfilmentLogistics;
+use Modules\Order\Contracts\OrderReturns;
 use Modules\Order\Exceptions\OrderException;
 use Modules\Order\Http\Controllers\Concerns\ResolvesOwnOrder;
 use Modules\Order\Http\Requests\CancelOrderRequest;
 use Modules\Order\Models\SalesOrder;
+use Modules\Order\Models\SellerOrder;
 use Modules\Order\Services\OrderCancellationService;
+use Modules\Order\Services\OrderFulfillmentService;
 use Modules\Payment\Services\PaymentService;
+use Modules\Theme\Support\StorefrontLinks;
+use Modules\Theme\Support\ThemeSettings;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
- * My Orders (basic, plan M12 §7): the list with a status chip per package, the order detail
- * and cancellation before shipment. M15 adds the tracking timeline and returns.
+ * My Orders (FR-RET-001, plans M12 §7 / M15 §5.1): one card per package with its status, a
+ * contextual line and actions; the order detail with the shipment timeline, courier and AWB,
+ * invoices, returns, cancellation before shipment and help links.
  */
 class OrderController extends Controller
 {
     use ResolvesOwnOrder;
 
-    public function __construct(private readonly OrderCancellationService $cancellations) {}
+    public function __construct(
+        private readonly OrderCancellationService $cancellations,
+        private readonly OrderReturns $returns,
+    ) {}
 
     public function index(): View
     {
+        $customer = $this->customer();
         $orders = SalesOrder::query()
-            ->forCustomer($this->customer()->id)
+            ->forCustomer($customer->id)
             ->with(['sellerOrders.seller', 'sellerOrders.items'])
             ->orderByDesc('placed_at')
             ->orderByDesc('id')
             ->paginate(10);
 
-        return view('order::frontend.account.orders.index', ['orders' => $orders]);
+        $returnStates = [];
+
+        foreach ($orders as $order) {
+            $returnStates += $this->returns->forOrder($order, $customer);
+        }
+
+        return view('order::frontend.account.orders.index', [
+            'orders' => $orders,
+            'returnStates' => $returnStates,
+            'returnsUrl' => $this->returns->listUrl(),
+        ]);
     }
 
-    public function show(Request $request, PaymentService $payments): View
+    public function show(Request $request, PaymentService $payments, FulfilmentLogistics $logistics): View
     {
-        $order = $this->ownOrder($request, $this->customer(), ['sellerOrders.seller', 'sellerOrders.items', 'shippingAddress', 'billingAddress']);
+        $customer = $this->customer();
+        $order = $this->ownOrder($request, $customer, ['sellerOrders.seller', 'sellerOrders.items', 'shippingAddress', 'billingAddress']);
 
         return view('order::frontend.account.orders.show', [
             'order' => $order,
             'payment' => $payments->latestPayment($order->id),
             'cancellableItemIds' => $this->cancellations->cancellableItemIds($order),
             'cancelReasons' => (array) config('order.cancel_reasons', []),
+            'timelines' => $order->sellerOrders->mapWithKeys(fn (SellerOrder $sellerOrder): array => [$sellerOrder->id => $logistics->timeline($sellerOrder)])->all(),
+            'shipments' => $logistics->shipments($order->sellerOrders->modelKeys()),
+            'returnStates' => $this->returns->forOrder($order, $customer),
+            'returnsUrl' => $this->returns->listUrl(),
+            'helpLinks' => $this->helpLinks(),
+            'supportPhone' => ThemeSettings::supportPhone(),
+            'supportEmail' => ThemeSettings::supportEmail(),
         ]);
     }
 
@@ -63,6 +93,35 @@ class OrderController extends Controller
         }
 
         return $back->with('success', trans_choice('order::front.cancel.done', $count, ['count' => $count]));
+    }
+
+    /**
+     * The package's tax invoice (owner only; available once the seller accepted the order).
+     */
+    public function invoice(Request $request, OrderFulfillmentService $fulfilment): Response
+    {
+        $order = $this->ownOrder($request, $this->customer());
+        $sellerOrder = SellerOrder::query()->where('sales_order_id', $order->id)->find((int) $request->route('sellerOrder'));
+        $path = $sellerOrder !== null ? $fulfilment->invoicePath($sellerOrder) : null;
+
+        abort_if($path === null, 404);
+
+        return $fulfilment->disk()->download($path, str_replace('/', '-', (string) $sellerOrder->invoice_no).'.pdf');
+    }
+
+    /**
+     * "Need help?" links: the storefront footer's help column (policies, FAQs, contact).
+     *
+     * @return list<array{url: string, label: string}>
+     */
+    protected function helpLinks(): array
+    {
+        $links = app(StorefrontLinks::class);
+
+        return array_values(array_filter(array_map(
+            fn (array $link): ?array => $links->resolve($link),
+            (array) config('theme.footer.columns.help.links', []),
+        )));
     }
 
     protected function customer(): Customer

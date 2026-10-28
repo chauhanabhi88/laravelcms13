@@ -69,6 +69,12 @@ class NotificationTemplateSeeder extends Seeder
             'subject' => 'Your order ##order_no## is cancelled',
             'mail' => '<p>Hi ##recipient_name##,</p><p>Your order <strong>##order_no##</strong> has been cancelled. Reason: ##reason##</p><p>Any amount you paid will be refunded to the original payment method.</p>',
         ],
+        'return.requested' => [
+            'title' => '{{type}} request {{return_no}} received',
+            'text' => 'We have your request for order {{order_no}}. We will confirm the pickup shortly.',
+            'subject' => 'We received your request ##return_no##',
+            'mail' => '<p>Hi ##recipient_name##,</p><p>We have received your ##type## request <strong>##return_no##</strong> for order ##order_no##. We will confirm the pickup shortly.</p><p><a href="##url##">Track your request</a></p>',
+        ],
         'return.approved' => [
             'title' => 'Return {{return_no}} approved',
             'text' => 'Pickup for your return is scheduled for {{pickup_date}}. Keep the item packed.',
@@ -205,6 +211,16 @@ class NotificationTemplateSeeder extends Seeder
             'text' => 'The shipment of {{order_no}} needs Logistics Ops: {{reason}}',
             'subject' => 'Shipment of ##order_no## needs attention',
             'mail' => '<p>The shipment of <strong>##order_no##</strong> could not continue automatically.</p><p>Reason: ##reason##</p><p><a href="##url##">Open the shipment</a></p>',
+        ],
+        'admin.return.review' => [
+            'title' => 'Return to review: {{return_no}}',
+            'text' => 'Return {{return_no}} for {{order_no}} ({{reason}}) needs a decision.',
+        ],
+        'admin.return.claim' => [
+            'title' => 'Seller claim: {{order_no}}',
+            'text' => '{{store}} raised a claim ({{reason}}) on {{order_no}}.',
+            'subject' => 'Seller claim to review: ##order_no##',
+            'mail' => '<p><strong>##store##</strong> raised a claim (##reason##) on ##order_no##.</p><p><a href="##url##">Review the claim</a></p>',
         ],
     ];
 

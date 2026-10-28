@@ -48,6 +48,7 @@ use Modules\Order\Models\SellerOrder;
  * @property string|null $manifest_url
  * @property string|null $invoice_url
  * @property string|null $pickup_location_code
+ * @property array<string, mixed>|null $pickup_address
  * @property Carbon|null $pickup_scheduled_at
  * @property Carbon|null $picked_up_at
  * @property Carbon|null $delivered_at
@@ -188,6 +189,7 @@ class Shipment extends MarketplaceModel
         'manifest_url',
         'invoice_url',
         'pickup_location_code',
+        'pickup_address',
         'pickup_scheduled_at',
         'picked_up_at',
         'delivered_at',
@@ -230,6 +232,7 @@ class Shipment extends MarketplaceModel
             'last_event_at' => 'datetime',
             'last_synced_at' => 'datetime',
             'rto_restocked' => 'integer',
+            'pickup_address' => 'array',
         ];
     }
 

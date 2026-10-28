@@ -12,7 +12,7 @@
 @endphp
 
 @section('account')
-    {{-- Order detail (basic, plan M12 §7): packages, items, address, totals and cancellation before shipment. --}}
+    {{-- Order detail (FR-RET-001): packages with timeline, courier and returns; address, totals, cancellation and help. --}}
     <div class="space-y-5" x-data="{ cancelling: @js($errors->hasAny(['reason', 'items', 'comment'])) }">
         @if (session('success'))
             <x-theme::alert type="success">{{ session('success') }}</x-theme::alert>
@@ -30,6 +30,9 @@
             @endif
             @if ($canCancel)
                 <x-theme::button type="button" variant="secondary" size="sm" x-on:click="cancelling = ! cancelling" data-cancel-toggle>{{ trans('order::front.cancel.button') }}</x-theme::button>
+            @endif
+            @if ($returnsUrl)
+                <a href="{{ $returnsUrl }}" class="ml-auto text-sm font-medium text-accent hover:underline">{{ trans('order::front.orders.my_returns') }}</a>
             @endif
         </div>
 
@@ -67,12 +70,22 @@
         @endif
 
         @foreach ($order->sellerOrders as $index => $sellerOrder)
-            <x-theme::card padding="p-0" data-seller-order="{{ $sellerOrder->sub_order_no }}">
+            @php
+                $events = $timelines[$sellerOrder->id] ?? [];
+                $shipment = $shipments[$sellerOrder->id] ?? null;
+                $returnState = $returnStates[$sellerOrder->id] ?? null;
+                $isRto = in_array($sellerOrder->status, [\Modules\Order\Models\SellerOrder::STATUS_RTO_INITIATED, \Modules\Order\Models\SellerOrder::STATUS_RTO_DELIVERED], true);
+            @endphp
+            <x-theme::card padding="p-0" id="package-{{ $sellerOrder->id }}" data-seller-order="{{ $sellerOrder->sub_order_no }}">
                 <header class="flex flex-wrap items-center justify-between gap-2 border-b border-line px-4 py-3 sm:px-5">
                     <div>
                         <p class="text-sm font-semibold text-ink">{{ trans('order::front.orders.package', ['number' => $index + 1]) }} · {{ trans('order::front.summary.sold_by', ['store' => $sellerOrder->seller?->displayName()]) }}</p>
                         <p class="text-xs text-muted">
-                            @if ($sellerOrder->delivered_at)
+                            @if ($isRto)
+                                {{ trans($sellerOrder->status === \Modules\Order\Models\SellerOrder::STATUS_RTO_DELIVERED ? 'order::front.orders.rto_returned' : 'order::front.orders.rto_returning') }}
+                            @elseif ($returnState?->canReturn() && $returnState->windowEndsAt)
+                                {{ trans($returnState->exchangeOnly ? 'order::front.orders.exchange_window_closes' : 'order::front.orders.return_window_closes', ['date' => $returnState->windowEndsAt->translatedFormat($dateFormat)]) }}
+                            @elseif ($sellerOrder->delivered_at)
                                 {{ trans('order::front.orders.delivered_on', ['date' => $sellerOrder->delivered_at->translatedFormat($dateFormat)]) }}
                             @elseif ($sellerOrder->cancelled_at)
                                 {{ trans('order::front.orders.cancelled_on', ['date' => $sellerOrder->cancelled_at->translatedFormat($dateFormat)]) }}
@@ -92,18 +105,74 @@
                                 @endif
                             </div>
                             <div class="min-w-0 flex-1">
-                                <p @class(['text-sm font-medium', 'text-ink' => $item->isActive(), 'text-muted line-through' => $item->isCancelled()])>{{ $item->name }}</p>
+                                <p @class(['text-sm font-medium', 'text-ink' => ! $item->isCancelled(), 'text-muted line-through' => $item->isCancelled()])>{{ $item->name }}</p>
                                 <p class="mt-0.5 text-xs text-muted">
                                     @if ($item->variant_label)
                                         {{ $item->variant_label }} ·
                                     @endif
                                     {{ trans('order::front.orders.qty', ['count' => $item->quantity]) }}
+                                    @if (! $item->isActive() && ! $item->isCancelled())
+                                        · {{ trans('order::front.item_statuses.'.$item->status) }}
+                                    @endif
                                 </p>
                             </div>
                             <p class="tabular text-sm font-semibold text-ink">{{ $item->lineTotal()->format() }}</p>
                         </li>
                     @endforeach
                 </ul>
+
+                @if ($events !== [] && $sellerOrder->status !== \Modules\Order\Models\SellerOrder::STATUS_PENDING_PAYMENT)
+                    <div class="grid gap-5 border-t border-line px-4 py-4 sm:px-5 md:grid-cols-[1fr_16rem]" data-timeline>
+                        <div>
+                            <h3 class="mb-3 text-xs font-semibold tracking-wide text-muted uppercase">{{ trans('order::front.orders.tracking') }}</h3>
+                            <x-theme::timeline :events="$events" />
+                        </div>
+                        @if ($shipment?->isBooked())
+                            <div class="text-sm">
+                                <p class="text-ink-soft" data-awb>{{ trans('order::front.orders.courier_awb', ['courier' => $shipment->carrierName ?? '—', 'awb' => $shipment->awb]) }}</p>
+                                @if ($shipment->edd && ! $sellerOrder->delivered_at && ! $isRto)
+                                    <p class="mt-1 text-xs text-muted">{{ trans('order::front.orders.delivery_by', ['date' => $shipment->edd->translatedFormat($dateFormat)]) }}</p>
+                                @endif
+                                @if ($shipment->trackingUrl)
+                                    <a href="{{ $shipment->trackingUrl }}" target="_blank" rel="noopener" class="mt-2 inline-flex items-center gap-1 font-medium text-accent hover:underline">
+                                        {{ trans('order::front.orders.track_on_courier') }} <x-theme::icon name="arrow-right" size="size-3.5" />
+                                    </a>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
+                @if ($isRto && ! $order->isCod())
+                    <p class="border-t border-line px-4 py-3 text-xs text-muted sm:px-5">{{ trans('order::front.orders.rto_refund_note') }}</p>
+                @endif
+
+                @if ($returnState && $returnState->returns !== [])
+                    <div class="border-t border-line px-4 py-3 sm:px-5" data-returns>
+                        <h3 class="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">{{ trans('order::front.orders.returns_heading') }}</h3>
+                        <ul class="space-y-1.5">
+                            @foreach ($returnState->returns as $return)
+                                <li class="flex flex-wrap items-center justify-between gap-2 text-sm">
+                                    <a href="{{ $return['url'] }}" class="tabular font-medium text-accent hover:underline">{{ $return['return_no'] }}</a>
+                                    <x-theme::chip :variant="$return['chip']">{{ $return['label'] }}</x-theme::chip>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                @if ($returnState?->canReturn() || ($sellerOrder->invoice_no && ! $sellerOrder->isCancelled()))
+                    <footer class="flex flex-wrap items-center justify-end gap-3 border-t border-line px-4 py-3 sm:px-5">
+                        @if ($sellerOrder->invoice_no && ! $sellerOrder->isCancelled())
+                            <x-theme::button variant="secondary" size="sm" :href="frontRoute('customer.orders.invoice', ['orderNo' => $order->order_no, 'sellerOrder' => $sellerOrder->id])">
+                                <x-theme::icon name="download" size="size-4" /> {{ trans('order::front.orders.invoice') }}
+                            </x-theme::button>
+                        @endif
+                        @if ($returnState?->canReturn())
+                            <x-theme::button size="sm" :href="$returnState->createUrl" data-return-link>{{ trans($returnState->exchangeOnly ? 'order::front.orders.exchange' : 'order::front.orders.return_exchange') }}</x-theme::button>
+                        @endif
+                    </footer>
+                @endif
             </x-theme::card>
         @endforeach
 
@@ -141,5 +210,27 @@
                 <p class="mt-3 text-xs text-muted">{{ trans('order::front.orders.payment') }}: {{ \Modules\Order\Support\OrderOptions::paymentMethod($order->payment_method) }}</p>
             </x-theme::card>
         </div>
+
+        <x-theme::card padding="p-5" data-help>
+            <h2 class="text-base font-semibold text-ink">{{ trans('order::front.orders.help_title') }}</h2>
+            <p class="mt-1 text-sm text-muted">{{ trans('order::front.orders.help_text') }}</p>
+            @if ($helpLinks !== [])
+                <ul class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                    @foreach ($helpLinks as $link)
+                        <li><a href="{{ $link['url'] }}" class="font-medium text-accent hover:underline">{{ $link['label'] }}</a></li>
+                    @endforeach
+                </ul>
+            @endif
+            @if ($supportPhone || $supportEmail)
+                <div class="mt-3 space-y-1 text-sm text-ink-soft">
+                    @if ($supportPhone)
+                        <p>{{ trans('order::front.orders.help_phone', ['phone' => $supportPhone]) }}</p>
+                    @endif
+                    @if ($supportEmail)
+                        <p>{{ trans('order::front.orders.help_email', ['email' => $supportEmail]) }}</p>
+                    @endif
+                </div>
+            @endif
+        </x-theme::card>
     </div>
 @endsection

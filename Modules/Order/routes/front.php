@@ -81,5 +81,11 @@ Route::middleware('auth:customer')->group(function () {
             'uses' => 'Account\OrderController@cancel',
             'middleware' => 'throttle:10,1',
         ]);
+
+        Route::get('/{orderNo}/invoice/{sellerOrder}', [
+            'as' => 'customer.orders.invoice',
+            'uses' => 'Account\OrderController@invoice',
+            'middleware' => 'throttle:30,1',
+        ])->where('sellerOrder', '[0-9]+');
     });
 });
