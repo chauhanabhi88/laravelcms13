@@ -3,6 +3,7 @@
 namespace Modules\Customer\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Modules\Core\Contracts\ProvidesAppConfig;
 use Modules\Customer\Console\ProcessAccountDeletionsCommand;
 use Modules\Customer\Contracts\AccountDeletionGuard;
 use Modules\Customer\Models\Customer;
@@ -18,6 +19,7 @@ use Modules\Customer\Repositories\Eloquent\EloquentCustomerLoginLogRepository;
 use Modules\Customer\Repositories\Eloquent\EloquentCustomerOnlineOfflineLogRepository;
 use Modules\Customer\Repositories\Eloquent\EloquentCustomerRepository;
 use Modules\Customer\Repositories\Eloquent\EloquentDeletedCustomerRepository;
+use Modules\Customer\Support\CustomerAppConfig;
 use Modules\Customer\Support\NullAccountDeletionGuard;
 use Modules\Customer\Support\StorefrontWishlistProvider;
 use Modules\Customer\Support\ThemeWishlistProvider;
@@ -122,6 +124,8 @@ class CustomerServiceProvider extends ServiceProvider
     {
         $this->app->register(RouteServiceProvider::class);
         $this->registerMarketplaceBindings();
+
+        $this->app->tag([CustomerAppConfig::class], ProvidesAppConfig::TAG);
     }
 
     /**

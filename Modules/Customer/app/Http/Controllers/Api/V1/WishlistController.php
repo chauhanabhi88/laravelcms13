@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Customer\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Customer\Exceptions\WishlistException;
 use Modules\Customer\Models\Customer;
 use Modules\Customer\Services\WishlistService;
@@ -16,7 +16,7 @@ use Modules\Storefront\Services\ProductCardPresenter;
  * Wishlist over the API (FR-CUS-006): GET /wishlist (paginated product cards), POST /wishlist
  * {product_id}, DELETE /wishlist/{product}.
  */
-class WishlistController extends Controller
+class WishlistController extends ApiController
 {
     private const PER_PAGE = 24;
 
@@ -33,24 +33,20 @@ class WishlistController extends Controller
                 'name' => $card['name'],
                 'url' => $card['url'],
                 'image' => $card['image'],
-                'price' => (float) $card['price']->toDecimal(),
-                'mrp' => (float) $card['mrp']->toDecimal(),
+                'price' => $card['price']->toDecimal(),
+                'mrp' => $card['mrp']->toDecimal(),
                 'rating' => $card['rating'],
                 'rating_count' => $card['rating_count'],
                 'in_stock' => $card['in_stock'],
             ], app(ProductCardPresenter::class)->present($page->items()))
             : array_map(fn (int $id): array => ['id' => $id], $page->items());
 
-        return response()->json([
-            'success' => true,
-            'data' => $items,
-            'meta' => [
-                'product_ids' => $this->wishlist->ids($customer),
-                'current_page' => $page->currentPage(),
-                'last_page' => $page->lastPage(),
-                'per_page' => $page->perPage(),
-                'total' => $page->total(),
-            ],
+        return $this->ok($items, [
+            'product_ids' => $this->wishlist->ids($customer),
+            'current_page' => $page->currentPage(),
+            'last_page' => $page->lastPage(),
+            'per_page' => $page->perPage(),
+            'total' => $page->total(),
         ]);
     }
 
@@ -62,14 +58,10 @@ class WishlistController extends Controller
         try {
             $this->wishlist->set($customer, (int) $validated['product_id'], true);
         } catch (WishlistException $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage(), 'code' => '422'], 422);
+            return $this->fail(422, $e->getMessage());
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => trans('customer::customer_front.wishlist.added'),
-            'data' => ['wishlisted' => true, 'count' => $this->wishlist->count($customer)],
-        ], 201);
+        return $this->created(['wishlisted' => true, 'count' => $this->wishlist->count($customer)], message: trans('customer::customer_front.wishlist.added'));
     }
 
     public function destroy(Request $request): JsonResponse
@@ -77,11 +69,7 @@ class WishlistController extends Controller
         $customer = $this->customer($request);
         $this->wishlist->remove($customer, (int) $request->route('product'));
 
-        return response()->json([
-            'success' => true,
-            'message' => trans('customer::customer_front.wishlist.removed'),
-            'data' => ['wishlisted' => false, 'count' => $this->wishlist->count($customer)],
-        ]);
+        return $this->ok(['wishlisted' => false, 'count' => $this->wishlist->count($customer)], message: trans('customer::customer_front.wishlist.removed'));
     }
 
     protected function customer(Request $request): Customer

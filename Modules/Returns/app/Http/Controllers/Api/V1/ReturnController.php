@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Returns\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Customer\Models\Customer;
 use Modules\Order\Http\Controllers\Concerns\ResolvesOwnOrder;
 use Modules\Returns\DTO\ReturnableItem;
@@ -23,9 +23,9 @@ use Modules\Returns\Transformers\ReturnResource;
 /**
  * Returns for the mobile apps (plan M15 §6): returnable items of an order, raise a return
  * (multipart with photos[]), list, detail and cancel before pickup. Other customers' orders
- * and returns answer 404. Envelope: {success, code, message, data, meta}.
+ * and returns answer 404.
  */
-class ReturnController extends Controller
+class ReturnController extends ApiController
 {
     use ResolvesOwnOrder;
 
@@ -51,16 +51,11 @@ class ReturnController extends Controller
             ];
         }
 
-        return response()->json([
-            'success' => true,
-            'code' => '200',
-            'message' => null,
-            'data' => [
-                'packages' => $packages,
-                'reasons' => (array) config('returns.reasons', []),
-                'photo_required_reasons' => (array) config('returns.photo_required_reasons', []),
-                'payment_method' => $order->payment_method,
-            ],
+        return $this->ok([
+            'packages' => $packages,
+            'reasons' => (array) config('returns.reasons', []),
+            'photo_required_reasons' => (array) config('returns.photo_required_reasons', []),
+            'payment_method' => $order->payment_method,
         ]);
     }
 
@@ -70,20 +65,17 @@ class ReturnController extends Controller
             ->forCustomer($this->customer($request)->id)
             ->with(self::RELATIONS)
             ->orderByDesc('id')
-            ->paginate(min(50, max(1, (int) $request->input('per_page', 15))));
+            ->paginate($this->perPage());
 
-        return response()->json([
-            'success' => true,
-            'code' => '200',
-            'message' => null,
-            'data' => ReturnResource::collection($returns->getCollection())->resolve($request),
-            'meta' => [
+        return $this->ok(
+            ReturnResource::collection($returns->getCollection())->resolve($request),
+            [
                 'current_page' => $returns->currentPage(),
                 'last_page' => $returns->lastPage(),
                 'per_page' => $returns->perPage(),
                 'total' => $returns->total(),
             ],
-        ]);
+        );
     }
 
     public function store(StoreReturnRequest $request): JsonResponse
@@ -111,7 +103,7 @@ class ReturnController extends Controller
                 $this->photos->delete($photo['path']);
             }
 
-            return response()->json(['success' => false, 'code' => '422', 'message' => $e->getMessage(), 'errors' => $e->errors + ['reason' => $e->reasonCode]], 422);
+            return $this->failReason($e->reasonCode, $e->getMessage(), $e->apiErrors());
         }
 
         return $this->single($request, $return->load(self::RELATIONS), trans('returns::front.messages.created', ['return_no' => $return->return_no]), 201);
@@ -129,7 +121,7 @@ class ReturnController extends Controller
         try {
             $this->returns->cancel($return, $this->customer($request), trans('returns::front.cancel.reason'));
         } catch (ReturnException $e) {
-            return response()->json(['success' => false, 'code' => '422', 'message' => $e->getMessage(), 'errors' => ['reason' => $e->reasonCode]], 422);
+            return $this->failReason($e->reasonCode, $e->getMessage());
         }
 
         return $this->single($request, $return->refresh()->load(self::RELATIONS), trans('returns::front.messages.cancelled'));
@@ -137,12 +129,7 @@ class ReturnController extends Controller
 
     protected function single(Request $request, ReturnRequest $return, ?string $message, int $status = 200): JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'code' => (string) $status,
-            'message' => $message,
-            'data' => (new ReturnResource($return))->resolve($request),
-        ], $status);
+        return $this->ok((new ReturnResource($return))->resolve($request), message: $message, status: $status);
     }
 
     protected function ownReturn(Request $request): ReturnRequest

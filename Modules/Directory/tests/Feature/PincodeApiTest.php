@@ -21,6 +21,8 @@ test('a known pincode returns its city, state and flags', function () {
         ->assertSuccessful()
         ->assertExactJson([
             'success' => true,
+            'code' => 200,
+            'message' => 'OK',
             'data' => [
                 'pincode' => '110001',
                 'district' => 'New Delhi',
@@ -46,7 +48,7 @@ test('cod is never offered where the pincode is not serviceable', function () {
 test('an unknown pincode returns the 404 envelope', function () {
     $this->getJson('/api/v1/pincode/999999')
         ->assertNotFound()
-        ->assertExactJson(['success' => false, 'message' => trans('directory::directory_pincode.messages.not_found'), 'code' => '404']);
+        ->assertExactJson(['success' => false, 'code' => 404, 'message' => trans('directory::directory_pincode.messages.not_found')]);
 });
 
 test('a malformed pincode does not match the route', function () {

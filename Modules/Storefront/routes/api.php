@@ -16,18 +16,20 @@ if ($apiVersions = config('core.api_versions')) {
         $upperCaseVersion = strtoupper($version);
         $name = fn (string $route): string => $version === 'v1' ? "storefront_api.{$route}" : "storefront_api.{$version}.{$route}";
 
-        Route::prefix($version)->group(function () use ($upperCaseVersion, $name) {
+        Route::prefix($version)->middleware('api.envelope')->group(function () use ($upperCaseVersion, $name) {
             Route::get('/autocomplete', [
                 'as' => $name('autocomplete'),
                 'uses' => $upperCaseVersion.'\AutocompleteController@index',
-                'middleware' => 'throttle:storefront-autocomplete',
+                'middleware' => ['throttle:api-search', 'throttle:storefront-autocomplete'],
             ]);
 
-            Route::middleware('throttle:60,1')->group(function () use ($upperCaseVersion, $name) {
-                Route::get('/products', [
-                    'as' => $name('search'),
-                    'uses' => $upperCaseVersion.'\SearchController@index',
-                ]);
+            Route::get('/products', [
+                'as' => $name('search'),
+                'uses' => $upperCaseVersion.'\SearchController@index',
+                'middleware' => 'throttle:api-search',
+            ]);
+
+            Route::middleware('throttle:api')->group(function () use ($upperCaseVersion, $name) {
 
                 Route::get('/home', [
                     'as' => $name('home'),
@@ -42,6 +44,11 @@ if ($apiVersions = config('core.api_versions')) {
                 Route::get('/products/{id}', [
                     'as' => $name('product.show'),
                     'uses' => $upperCaseVersion.'\ProductController@show',
+                ])->where('id', '[0-9]+');
+
+                Route::get('/products/{id}/similar', [
+                    'as' => $name('product.similar'),
+                    'uses' => $upperCaseVersion.'\SimilarProductsController@index',
                 ])->where('id', '[0-9]+');
             });
 

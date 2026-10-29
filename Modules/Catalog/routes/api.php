@@ -15,7 +15,7 @@ if ($apiVersions = config('core.api_versions')) {
         $upperCaseVersion = strtoupper($version);
         $name = fn (string $route): string => $version === 'v1' ? "catalog_api.{$route}" : "catalog_api.{$version}.{$route}";
 
-        Route::middleware('throttle:60,1')->prefix($version)->group(function () use ($upperCaseVersion, $name) {
+        Route::middleware(['throttle:api', 'api.envelope'])->prefix($version)->group(function () use ($upperCaseVersion, $name) {
             Route::get('/categories', [
                 'as' => $name('categories.tree'),
                 'uses' => $upperCaseVersion.'\CategoryController@index',

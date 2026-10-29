@@ -29,7 +29,7 @@ pest()->extend(TestCase::class)
 |   mysqldump --no-data <dev_db> | mysql laravelcms13_testing
 */
 pest()->use(DatabaseTransactions::class)
-    ->in('Feature/Frontend', '../Modules/*/tests/Feature');
+    ->in('Feature/Frontend', 'Feature/Api', '../Modules/*/tests/Feature');
 
 /*
 |--------------------------------------------------------------------------

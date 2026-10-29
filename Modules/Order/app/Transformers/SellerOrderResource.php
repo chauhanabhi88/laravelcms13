@@ -22,6 +22,7 @@ class SellerOrderResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'sub_order_no' => $this->sub_order_no,
             'seller' => $this->whenLoaded('seller', fn (): ?string => $this->seller?->displayName()),
             'status' => $this->status,
@@ -32,6 +33,7 @@ class SellerOrderResource extends JsonResource
             'delivered_at' => $this->delivered_at?->toIso8601String(),
             'cancelled_at' => $this->cancelled_at?->toIso8601String(),
             'cancel_reason' => $this->cancel_reason,
+            'has_invoice' => $this->invoice_no !== null && ! $this->isCancelled(),
             'items' => OrderItemResource::collection($this->whenLoaded('items')),
         ];
     }

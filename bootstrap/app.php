@@ -4,8 +4,10 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Routing\Middleware\SubstituteBindings;
+use Modules\Core\Support\Api\ApiExceptionRenderer;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -33,6 +35,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->preventRequestForgery(except: ['webhooks/*']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // REST API (plan M20): every failure under /api/* is the JSON error envelope, whatever the
+        // Accept header says, so an app never receives an HTML error page.
+        $exceptions->shouldRenderJsonWhen(fn ($request, Throwable $e) => isApiRequest($request) || $request->expectsJson());
+
+        $exceptions->render(function (Throwable $e, $request) {
+            // A HttpResponseException already carries the response to send.
+            if ($e instanceof HttpResponseException || ! isApiRequest($request)) {
+                return null;
+            }
+
+            return ApiExceptionRenderer::render($e, $request);
+        });
+
         // Callbacks run in registration order, and the first non-null return
         // wins — so the specific HttpException subclasses must be registered
         // before the generic HttpException handler at the bottom.

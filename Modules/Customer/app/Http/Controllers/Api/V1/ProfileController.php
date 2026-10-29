@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Customer\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Customer\Models\Customer;
 use Modules\Customer\Transformers\CustomerResource;
 use Modules\Language\Repositories\LanguageRepository;
@@ -15,7 +15,7 @@ use Modules\Language\Repositories\LanguageRepository;
  * GET/PUT /api/v1/customer/profile (FR-CUS-005). The mobile number is the sign-in identity
  * and is not changed here; reseller mode is part of the profile (FR-CUS-007).
  */
-class ProfileController extends Controller
+class ProfileController extends ApiController
 {
     public function show(Request $request): CustomerResource
     {

@@ -61,22 +61,21 @@ class CouponController extends CartController
     {
         $snapshot = $this->cartService->snapshot($this->ownerCart($request));
 
-        return response()->json([
-            'success' => true,
-            'data' => array_map(fn (array $row): array => [
-                'code' => $row['coupon']->code,
-                'name' => $row['coupon']->name,
-                'description' => $row['coupon']->description,
-                'benefit' => $row['coupon']->benefitText(),
-                'min_cart_value' => $row['coupon']->min_cart_value->toDecimal(),
-                'ends_at' => $row['coupon']->ends_at?->toIso8601String(),
-                'applicable' => $row['evaluation']->valid,
-                'saving' => $row['evaluation']->benefit()->toDecimal(),
-                'reason' => $row['evaluation']->reason,
-                'message' => $row['evaluation']->message,
-                'applied' => $snapshot->couponCode === $row['coupon']->code,
-            ], $this->coupons->offers($snapshot, $this->paymentMethod($request))),
-        ]);
+        $offers = array_map(fn (array $row): array => [
+            'code' => $row['coupon']->code,
+            'name' => $row['coupon']->name,
+            'description' => $row['coupon']->description,
+            'benefit' => $row['coupon']->benefitText(),
+            'min_cart_value' => $row['coupon']->min_cart_value->toDecimal(),
+            'ends_at' => $row['coupon']->ends_at?->toIso8601String(),
+            'applicable' => $row['evaluation']->valid,
+            'saving' => $row['evaluation']->benefit()->toDecimal(),
+            'reason' => $row['evaluation']->reason,
+            'message' => $row['evaluation']->message,
+            'applied' => $snapshot->couponCode === $row['coupon']->code,
+        ], $this->coupons->offers($snapshot, $this->paymentMethod($request)));
+
+        return $this->ok($offers);
     }
 
     protected function ownerCart(Request $request): ?Cart
@@ -96,12 +95,6 @@ class CouponController extends CartController
 
     protected function rejected(CouponException $e): JsonResponse
     {
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage(),
-            'code' => '422',
-            'reason' => $e->reason,
-            'errors' => ['code' => [$e->getMessage()]],
-        ], 422);
+        return $this->fail(422, $e->getMessage(), $e->apiErrors(), extra: ['reason' => $e->reason]);
     }
 }

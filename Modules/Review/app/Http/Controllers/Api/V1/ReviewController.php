@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Review\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Customer\Models\Customer;
 use Modules\Order\Models\SalesOrderItem;
 use Modules\Product\Models\Product;
@@ -26,9 +26,9 @@ use Modules\Storefront\Support\StorefrontUrls;
 /**
  * Reviews for the mobile apps (plan M16 §6): a product's published reviews with the summary,
  * filters and sorts (public); the customer's own reviews and items waiting for one; write a
- * review (multipart with photos[]); toggle "Helpful". Envelope: {success, code, message, data, meta}.
+ * review (multipart with photos[]); toggle "Helpful".
  */
-class ReviewController extends Controller
+class ReviewController extends ApiController
 {
     public function index(Request $request, ReviewListService $list, ReviewSummaryProvider $summaries): JsonResponse
     {
@@ -41,17 +41,11 @@ class ReviewController extends Controller
         $customer = Auth::guard('api')->user();
         $votedIds = $list->votedIds($customer instanceof Customer ? $customer : null, $reviews->getCollection()->modelKeys());
 
-        return response()->json([
-            'success' => true,
-            'code' => '200',
-            'message' => null,
-            'data' => [
-                'summary' => $summaries->forProduct($product->id)->toArray(),
-                'filters' => $filters,
-                'reviews' => $reviews->getCollection()->map(fn (ProductReview $review): array => (new ReviewResource($review, $votedIds))->resolve($request))->all(),
-            ],
-            'meta' => $this->meta($reviews),
-        ]);
+        return $this->ok([
+            'summary' => $summaries->forProduct($product->id)->toArray(),
+            'filters' => $filters,
+            'reviews' => $reviews->getCollection()->map(fn (ProductReview $review): array => (new ReviewResource($review, $votedIds))->resolve($request))->all(),
+        ], $this->meta($reviews));
     }
 
     public function mine(Request $request, ReviewEligibilityService $eligibility): JsonResponse
@@ -60,24 +54,18 @@ class ReviewController extends Controller
         $reviews = ProductReview::query()->forCustomer($customer->id)->with('images')->orderByDesc('id')
             ->paginate(min(50, max(1, $request->integer('per_page') ?: 15)));
 
-        return response()->json([
-            'success' => true,
-            'code' => '200',
-            'message' => null,
-            'data' => [
-                'to_review' => $eligibility->pendingItems($customer)->map(fn (SalesOrderItem $item): array => [
-                    'order_item_id' => $item->id,
-                    'order_no' => $item->salesOrder?->order_no,
-                    'product_id' => $item->product_id,
-                    'name' => $item->name,
-                    'variant' => $item->variant_label,
-                    'image' => StorefrontUrls::productImage($item->image, 'thumb'),
-                    'delivered_at' => $item->sellerOrder?->delivered_at?->toIso8601String(),
-                ])->values()->all(),
-                'reviews' => $reviews->getCollection()->map(fn (ProductReview $review): array => (new ReviewResource($review, [], true))->resolve($request))->all(),
-            ],
-            'meta' => $this->meta($reviews),
-        ]);
+        return $this->ok([
+            'to_review' => $eligibility->pendingItems($customer)->map(fn (SalesOrderItem $item): array => [
+                'order_item_id' => $item->id,
+                'order_no' => $item->salesOrder?->order_no,
+                'product_id' => $item->product_id,
+                'name' => $item->name,
+                'variant' => $item->variant_label,
+                'image' => StorefrontUrls::productImage($item->image, 'thumb'),
+                'delivered_at' => $item->sellerOrder?->delivered_at?->toIso8601String(),
+            ])->values()->all(),
+            'reviews' => $reviews->getCollection()->map(fn (ProductReview $review): array => (new ReviewResource($review, [], true))->resolve($request))->all(),
+        ], $this->meta($reviews));
     }
 
     public function store(StoreReviewRequest $request, ReviewService $service): JsonResponse
@@ -86,21 +74,19 @@ class ReviewController extends Controller
         $item = SalesOrderItem::query()->with(['salesOrder', 'sellerOrder'])->find((int) $request->validated('order_item_id'));
 
         if ($item === null || $item->salesOrder === null || (int) $item->salesOrder->customer_id !== (int) $customer->id) {
-            return response()->json(['success' => false, 'code' => '404', 'message' => trans('review::front.errors.not_found')], 404);
+            return $this->fail(404, trans('review::front.errors.not_found'));
         }
 
         try {
             $review = $service->create($customer, $item, $request->submission());
         } catch (ReviewException $e) {
-            return response()->json(['success' => false, 'code' => '422', 'message' => $e->getMessage(), 'errors' => $e->errors + ['reason' => $e->reasonCode]], 422);
+            return $this->failReason($e->reasonCode, $e->getMessage(), $e->apiErrors());
         }
 
-        return response()->json([
-            'success' => true,
-            'code' => '201',
-            'message' => trans($review->isPublished() ? 'review::front.messages.published' : 'review::front.messages.pending'),
-            'data' => (new ReviewResource($review->load('images'), [], true))->resolve($request),
-        ], 201);
+        return $this->created(
+            (new ReviewResource($review->load('images'), [], true))->resolve($request),
+            message: trans($review->isPublished() ? 'review::front.messages.published' : 'review::front.messages.pending'),
+        );
     }
 
     public function vote(Request $request, ReviewFeedbackService $feedback): JsonResponse
@@ -108,21 +94,16 @@ class ReviewController extends Controller
         $review = ProductReview::query()->published()->find((int) $request->route('id'));
 
         if ($review === null) {
-            return response()->json(['success' => false, 'code' => '404', 'message' => trans('review::front.errors.not_found')], 404);
+            return $this->fail(404, trans('review::front.errors.not_found'));
         }
 
         try {
             $result = $feedback->toggleVote($review, $this->customer($request));
         } catch (ReviewException $e) {
-            return response()->json(['success' => false, 'code' => '422', 'message' => $e->getMessage(), 'errors' => ['reason' => $e->reasonCode]], 422);
+            return $this->failReason($e->reasonCode, $e->getMessage());
         }
 
-        return response()->json([
-            'success' => true,
-            'code' => '200',
-            'message' => trans($result['voted'] ? 'review::front.messages.voted' : 'review::front.messages.unvoted'),
-            'data' => $result,
-        ]);
+        return $this->ok($result, message: trans($result['voted'] ? 'review::front.messages.voted' : 'review::front.messages.unvoted'));
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Promotion\Exceptions;
 
+use Modules\Core\Contracts\ApiError;
 use Modules\Promotion\DTO\CouponEvaluation;
 use RuntimeException;
 
@@ -11,7 +12,7 @@ use RuntimeException;
  * A coupon cannot be applied. $reason is stable for the API (CouponEvaluation constants,
  * "not_found", "login_required"); the message is for the buyer.
  */
-class CouponException extends RuntimeException
+class CouponException extends RuntimeException implements ApiError
 {
     public function __construct(string $message, public readonly string $reason = CouponEvaluation::NOT_FOUND)
     {
@@ -26,5 +27,18 @@ class CouponException extends RuntimeException
     public static function fromEvaluation(CouponEvaluation $evaluation): self
     {
         return new self((string) $evaluation->message, (string) $evaluation->reason);
+    }
+
+    public function apiReason(): string
+    {
+        return $this->reason;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function apiErrors(): array
+    {
+        return ['code' => [$this->getMessage()]];
     }
 }

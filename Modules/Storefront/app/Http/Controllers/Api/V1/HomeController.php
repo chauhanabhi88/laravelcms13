@@ -6,7 +6,7 @@ namespace Modules\Storefront\Http\Controllers\Api\V1;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Storefront\Services\Home\HomePageBuilder;
 use Modules\Storefront\Transformers\ProductCardResource;
 
@@ -14,7 +14,7 @@ use Modules\Storefront\Transformers\ProductCardResource;
  * GET /api/v1/home — the active home sections with their content, for apps. The
  * "products_for_you" section points the app at /api/v1/products.
  */
-class HomeController extends Controller
+class HomeController extends ApiController
 {
     public function __construct(protected HomePageBuilder $builder) {}
 
@@ -38,7 +38,7 @@ class HomeController extends Controller
             ];
         }
 
-        return response()->json(['success' => true, 'data' => $sections]);
+        return $this->ok($sections);
     }
 
     /**

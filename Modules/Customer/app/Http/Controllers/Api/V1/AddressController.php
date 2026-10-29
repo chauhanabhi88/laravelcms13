@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Customer\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Customer\Http\Requests\Api\AddressRequest;
 use Modules\Customer\Models\Customer;
 use Modules\Customer\Models\CustomerAddress;
@@ -18,7 +18,7 @@ use Modules\Customer\Transformers\AddressResource;
  * Address book over the API (FR-CUS-004): /api/v1/customer/addresses[/{address}].
  * Lookups are scoped to the token's customer; anyone else's address is a 404.
  */
-class AddressController extends Controller
+class AddressController extends ApiController
 {
     public function __construct(private readonly AddressService $addresses) {}
 
@@ -50,7 +50,7 @@ class AddressController extends Controller
     {
         $this->addresses->delete($this->customer($request), $this->findOwned($request));
 
-        return response()->json(['success' => true, 'message' => trans('customer::customer_front.messages.address_deleted')]);
+        return $this->ok(message: trans('customer::customer_front.messages.address_deleted'));
     }
 
     protected function saved(CustomerAddress $address, int $status): JsonResponse

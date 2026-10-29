@@ -6,8 +6,8 @@ namespace Modules\Storefront\Http\Controllers\Api\V1;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
 use Modules\Catalog\Repositories\CatalogCategoryRepository;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Seller\Repositories\SellerRepository;
 use Modules\Storefront\Contracts\ProductSearchEngine;
 use Modules\Storefront\Models\ProductCollection;
@@ -21,7 +21,7 @@ use Modules\Storefront\Transformers\ProductCardResource;
  * page, price, rating, discount, cod, brand, attribute codes) plus an optional context:
  * category (slug), store (store slug) or collection (slug). An unknown context is a 404.
  */
-class SearchController extends Controller
+class SearchController extends ApiController
 {
     public function __construct(
         protected ProductSearchEngine $search,
@@ -36,7 +36,7 @@ class SearchController extends Controller
         $fixed = $this->context($request);
 
         if ($fixed === null) {
-            return response()->json(['success' => false, 'message' => trans('core::core.messages.route_not_found'), 'code' => '404'], 404);
+            return $this->fail(404, trans('core::core.messages.route_not_found'));
         }
 
         $query = ListingQuery::fromRequest($request, $fixed);

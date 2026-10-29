@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Logistics\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Customer\Models\Customer;
 use Modules\Logistics\Support\TimelineBuilder;
 use Modules\Order\Http\Controllers\Concerns\ResolvesOwnOrder;
@@ -15,7 +15,7 @@ use Modules\Order\Http\Controllers\Concerns\ResolvesOwnOrder;
  * GET api/{version}/orders/{orderNo}/tracking: the shipment timeline of each package of the
  * customer's order (plan M13 §6). Another customer's order is a 404.
  */
-class TrackingController extends Controller
+class TrackingController extends ApiController
 {
     use ResolvesOwnOrder;
 
@@ -26,14 +26,9 @@ class TrackingController extends Controller
         $customer = $request->user();
         $order = $this->ownOrder($request, $customer instanceof Customer ? $customer : null);
 
-        return response()->json([
-            'success' => true,
-            'code' => '200',
-            'message' => null,
-            'data' => [
-                'order_no' => $order->order_no,
-                'packages' => array_map(fn (array $timeline): array => self::serialize($timeline), $this->timelines->forOrder($order)),
-            ],
+        return $this->ok([
+            'order_no' => $order->order_no,
+            'packages' => array_map(fn (array $timeline): array => self::serialize($timeline), $this->timelines->forOrder($order)),
         ]);
     }
 

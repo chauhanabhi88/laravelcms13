@@ -6,6 +6,7 @@ namespace Modules\Payment\Providers;
 
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Modules\Core\Contracts\ProvidesAppConfig;
 use Modules\Payment\Console\ExpireUnpaidPaymentsCommand;
 use Modules\Payment\Console\ReconcileSettlementsCommand;
 use Modules\Payment\Contracts\CodRefundPayout;
@@ -36,6 +37,7 @@ use Modules\Payment\Repositories\PaymentRepository;
 use Modules\Payment\Repositories\WebhookEventRepository;
 use Modules\Payment\Support\ManualCodRefundPayout;
 use Modules\Payment\Support\NullPayableOrderResolver;
+use Modules\Payment\Support\PaymentAppConfig;
 use Modules\Payment\Support\PaymentOrderHistory;
 
 class PaymentServiceProvider extends ServiceProvider
@@ -60,6 +62,7 @@ class PaymentServiceProvider extends ServiceProvider
         $this->app->register(RouteServiceProvider::class);
         $this->registerBindings();
 
+        $this->app->tag([PaymentAppConfig::class], ProvidesAppConfig::TAG);
         $this->app->bind(RazorpayGateway::class, fn (): RazorpayGateway => new RazorpayGateway((array) config('payment.razorpay')));
         $this->app->bind(SettlementReport::class, RazorpayGateway::class);
         // One instance per app so simulate() and fetch() share state within a request / test.

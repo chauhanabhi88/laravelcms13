@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Order\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Customer\Models\Customer;
 use Modules\Order\Exceptions\OrderException;
 use Modules\Order\Http\Controllers\Concerns\ResolvesOwnOrder;
@@ -17,9 +17,10 @@ use Modules\Order\Transformers\OrderResource;
 
 /**
  * The customer's orders for the mobile apps: list, detail and cancellation before shipment.
- * Another customer's order is a 404. Envelope: {success, code, message, data, meta}.
+ * Another customer's order is a 404. The list is page-based; send ?cursor= (empty for the first
+ * page) to page by cursor instead - stable while new orders arrive.
  */
-class OrderController extends Controller
+class OrderController extends ApiController
 {
     use ResolvesOwnOrder;
 
@@ -29,25 +30,33 @@ class OrderController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $orders = SalesOrder::query()
+        $query = SalesOrder::query()
             ->forCustomer($this->customer($request)->id)
             ->with(self::RELATIONS)
             ->orderByDesc('placed_at')
-            ->orderByDesc('id')
-            ->paginate(min(50, max(1, (int) $request->input('per_page', 15))));
+            ->orderByDesc('id');
 
-        return response()->json([
-            'success' => true,
-            'code' => '200',
-            'message' => null,
-            'data' => OrderResource::collection($orders->getCollection())->resolve($request),
-            'meta' => [
+        if ($request->has('cursor')) {
+            $total = (clone $query)->toBase()->getCountForPagination();
+            $orders = $query->cursorPaginate($this->perPage());
+
+            return $this->ok(
+                OrderResource::collection($orders->getCollection())->resolve($request),
+                ['total' => $total] + $this->pagination($orders),
+            );
+        }
+
+        $orders = $query->paginate($this->perPage());
+
+        return $this->ok(
+            OrderResource::collection($orders->getCollection())->resolve($request),
+            [
                 'current_page' => $orders->currentPage(),
                 'last_page' => $orders->lastPage(),
                 'per_page' => $orders->perPage(),
                 'total' => $orders->total(),
             ],
-        ]);
+        );
     }
 
     public function show(Request $request): JsonResponse
@@ -65,7 +74,7 @@ class OrderController extends Controller
         try {
             $count = $this->cancellations->cancelForCustomer($order, $request->itemIds(), $request->reasonText(), $customer);
         } catch (OrderException $e) {
-            return response()->json(['success' => false, 'code' => '422', 'message' => $e->getMessage(), 'errors' => ['reason' => $e->reasonCode]], 422);
+            return $this->failReason($e->reasonCode, $e->getMessage());
         }
 
         return $this->order($request, $order->refresh()->load(self::RELATIONS), trans_choice('order::front.cancel.done', $count, ['count' => $count]));
@@ -73,15 +82,10 @@ class OrderController extends Controller
 
     protected function order(Request $request, SalesOrder $order, ?string $message): JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'code' => '200',
-            'message' => $message,
-            'data' => [
-                'order' => (new OrderResource($order))->resolve($request),
-                'cancellable_item_ids' => $this->cancellations->cancellableItemIds($order),
-            ],
-        ]);
+        return $this->ok([
+            'order' => (new OrderResource($order))->resolve($request),
+            'cancellable_item_ids' => $this->cancellations->cancellableItemIds($order),
+        ], message: $message);
     }
 
     protected function customer(Request $request): Customer

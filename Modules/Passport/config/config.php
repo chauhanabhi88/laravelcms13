@@ -16,4 +16,9 @@ return [
     'tokens_expire_in' => env('PASSPORT_TOKENS_EXPIRE_IN', 'P7D'),
 
     'refresh_tokens_expire_in' => env('PASSPORT_REFRESH_TOKENS_EXPIRE_IN', 'P30D'),
+
+    /*
+    | Personal access tokens issued to the mobile apps after OTP sign-in.
+    */
+    'personal_access_tokens_expire_in' => env('PASSPORT_PERSONAL_ACCESS_TOKENS_EXPIRE_IN', 'P1Y'),
 ];

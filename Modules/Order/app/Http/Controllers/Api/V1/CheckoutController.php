@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Order\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Modules\Cart\Models\Cart;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Core\Support\Money;
 use Modules\Customer\Models\Customer;
 use Modules\Order\DTO\CheckoutSession;
@@ -24,9 +24,9 @@ use Modules\Order\Transformers\OrderResource;
  * payment method, reseller block). summary returns totals, serviceability and COD eligibility;
  * place needs a client-generated UUID token (repeat it to retry safely) and says what comes
  * next: pay (payment_api.initiate), cod_otp (payment_api.cod_otp.verify) or success.
- * Envelope: {success, code, message, data}.
+ * A price change answers 4091 and a stock problem 4092 (see config/api_codes.php).
  */
-class CheckoutController extends Controller
+class CheckoutController extends ApiController
 {
     public function __construct(
         private readonly CheckoutService $checkout,
@@ -45,7 +45,7 @@ class CheckoutController extends Controller
             return $this->error($e);
         }
 
-        return response()->json(['success' => true, 'code' => '200', 'message' => null, 'data' => $summary->toArray()]);
+        return $this->ok($summary->toArray());
     }
 
     public function place(Request $request): JsonResponse
@@ -66,11 +66,8 @@ class CheckoutController extends Controller
 
         $order = $result->order->load(['shippingAddress', 'sellerOrders.seller', 'sellerOrders.items']);
 
-        return response()->json([
-            'success' => true,
-            'code' => $result->alreadyPlaced ? '200' : '201',
-            'message' => trans('order::front.messages.placed', ['order_no' => $order->order_no]),
-            'data' => [
+        return $this->ok(
+            [
                 'order' => (new OrderResource($order))->resolve($request),
                 'next_action' => $result->nextAction(),
                 'already_placed' => $result->alreadyPlaced,
@@ -82,7 +79,9 @@ class CheckoutController extends Controller
                     'cod_otp_required' => $result->nextAction() === PlaceOrderResult::NEXT_COD_OTP,
                 ],
             ],
-        ], $result->alreadyPlaced ? 200 : 201);
+            message: trans('order::front.messages.placed', ['order_no' => $order->order_no]),
+            status: $result->alreadyPlaced ? 200 : 201,
+        );
     }
 
     /**
@@ -124,12 +123,7 @@ class CheckoutController extends Controller
 
     protected function error(CheckoutException $e): JsonResponse
     {
-        return response()->json([
-            'success' => false,
-            'code' => '422',
-            'message' => $e->getMessage(),
-            'errors' => ['reason' => $e->reasonCode, 'step' => $e->step],
-        ], 422);
+        return $this->failReason($e->reasonCode, $e->getMessage(), $e->apiErrors());
     }
 
     protected function customer(Request $request): Customer

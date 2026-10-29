@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Order\Exceptions;
 
+use Modules\Core\Contracts\ApiError;
 use RuntimeException;
 
 /**
  * Checkout cannot go on. $reasonCode is stable for the API; $step is the checkout page that
  * lets the buyer fix it (cart, address, payment, summary).
  */
-class CheckoutException extends RuntimeException
+class CheckoutException extends RuntimeException implements ApiError
 {
     public const STEP_CART = 'cart';
 
@@ -51,5 +52,18 @@ class CheckoutException extends RuntimeException
     public static function outOfStock(): self
     {
         return new self(trans('order::front.errors.out_of_stock'), 'out_of_stock', self::STEP_CART);
+    }
+
+    public function apiReason(): string
+    {
+        return $this->reasonCode;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function apiErrors(): array
+    {
+        return ['step' => $this->step];
     }
 }
