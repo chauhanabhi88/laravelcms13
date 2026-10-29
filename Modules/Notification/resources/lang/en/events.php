@@ -28,6 +28,7 @@ return [
     ],
     'review' => [
         'request' => 'Review request',
+        'rejected' => 'Review not published',
     ],
     'cart' => [
         'abandoned' => 'Abandoned cart',
@@ -51,5 +52,6 @@ return [
         'payment' => ['recon_mismatch' => 'Settlement mismatches found'],
         'shipment' => ['attention' => 'Shipment needs attention'],
         'return' => ['review' => 'Return to review', 'claim' => 'Seller claim raised'],
+        'review' => ['reported' => 'Product review reported'],
     ],
 ];

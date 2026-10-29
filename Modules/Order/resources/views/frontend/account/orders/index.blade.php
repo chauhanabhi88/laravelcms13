@@ -39,6 +39,7 @@
                             @foreach ($order->sellerOrders as $sellerOrder)
                                 @php
                                     $returnState = $returnStates[$sellerOrder->id] ?? null;
+                                    $rateState = $sellerOrder->items->map(fn ($item) => ($reviewStates ?? [])[$item->id] ?? null)->first(fn ($state) => $state?->canReview());
                                     $isRto = in_array($sellerOrder->status, [\Modules\Order\Models\SellerOrder::STATUS_RTO_INITIATED, \Modules\Order\Models\SellerOrder::STATUS_RTO_DELIVERED], true);
                                 @endphp
                                 <li class="flex flex-wrap items-start justify-between gap-3 px-4 py-3 sm:px-5" data-seller-order="{{ $sellerOrder->sub_order_no }}">
@@ -76,6 +77,9 @@
                                                 @endif
                                                 @if ($sellerOrder->invoice_no && ! $sellerOrder->isCancelled())
                                                     <a href="{{ frontRoute('customer.orders.invoice', ['orderNo' => $order->order_no, 'sellerOrder' => $sellerOrder->id]) }}" class="text-accent hover:underline">{{ trans('order::front.orders.invoice') }}</a>
+                                                @endif
+                                                @if ($rateState)
+                                                    <a href="{{ $rateState->createUrl }}" class="text-accent hover:underline" data-rate-link>{{ trans('order::front.orders.rate') }}</a>
                                                 @endif
                                             </div>
                                         </div>

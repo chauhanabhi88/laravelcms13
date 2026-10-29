@@ -59,6 +59,7 @@ use Modules\Seller\Models\Seller;
  * @property int $total_stock
  * @property string $rating_avg
  * @property int $rating_count
+ * @property array<string, int>|null $rating_histogram published ratings per star (M16)
  * @property int $sold_count
  * @property int $view_count
  * @property int $seller_active
@@ -161,6 +162,7 @@ class Product extends MarketplaceModel
             'max_discount_percent' => 'integer',
             'total_stock' => 'integer',
             'rating_count' => 'integer',
+            'rating_histogram' => 'array',
             'sold_count' => 'integer',
             'view_count' => 'integer',
             'seller_active' => 'integer',
