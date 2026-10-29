@@ -25,6 +25,10 @@
 
 @section('content')
 
+@foreach(($widgets ?? []) as $widget)
+@include($widget['view'], $widget['data'])
+@endforeach
+
 @include('dashboard::backend.partials.stat_cards')
 
 <div class="row">
