@@ -9,7 +9,7 @@
     $typeFields = [
         'hero' => 'banner', 'banner_row' => 'banner', 'category_tiles' => 'categories',
         'collection' => 'collection', 'html_block' => 'block', 'blog_posts' => 'limit',
-        'trust_strip' => 'trust', 'products_for_you' => 'listing',
+        'trust_strip' => 'trust', 'products_for_you' => 'listing', 'flash_deal' => 'limit',
     ];
 @endphp
 <div class="card card-info card-outline">

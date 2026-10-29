@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Modules\Storefront\Services;
 
 use Illuminate\Support\Collection;
+use Modules\Product\Contracts\PriceResolver;
+use Modules\Product\DTO\PriceOverride;
 use Modules\Product\Models\Product;
 use Modules\Product\Models\ProductImage;
 use Modules\Storefront\Support\StorefrontSettings;
@@ -20,7 +22,10 @@ use Modules\Theme\Contracts\WishlistProvider;
  */
 class ProductCardPresenter
 {
-    public function __construct(protected WishlistProvider $wishlist) {}
+    public function __construct(
+        protected WishlistProvider $wishlist,
+        protected PriceResolver $prices,
+    ) {}
 
     /**
      * @param  list<int>  $productIds
@@ -39,6 +44,7 @@ class ProductCardPresenter
             ->keyBy('id');
 
         $hoverImages = $this->hoverImages($products);
+        $deals = $this->prices->forProducts($products->keys()->all());
         $wishlisted = array_flip(array_map('strval', $this->wishlist->ids()));
         $freeDelivery = StorefrontSettings::freeDeliveryBadge();
 
@@ -47,7 +53,7 @@ class ProductCardPresenter
             $product = $products->get($id);
 
             if ($product !== null) {
-                $cards[] = $this->card($product, $hoverImages[$id] ?? null, isset($wishlisted[(string) $id]), $freeDelivery);
+                $cards[] = $this->card($product, $hoverImages[$id] ?? null, isset($wishlisted[(string) $id]), $freeDelivery, $deals[$id] ?? null);
             }
         }
 
@@ -57,9 +63,11 @@ class ProductCardPresenter
     /**
      * @return Card
      */
-    protected function card(Product $product, ?string $hoverImage, bool $wishlisted, bool $freeDelivery): array
+    protected function card(Product $product, ?string $hoverImage, bool $wishlisted, bool $freeDelivery, ?PriceOverride $deal = null): array
     {
         $ratingCount = (int) $product->rating_count;
+        // A flash deal (M18) below the product's lowest price shows on the card.
+        $price = $deal !== null && $deal->price->compare($product->min_price) < 0 ? $deal->price : $product->min_price;
 
         return [
             'id' => $product->id,
@@ -68,7 +76,7 @@ class ProductCardPresenter
             'url' => StorefrontUrls::product($product->slug, $product->id),
             'image' => StorefrontUrls::productImage($product->primary_image),
             'image_alt2' => StorefrontUrls::productImage($hoverImage),
-            'price' => $product->min_price,
+            'price' => $price,
             'mrp' => $product->min_mrp,
             'rating' => $ratingCount > 0 ? (float) $product->rating_avg : null,
             'rating_count' => $ratingCount,

@@ -10,6 +10,7 @@ use Modules\Banner\Repositories\BannerGroupRepository;
 use Modules\Block\Repositories\BlockRepository;
 use Modules\Blog\Repositories\BlogPostRepository;
 use Modules\Catalog\Services\CategoryTreeService;
+use Modules\Storefront\Contracts\HomeSectionProvider;
 use Modules\Storefront\Contracts\ProductSearchEngine;
 use Modules\Storefront\Models\HomeSection;
 use Modules\Storefront\Models\ProductCollection;
@@ -30,6 +31,11 @@ use Nwidart\Modules\Facades\Module;
 class HomePageBuilder
 {
     public const LISTING_TYPE = 'products_for_you';
+
+    /**
+     * Container tag of HomeSectionProvider implementations (section types of other modules).
+     */
+    public const SECTION_PROVIDER_TAG = 'storefront.home_section_providers';
 
     public function __construct(
         protected StorefrontCache $cache,
@@ -75,9 +81,11 @@ class HomePageBuilder
 
         return $this->cache->remember('home', 'html.'.$section['id'].'.'.app()->getLocale(), $this->ttl(), function () use ($section): string {
             try {
-                $data = $this->data($section);
+                $provider = $this->provider($section['type']);
+                $data = $provider !== null ? $provider->data($section['config']) : $this->data($section);
+                $view = $provider !== null ? $provider->view() : 'storefront::frontend.sections.'.$section['type'];
 
-                return $data === null ? '' : view('storefront::frontend.sections.'.$section['type'], ['section' => $section] + $data)->render();
+                return $data === null ? '' : view($view, ['section' => $section] + $data)->render();
             } catch (\Throwable $e) {
                 // A broken section (missing module, bad config) must never take the home page down.
                 Log::error($e);
@@ -107,6 +115,20 @@ class HomePageBuilder
             'blog_posts' => ($posts = $this->posts((int) ($config['limit'] ?? config('storefront.home_defaults.blog_posts_limit', 3))))->isNotEmpty() ? ['posts' => $posts] : null,
             default => null,
         };
+    }
+
+    /**
+     * The module provider of a section type, if another module owns it.
+     */
+    protected function provider(string $type): ?HomeSectionProvider
+    {
+        foreach (app()->tagged(self::SECTION_PROVIDER_TAG) as $provider) {
+            if ($provider instanceof HomeSectionProvider && $provider->type() === $type) {
+                return $provider;
+            }
+        }
+
+        return null;
     }
 
     /**

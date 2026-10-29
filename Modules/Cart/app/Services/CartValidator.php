@@ -9,6 +9,8 @@ use Modules\Cart\DTO\LineIssue;
 use Modules\Cart\Models\Cart;
 use Modules\Cart\Models\CartItem;
 use Modules\Cart\Support\CartSettings;
+use Modules\Core\Support\Money;
+use Modules\Product\Contracts\PriceResolver;
 use Modules\Product\Models\Product;
 use Modules\Product\Models\ProductVariant;
 
@@ -18,7 +20,8 @@ use Modules\Product\Models\ProductVariant;
  *
  * Corrections are saved so each notice shows once: a lower quantity when stock (or the
  * per-line maximum) dropped, and the new price as price_at_add after a price change.
- * Nothing is reserved here; place-order (M12) re-checks inside its transaction.
+ * The live price is the variant's selling price unless a PriceResolver override (flash deal,
+ * M18) applies. Nothing is reserved here; place-order (M12) re-checks inside its transaction.
  */
 class CartValidator
 {
@@ -31,15 +34,47 @@ class CartValidator
         'items.variant.attributeValues',
     ];
 
+    public function __construct(protected PriceResolver $prices) {}
+
+    /**
+     * The price each variant sells at right now (its own price, or a lower override).
+     *
+     * @param  iterable<ProductVariant|null>  $variants
+     * @return array<int, Money> variant id => unit price
+     */
+    public function livePrices(iterable $variants): array
+    {
+        $own = [];
+
+        foreach ($variants as $variant) {
+            if ($variant !== null) {
+                $own[$variant->id] = $variant->price;
+            }
+        }
+
+        if ($own === []) {
+            return [];
+        }
+
+        foreach ($this->prices->forVariants(array_keys($own)) as $variantId => $override) {
+            if (isset($own[$variantId]) && $override->price->compare($own[$variantId]) < 0) {
+                $own[$variantId] = $override->price;
+            }
+        }
+
+        return $own;
+    }
+
     public function revalidate(Cart $cart, bool $persist = true): CartValidation
     {
         $cart->loadMissing(self::ITEM_RELATIONS);
 
         $maxQty = CartSettings::maxQtyPerLine();
         $issues = [];
+        $prices = $this->livePrices($cart->items->map(fn (CartItem $item): ?ProductVariant => $item->isSavedForLater() ? null : $item->variant));
 
         foreach ($cart->items as $item) {
-            $found = $item->isSavedForLater() ? $this->savedLineIssues($item) : $this->activeLineIssues($item, $maxQty, $persist);
+            $found = $item->isSavedForLater() ? $this->savedLineIssues($item) : $this->activeLineIssues($item, $maxQty, $persist, $prices[$item->variant_id] ?? null);
 
             if ($found !== []) {
                 $issues[$item->id] = $found;
@@ -74,7 +109,7 @@ class CartValidator
     /**
      * @return list<LineIssue>
      */
-    protected function activeLineIssues(CartItem $item, int $maxQty, bool $persist): array
+    protected function activeLineIssues(CartItem $item, int $maxQty, bool $persist, ?Money $livePrice = null): array
     {
         if (! $this->isPurchasable($item)) {
             return [LineIssue::unavailable()];
@@ -98,9 +133,11 @@ class CartValidator
             $changes['quantity'] = $maxQty;
         }
 
-        if (! $variant->price->equals($item->price_at_add)) {
-            $issues[] = LineIssue::priceChanged($item->price_at_add, $variant->price);
-            $changes['price_at_add'] = $variant->price;
+        $livePrice ??= $variant->price;
+
+        if (! $livePrice->equals($item->price_at_add)) {
+            $issues[] = LineIssue::priceChanged($item->price_at_add, $livePrice);
+            $changes['price_at_add'] = $livePrice;
         }
 
         if ($changes !== []) {

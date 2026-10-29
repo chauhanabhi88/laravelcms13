@@ -16,6 +16,7 @@ use Modules\Cart\Exceptions\CartException;
 use Modules\Cart\Models\Cart;
 use Modules\Cart\Models\CartItem;
 use Modules\Cart\Support\CartSettings;
+use Modules\Core\Support\Money;
 use Modules\Customer\Exceptions\WishlistException;
 use Modules\Customer\Models\Customer;
 use Modules\Customer\Services\WishlistService;
@@ -345,12 +346,13 @@ class CartService
         $items = $cart->items->sortBy('id')->values();
         $labels = $this->optionLabels->for($items->flatMap(fn (CartItem $item): array => $item->variant?->attributeValues->pluck('attribute_option_id')->all() ?? [])->all());
 
+        $prices = $this->validator->livePrices($items->map(fn (CartItem $item) => $item->variant));
         $grouped = [];
         $unavailable = [];
         $saved = [];
 
         foreach ($items as $item) {
-            $line = $this->presentLine($item, $validation, $labels);
+            $line = $this->presentLine($item, $validation, $labels, $prices[$item->variant_id] ?? null);
 
             if ($item->isSavedForLater()) {
                 $saved[] = $line;
@@ -364,13 +366,14 @@ class CartService
         $pincode = $cart->delivery_pincode ?? $pincode;
         $groups = array_map(fn (array $rows): CartGroup => $this->group($rows, $pincode), array_values($grouped));
 
-        return new CartSnapshot($cart->id, $cart->type, $groups, $unavailable, $saved, $pincode, $cart->coupon_code);
+        return new CartSnapshot($cart->id, $cart->type, $groups, $unavailable, $saved, $pincode, $cart->coupon_code, $cart->customer_id);
     }
 
     /**
      * @param  array<int, string>  $labels
+     * @param  Money|null  $livePrice  the variant's price right now (a flash-deal price, M18)
      */
-    protected function presentLine(CartItem $item, CartValidation $validation, array $labels): CartLine
+    protected function presentLine(CartItem $item, CartValidation $validation, array $labels, ?Money $livePrice = null): CartLine
     {
         $product = $item->product;
         $variant = $item->variant;
@@ -389,7 +392,7 @@ class CartService
             productUrl: $product !== null && $product->isVisibleOnStorefront() ? StorefrontUrls::product($product->slug, $product->id) : null,
             quantity: $item->quantity,
             maxQuantity: max(1, min(CartSettings::maxQtyPerLine(), $available)),
-            unitPrice: $variant?->price ?? $item->price_at_add,
+            unitPrice: $livePrice ?? $variant?->price ?? $item->price_at_add,
             unitMrp: $variant?->mrp ?? $item->price_at_add,
             available: $available,
             codAllowed: $product?->isCodAllowed() ?? false,
@@ -457,11 +460,12 @@ class CartService
     {
         $cap = max(1, min(CartSettings::maxQtyPerLine(), $variant->available));
         $existing = $this->line($cart, $variant->id, false);
+        $price = $this->validator->livePrices([$variant])[$variant->id] ?? $variant->price;
 
         if ($existing !== null) {
             $wanted = $existing->quantity + $quantity;
             $target = min($wanted, $cap);
-            $existing->forceFill(['quantity' => $target, 'price_at_add' => $variant->price])->save();
+            $existing->forceFill(['quantity' => $target, 'price_at_add' => $price])->save();
             $item = $existing;
         } else {
             $maxLines = CartSettings::maxLines();
@@ -477,7 +481,7 @@ class CartService
                 'variant_id' => $variant->id,
                 'seller_id' => $variant->seller_id,
                 'quantity' => $target,
-                'price_at_add' => $variant->price,
+                'price_at_add' => $price,
                 'is_saved_for_later' => (int) config('core.no'),
             ]);
         }

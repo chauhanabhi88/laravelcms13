@@ -18,6 +18,7 @@ use Modules\Order\Console\SnapshotSellerQualityCommand;
 use Modules\Order\Console\WarnSlaBreachesCommand;
 use Modules\Order\Contracts\FulfilmentLogistics;
 use Modules\Order\Contracts\LedgerPoster;
+use Modules\Order\Contracts\OrderPromotions;
 use Modules\Order\Contracts\OrderReturns;
 use Modules\Order\Contracts\OrderReviews;
 use Modules\Order\Contracts\ShipmentPlanner;
@@ -53,6 +54,7 @@ use Modules\Order\Repositories\SellerOrderRepository;
 use Modules\Order\Services\CodRiskService;
 use Modules\Order\Support\NullFulfilmentLogistics;
 use Modules\Order\Support\NullLedgerPoster;
+use Modules\Order\Support\NullOrderPromotions;
 use Modules\Order\Support\NullOrderReturns;
 use Modules\Order\Support\NullOrderReviews;
 use Modules\Order\Support\NullShipmentPlanner;
@@ -114,6 +116,9 @@ class OrderServiceProvider extends ServiceProvider
         $this->app->bindIf(FulfilmentLogistics::class, NullFulfilmentLogistics::class);
         $this->app->bindIf(OrderReturns::class, NullOrderReturns::class);
         $this->app->bindIf(OrderReviews::class, NullOrderReviews::class);
+
+        // The Promotion module (M18) records coupon usage and flash-deal units at placement.
+        $this->app->bindIf(OrderPromotions::class, NullOrderPromotions::class);
 
         // FR-ORD-009 rules on top of the Payment module's COD eligibility checks.
         $this->app->tag([CodRiskService::class], CodEligibilityService::RISK_CHECK_TAG);

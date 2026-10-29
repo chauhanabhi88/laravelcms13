@@ -29,6 +29,7 @@ return [
         'inclusive_taxes' => 'Inclusive of all taxes',
         'sku' => 'SKU: :sku',
         'ratings_link' => 'See ratings',
+        'deal_ends' => 'Flash deal · ends :time',
     ],
 
     'picker' => [

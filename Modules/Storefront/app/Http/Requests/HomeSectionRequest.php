@@ -81,6 +81,7 @@ class HomeSectionRequest extends FormRequest
             'collection' => ['collection_id' => (int) $this->input('collection_id'), 'limit' => $limit ?? (int) config('storefront.home_defaults.collection_limit', 12)],
             'html_block' => ['block_code' => (string) $this->input('block_code')],
             'blog_posts' => ['limit' => $limit ?? (int) config('storefront.home_defaults.blog_posts_limit', 3)],
+            'flash_deal' => ['limit' => $limit ?? (int) config('storefront.home_defaults.collection_limit', 12)],
             default => [],
         };
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Storefront\ViewModels;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,8 @@ use Modules\Catalog\Models\CatalogCategory;
 use Modules\Catalog\Models\CatalogSizeChart;
 use Modules\Catalog\Services\CategoryDefaults;
 use Modules\Core\Support\Money;
+use Modules\Product\Contracts\PriceResolver;
+use Modules\Product\DTO\PriceOverride;
 use Modules\Product\Models\Product;
 use Modules\Product\Models\ProductAttributeValue;
 use Modules\Product\Models\ProductImage;
@@ -101,6 +104,13 @@ class ProductPageViewModel
 
     public ?ProductVariant $selectedVariant = null;
 
+    /**
+     * Flash-deal prices of the enabled variants (PriceResolver, M18): variant id => override.
+     *
+     * @var array<int, PriceOverride>
+     */
+    public array $priceOverrides = [];
+
     public int $sellerProductCount = 0;
 
     public bool $preview = false;
@@ -116,6 +126,7 @@ class ProductPageViewModel
         protected ReviewSummaryProvider $reviewProvider,
         protected WishlistStateProvider $wishlist,
         protected CartEntryPoint $cart,
+        protected PriceResolver $prices,
     ) {}
 
     public function load(Product $product, ?int $requestedVariantId = null, bool $preview = false): static
@@ -132,6 +143,7 @@ class ProductPageViewModel
             ->orderBy('position')
             ->orderBy('id')
             ->get();
+        $this->priceOverrides = $this->overridesFor($this->variantModels);
 
         $imageRows = ProductImage::query()->where('product_id', $product->id)->orderBy('position')->orderBy('id')->get();
         $specRows = ProductAttributeValue::query()->where('product_id', $product->id)->orderBy('id')->get();
@@ -170,12 +182,15 @@ class ProductPageViewModel
      */
     public function availability(Product $product): array
     {
-        return ProductVariant::query()
+        $variants = ProductVariant::query()
             ->where('product_id', $product->id)
             ->where('status', config('core.enabled'))
             ->orderBy('position')
             ->orderBy('id')
-            ->get(['id', 'sku', 'mrp', 'price', 'stock', 'reserved'])
+            ->get(['id', 'sku', 'mrp', 'price', 'stock', 'reserved']);
+        $this->priceOverrides = $this->overridesFor($variants);
+
+        return $variants
             ->map(fn (ProductVariant $variant): array => $this->variantRow($variant, false))
             ->values()
             ->all();
@@ -222,12 +237,32 @@ class ProductPageViewModel
      */
     public function priceVariant(): ?ProductVariant
     {
-        return $this->selectedVariant ?? $this->variantModels->sortBy(fn (ProductVariant $variant): int => $variant->price->paise)->first();
+        return $this->selectedVariant ?? $this->variantModels->sortBy(fn (ProductVariant $variant): int => $this->priceOf($variant)->paise)->first();
+    }
+
+    /**
+     * What the variant sells at right now: a flash-deal price (M18), else its own price.
+     */
+    public function priceOf(ProductVariant $variant): Money
+    {
+        return $this->priceOverrides[$variant->id]->price ?? $variant->price;
+    }
+
+    /**
+     * When the flash deal on the shown variant ends (null without a deal).
+     */
+    public function dealEndsAt(): ?CarbonInterface
+    {
+        $variant = $this->priceVariant();
+
+        return $variant !== null ? ($this->priceOverrides[$variant->id]->endsAt ?? null) : null;
     }
 
     public function displayPrice(): Money
     {
-        return $this->priceVariant()?->price ?? $this->product->min_price;
+        $variant = $this->priceVariant();
+
+        return $variant !== null ? $this->priceOf($variant) : $this->product->min_price;
     }
 
     public function displayMrp(): Money
@@ -237,12 +272,12 @@ class ProductPageViewModel
 
     public function lowestPrice(): Money
     {
-        return $this->variantModels->isEmpty() ? $this->product->min_price : $this->variantModels->sortBy(fn (ProductVariant $variant): int => $variant->price->paise)->first()->price;
+        return $this->variantModels->isEmpty() ? $this->product->min_price : $this->priceOf($this->variantModels->sortBy(fn (ProductVariant $variant): int => $this->priceOf($variant)->paise)->first());
     }
 
     public function highestPrice(): Money
     {
-        return $this->variantModels->isEmpty() ? $this->product->max_price : $this->variantModels->sortByDesc(fn (ProductVariant $variant): int => $variant->price->paise)->first()->price;
+        return $this->variantModels->isEmpty() ? $this->product->max_price : $this->priceOf($this->variantModels->sortByDesc(fn (ProductVariant $variant): int => $this->priceOf($variant)->paise)->first());
     }
 
     public function isInStock(): bool
@@ -488,14 +523,15 @@ class ProductPageViewModel
      */
     protected function variantRow(ProductVariant $variant, bool $withOptions): array
     {
+        $price = $this->priceOf($variant);
         $row = [
             'id' => $variant->id,
             'sku' => $variant->sku,
-            'price' => $variant->price->toDecimal(),
+            'price' => $price->toDecimal(),
             'mrp' => $variant->mrp->toDecimal(),
-            'priceText' => $variant->price->format(),
+            'priceText' => $price->format(),
             'mrpText' => $variant->mrp->format(),
-            'discount' => self::discountPercent($variant->price, $variant->mrp),
+            'discount' => self::discountPercent($price, $variant->mrp),
             'available' => min($variant->available, (int) config('storefront.pdp.max_available_shown', 10)),
         ];
 
@@ -506,6 +542,27 @@ class ProductPageViewModel
         }
 
         return $row;
+    }
+
+    /**
+     * Overrides that are really below each variant's own price.
+     *
+     * @param  EloquentCollection<int, ProductVariant>  $variants
+     * @return array<int, PriceOverride>
+     */
+    protected function overridesFor(EloquentCollection $variants): array
+    {
+        if ($variants->isEmpty()) {
+            return [];
+        }
+
+        $byId = $variants->keyBy('id');
+
+        return array_filter(
+            $this->prices->forVariants($byId->keys()->all()),
+            fn (PriceOverride $override, int $variantId): bool => $byId->has($variantId) && $override->price->compare($byId->get($variantId)->price) < 0,
+            ARRAY_FILTER_USE_BOTH,
+        );
     }
 
     public static function discountPercent(Money $price, Money $mrp): int

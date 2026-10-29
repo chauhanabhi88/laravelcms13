@@ -57,7 +57,9 @@
             @endif
         </div>
 
-        <aside class="lg:sticky lg:top-28">
+        <aside class="flex flex-col gap-4 lg:sticky lg:top-28">
+            {{-- Coupon input, applied chip and available offers (Promotion module, M18). --}}
+            @includeIf('promotion::frontend.partials.coupon-box', ['couponContext' => 'cart'])
             @include('cart::frontend.partials.price-summary')
         </aside>
     </div>

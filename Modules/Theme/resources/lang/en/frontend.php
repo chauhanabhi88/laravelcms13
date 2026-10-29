@@ -43,6 +43,7 @@ return [
         'my_orders' => 'My orders',
         'my_returns' => 'Returns & exchanges',
         'my_reviews' => 'My reviews',
+        'refer_earn' => 'Refer & earn',
         'wishlist' => 'Wishlist',
         'profile' => 'Profile',
         'open_profile_menu' => 'Open profile menu',

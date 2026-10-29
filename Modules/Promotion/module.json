@@ -1,0 +1,24 @@
+{
+    "name": "Promotion",
+    "alias": "promotion",
+    "description": "Coupons and offers: code coupons with a rule engine (minimum cart, scope, caps, usage limits, first order, new customers, channel, payment method, validity), platform- or seller-funded discounts allocated pro-rata to order items, automatic offers, the cart and checkout coupon box with available offers, flash deals with time-boxed variant prices, stock caps and a home countdown section, referral codes with reward coupons, seller coupons, admin CRUD, bulk codes and the promotion report.",
+    "keywords": [],
+    "priority": 39,
+    "providers": [
+        "Modules\\Promotion\\Providers\\PromotionServiceProvider"
+    ],
+    "files": [],
+    "cache": false,
+    "depends": [
+        "core",
+        "customer",
+        "seller",
+        "catalog",
+        "product",
+        "storefront",
+        "cart",
+        "order",
+        "finance",
+        "theme"
+    ]
+}
