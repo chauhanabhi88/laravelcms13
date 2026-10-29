@@ -13,7 +13,7 @@
 if ($apiVersions = config('core.api_versions')) {
     foreach ($apiVersions as $version) {
         $upperCaseVersion = strtoupper($version);
-        Route::middleware('throttle:60,1')->prefix($version.'/pincode')->group(function () use ($upperCaseVersion, $version) {
+        Route::middleware(['throttle:api', 'api.envelope'])->prefix($version.'/pincode')->group(function () use ($upperCaseVersion, $version) {
             Route::get('/{pincode}', [
                 'as' => $version === 'v1' ? 'directory_api.pincode.show' : "directory_api.{$version}.pincode.show",
                 'uses' => $upperCaseVersion.'\PincodeController@show',

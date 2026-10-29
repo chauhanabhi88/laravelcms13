@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Review\Exceptions;
 
+use Modules\Core\Contracts\ApiError;
 use RuntimeException;
 
 /**
  * A review action that cannot be done; the message is safe to show to the user and
  * $reasonCode is stable for the API and tests.
  */
-class ReviewException extends RuntimeException
+class ReviewException extends RuntimeException implements ApiError
 {
     /**
      * @param  array<string, list<string>>  $errors  field => messages, for validation-style answers
@@ -33,5 +34,18 @@ class ReviewException extends RuntimeException
         $message = trans('review::front.errors.'.$key, $replace);
 
         return new self($message, $key, [$field => [$message]]);
+    }
+
+    public function apiReason(): string
+    {
+        return $this->reasonCode;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function apiErrors(): array
+    {
+        return $this->errors;
     }
 }

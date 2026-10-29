@@ -5,6 +5,7 @@ namespace Modules\Theme\Providers;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Modules\Core\Contracts\ProvidesAppConfig;
 use Modules\Theme\Composers\FrontendLayoutComposer;
 use Modules\Theme\Composers\HeaderComposer;
 use Modules\Theme\Composers\SellerLayoutComposer;
@@ -21,6 +22,7 @@ use Modules\Theme\Support\NullMegaMenuProvider;
 use Modules\Theme\Support\NullNotificationBellProvider;
 use Modules\Theme\Support\NullWishlistProvider;
 use Modules\Theme\Support\StorefrontLinks;
+use Modules\Theme\Support\ThemeAppConfig;
 
 class ThemeServiceProvider extends ServiceProvider
 {
@@ -55,6 +57,8 @@ class ThemeServiceProvider extends ServiceProvider
     {
         $this->app->register(RouteServiceProvider::class);
         $this->registerStorefrontBindings();
+
+        $this->app->tag([ThemeAppConfig::class], ProvidesAppConfig::TAG);
     }
 
     /**

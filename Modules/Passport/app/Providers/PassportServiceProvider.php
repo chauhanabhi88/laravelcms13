@@ -43,6 +43,8 @@ class PassportServiceProvider extends ServiceProvider
         // application down with a malformed interval.
         Passport::tokensExpireIn(new DateInterval(config('passport.tokens_expire_in') ?: 'P7D'));
         Passport::refreshTokensExpireIn(new DateInterval(config('passport.refresh_tokens_expire_in') ?: 'P30D'));
+        // Mobile sign-in tokens (M08/M20): one year, revoked explicitly on logout or from the device list.
+        Passport::personalAccessTokensExpireIn(new DateInterval(config('passport.personal_access_tokens_expire_in') ?: 'P1Y'));
 
         $this->app->afterResolving(AuthorizationServer::class, function (AuthorizationServer $server): void {
             $grant = $this->app->make(PasswordGrant::class);

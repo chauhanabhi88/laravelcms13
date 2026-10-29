@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Cart\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\Cart\DTO\CartOwner;
@@ -14,6 +13,7 @@ use Modules\Cart\Models\Cart;
 use Modules\Cart\Services\CartService;
 use Modules\Cart\Services\CartTotals;
 use Modules\Cart\Support\CartSettings;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Customer\Services\CustomerAuthService;
 
 /**
@@ -21,7 +21,7 @@ use Modules\Customer\Services\CustomerAuthService;
  * "customer" scope; guests send the X-Cart-Token header, which the first add returns in
  * meta.cart_token. Every answer carries the revalidated cart and its totals.
  */
-class CartController extends Controller
+class CartController extends ApiController
 {
     public function __construct(
         private readonly CartService $carts,
@@ -75,7 +75,7 @@ class CartController extends Controller
         $owner = $this->owner($request);
 
         if ($owner->customer === null) {
-            return response()->json(['success' => false, 'message' => trans('cart::front.errors.login_required'), 'code' => '401'], 401);
+            return $this->fail(401, trans('cart::front.errors.login_required'));
         }
 
         try {
@@ -91,28 +91,23 @@ class CartController extends Controller
     {
         $snapshot = $this->carts->snapshot($cart?->exists ? $cart->fresh() : null);
 
-        return response()->json(array_filter([
-            'success' => true,
-            'message' => $message,
-            'data' => [
+        return $this->ok(
+            [
                 'cart' => $snapshot->toArray(),
                 'totals' => $this->totals->calculate($snapshot)->toArray(),
             ],
-            'meta' => [
+            [
                 'cart_token' => $cart !== null && $cart->isGuest() ? $cart->token : null,
                 'max_qty_per_line' => CartSettings::maxQtyPerLine(),
             ],
-        ], fn ($value): bool => $value !== null), $status);
+            $message,
+            $status,
+        );
     }
 
     protected function failed(CartException $e): JsonResponse
     {
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage(),
-            'code' => '422',
-            'errors' => [$e->field => [$e->getMessage()]],
-        ], 422);
+        return $this->failReason($e->reason, $e->getMessage(), $e->apiErrors());
     }
 
     protected function owner(Request $request): CartOwner

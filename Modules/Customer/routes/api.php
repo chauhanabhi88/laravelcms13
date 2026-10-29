@@ -23,7 +23,7 @@ use Modules\Customer\Services\CustomerAuthService;
 if ($apiVersions = config('core.api_versions')) {
     foreach ($apiVersions as $version) {
         $upperCaseVersion = strtoupper($version);
-        Route::prefix($version.'/customer')->group(function () use ($upperCaseVersion) {
+        Route::prefix($version.'/customer')->middleware('api.envelope')->group(function () use ($upperCaseVersion) {
             // Route::post('/login', [
             //     'as' => 'customer_api.login',
             //     'uses' => $upperCaseVersion.'\IndexController@login'
@@ -55,19 +55,28 @@ if ($apiVersions = config('core.api_versions')) {
             Route::post('/otp/send', [
                 'as' => 'customer_api.otp.send',
                 'uses' => $upperCaseVersion.'\AuthController@sendOtp',
-                'middleware' => 'throttle:otp',
+                'middleware' => 'throttle:api-auth',
             ]);
             Route::post('/otp/verify', [
                 'as' => 'customer_api.otp.verify',
                 'uses' => $upperCaseVersion.'\AuthController@verifyOtp',
-                'middleware' => 'throttle:10,1',
+                'middleware' => 'throttle:api-auth-verify',
             ]);
 
-            Route::middleware(['auth:api', CheckToken::using(CustomerAuthService::API_SCOPE), 'throttle:60,1'])->group(function () use ($upperCaseVersion) {
+            Route::middleware(['auth:api', CheckToken::using(CustomerAuthService::API_SCOPE), 'throttle:api'])->group(function () use ($upperCaseVersion) {
                 Route::post('/logout', [
                     'as' => 'customer_api.logout',
                     'uses' => $upperCaseVersion.'\AuthController@logout',
                 ]);
+
+                Route::get('/devices', [
+                    'as' => 'customer_api.devices.index',
+                    'uses' => $upperCaseVersion.'\DeviceController@index',
+                ]);
+                Route::delete('/devices/{device}', [
+                    'as' => 'customer_api.devices.destroy',
+                    'uses' => $upperCaseVersion.'\DeviceController@destroy',
+                ])->where('device', '[A-Za-z0-9]+');
 
                 Route::get('/profile', [
                     'as' => 'customer_api.profile.show',

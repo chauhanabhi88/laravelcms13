@@ -199,4 +199,33 @@ return [
         'prune_after_hours' => 24,
     ],
 
+    /*
+    | REST API throttles, requests per minute (plan M20 §3.4). "api" is per user (or IP when
+    | anonymous); "auth_phone" is per phone number / email on the OTP endpoints and "auth_ip" per IP.
+    */
+    'api_limits' => [
+        'api' => (int) env('API_LIMIT_DEFAULT', 60),
+        'search' => (int) env('API_LIMIT_SEARCH', 120),
+        'checkout' => (int) env('API_LIMIT_CHECKOUT', 10),
+        'auth_phone' => (int) env('API_LIMIT_AUTH_PHONE', 5),
+        'auth_ip' => (int) env('API_LIMIT_AUTH_IP', 20),
+        'auth_verify_phone' => (int) env('API_LIMIT_AUTH_VERIFY_PHONE', 10),
+    ],
+
+    /*
+    | What GET /api/v1/app/config tells the mobile apps about versions. Raise "min_version" to make
+    | older builds show the forced-update screen; "latest_version" drives the soft nudge.
+    */
+    'mobile' => [
+        'min_version' => [
+            'android' => env('MOBILE_MIN_VERSION_ANDROID', '1.0.0'),
+            'ios' => env('MOBILE_MIN_VERSION_IOS', '1.0.0'),
+        ],
+        'latest_version' => [
+            'android' => env('MOBILE_LATEST_VERSION_ANDROID', '1.0.0'),
+            'ios' => env('MOBILE_LATEST_VERSION_IOS', '1.0.0'),
+        ],
+        'maintenance' => (bool) env('MOBILE_MAINTENANCE', false),
+    ],
+
 ];

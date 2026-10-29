@@ -64,6 +64,15 @@ test('API buy now needs a customer', function () {
 
 test('API errors use the error envelope', function () {
     $this->postJson('/api/v1/cart/items', ['variant_id' => cartVariant(['stock' => 0])->id])
+        ->assertStatus(409)
+        ->assertJson(['success' => false, 'code' => 4092, 'message' => 'Sorry, this item is out of stock.'])
+        ->assertJsonPath('errors.reason', 'out_of_stock')
+        ->assertJsonPath('errors.variant_id.0', 'Sorry, this item is out of stock.');
+});
+
+test('a quantity the cart cannot hold is a plain validation-style 422', function () {
+    $this->postJson('/api/v1/cart/items', ['variant_id' => cartVariant()->id, 'quantity' => 999])
         ->assertUnprocessable()
-        ->assertJson(['success' => false, 'code' => '422', 'message' => 'Sorry, this item is out of stock.']);
+        ->assertJsonPath('success', false)
+        ->assertJsonPath('code', 422);
 });

@@ -6,7 +6,7 @@ namespace Modules\Storefront\Http\Controllers\Api\V1;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Storefront\Services\RecentlyViewedService;
 use Modules\Storefront\Transformers\ProductCardResource;
 
@@ -14,7 +14,7 @@ use Modules\Storefront\Transformers\ProductCardResource;
  * GET /api/v1/recently-viewed?ids=3,9,4 — cards for the ids an app keeps locally (only
  * products still on the storefront, in the given order).
  */
-class RecentlyViewedController extends Controller
+class RecentlyViewedController extends ApiController
 {
     public function __construct(protected RecentlyViewedService $recentlyViewed) {}
 
@@ -22,9 +22,6 @@ class RecentlyViewedController extends Controller
     {
         $cards = $this->recentlyViewed->cards(array_map('intval', explode(',', (string) $request->query('ids', ''))));
 
-        return response()->json([
-            'success' => true,
-            'data' => ProductCardResource::collection($cards)->resolve($request),
-        ]);
+        return $this->ok(ProductCardResource::collection($cards)->resolve($request));
     }
 }

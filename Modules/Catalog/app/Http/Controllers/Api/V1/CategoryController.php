@@ -6,7 +6,6 @@ namespace Modules\Catalog\Http\Controllers\Api\V1;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
 use Modules\Catalog\Repositories\CatalogCategoryRepository;
 use Modules\Catalog\Services\CategoryAttributeResolver;
 use Modules\Catalog\Services\CategoryDefaults;
@@ -14,13 +13,14 @@ use Modules\Catalog\Services\CategoryTreeService;
 use Modules\Catalog\Support\CatalogSettings;
 use Modules\Catalog\Transformers\CategoryDetailResource;
 use Modules\Catalog\Transformers\CategoryNodeResource;
+use Modules\Core\Http\Controllers\Api\ApiController;
 
 /**
  * Public category API: the enabled tree, and one category by slug with its breadcrumbs,
  * children and filterable attributes. Disabled categories (or ones under a disabled
  * ancestor) are a 404.
  */
-class CategoryController extends Controller
+class CategoryController extends ApiController
 {
     public function __construct(
         protected CategoryTreeService $tree,
@@ -34,10 +34,7 @@ class CategoryController extends Controller
         $depth = (int) $request->query('depth', (string) config('catalog.api.default_depth', 3));
         $depth = max(1, min($depth, CatalogSettings::maxCategoryDepth()));
 
-        return response()->json([
-            'success' => true,
-            'data' => CategoryNodeResource::collection($this->tree->tree($depth))->resolve($request),
-        ]);
+        return $this->ok(CategoryNodeResource::collection($this->tree->tree($depth))->resolve($request));
     }
 
     public function show(string $slug): JsonResponse|CategoryDetailResource
@@ -48,7 +45,7 @@ class CategoryController extends Controller
         $hiddenByAncestor = collect($ancestors)->contains(fn (array $node): bool => $node['status'] !== (int) config('core.enabled'));
 
         if ($category === null || $hiddenByAncestor) {
-            return response()->json(['success' => false, 'message' => trans('catalog::catalog.errors.not_found'), 'code' => '404'], 404);
+            return $this->fail(404, trans('catalog::catalog.errors.not_found'));
         }
 
         $children = $this->findBranch($this->tree->tree(), $category->id)['children'] ?? [];

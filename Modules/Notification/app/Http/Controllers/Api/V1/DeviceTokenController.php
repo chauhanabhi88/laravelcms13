@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Notification\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Customer\Models\Customer;
 use Modules\Notification\Services\DeviceTokenRegistry;
 
@@ -16,7 +16,7 @@ use Modules\Notification\Services\DeviceTokenRegistry;
  * {device_token, device_type} (idempotent) and DELETE /customer/device-tokens {device_token}
  * on logout.
  */
-class DeviceTokenController extends Controller
+class DeviceTokenController extends ApiController
 {
     public function __construct(private readonly DeviceTokenRegistry $tokens) {}
 
@@ -29,11 +29,11 @@ class DeviceTokenController extends Controller
 
         $device = $this->tokens->register($this->customer($request), $validated['device_token'], $validated['device_type'] ?? null);
 
-        return response()->json([
-            'success' => true,
-            'message' => trans('notification::front.device_tokens.saved'),
-            'data' => ['id' => $device->id, 'device_type' => $device->device_type],
-        ], $device->wasRecentlyCreated ? 201 : 200);
+        return $this->ok(
+            ['id' => $device->id, 'device_type' => $device->device_type],
+            message: trans('notification::front.device_tokens.saved'),
+            status: $device->wasRecentlyCreated ? 201 : 200,
+        );
     }
 
     public function destroy(Request $request): JsonResponse
@@ -42,7 +42,7 @@ class DeviceTokenController extends Controller
 
         $this->tokens->forgetFor($this->customer($request), $validated['device_token']);
 
-        return response()->json(['success' => true, 'message' => trans('notification::front.device_tokens.removed')]);
+        return $this->ok(message: trans('notification::front.device_tokens.removed'));
     }
 
     protected function customer(Request $request): Customer

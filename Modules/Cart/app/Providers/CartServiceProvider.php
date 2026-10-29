@@ -16,8 +16,10 @@ use Modules\Cart\Repositories\Cache\CacheCartDecorator;
 use Modules\Cart\Repositories\CartRepository;
 use Modules\Cart\Repositories\Eloquent\EloquentCartRepository;
 use Modules\Cart\Services\CartTotals;
+use Modules\Cart\Support\CartAppConfig;
 use Modules\Cart\Support\StorefrontCartEntryPoint;
 use Modules\Cart\Support\ThemeCartCount;
+use Modules\Core\Contracts\ProvidesAppConfig;
 use Modules\Customer\Events\CustomerLoggedIn;
 use Modules\Storefront\Contracts\CartEntryPoint;
 use Modules\Theme\Contracts\CartCountProvider;
@@ -43,6 +45,7 @@ class CartServiceProvider extends ServiceProvider
         $this->app->register(RouteServiceProvider::class);
         $this->registerBindings();
 
+        $this->app->tag([CartAppConfig::class], ProvidesAppConfig::TAG);
         // The Storefront and Theme bind null implementations with bindIf; these replace them.
         $this->app->bind(CartEntryPoint::class, StorefrontCartEntryPoint::class);
         $this->app->bind(CartCountProvider::class, ThemeCartCount::class);

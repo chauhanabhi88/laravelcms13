@@ -18,7 +18,7 @@ if ($apiVersions = config('core.api_versions')) {
         $upperCaseVersion = strtoupper($version);
 
         Route::prefix($version.'/customer')
-            ->middleware(['auth:api', CheckToken::using(CustomerAuthService::API_SCOPE), 'throttle:60,1'])
+            ->middleware(['auth:api', CheckToken::using(CustomerAuthService::API_SCOPE), 'throttle:api', 'api.envelope'])
             ->group(function () use ($upperCaseVersion) {
                 Route::get('/notifications', [
                     'as' => 'notification_api.notifications.index',

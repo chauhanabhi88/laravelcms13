@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Payment\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\Core\Http\Controllers\Api\ApiController;
 use Modules\Core\Services\Otp\OtpSendStatus;
+use Modules\Core\Support\Api\ApiCodes;
 use Modules\Customer\Models\Customer;
 use Modules\Payment\Contracts\PayableOrder;
 use Modules\Payment\Exceptions\PaymentException;
@@ -17,10 +18,9 @@ use Modules\Payment\Services\PaymentService;
 
 /**
  * Payments for the mobile apps (plan M11 §6): the Razorpay order id and key for the native
- * SDK, verification of the SDK's signed result, and COD OTP verify / resend. Envelope:
- * {success, code, message, data}.
+ * SDK, verification of the SDK's signed result, and COD OTP verify / resend.
  */
-class PaymentController extends Controller
+class PaymentController extends ApiController
 {
     use ResolvesCustomerOrder;
 
@@ -141,25 +141,22 @@ class PaymentController extends Controller
      */
     protected function success(Payment $payment, ?string $message = null, array $extra = [], int $status = 200): JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'code' => (string) $status,
-            'message' => $message,
-            'data' => [
-                'payment' => [
-                    'method' => $payment->method,
-                    'status' => $payment->status,
-                    'amount' => $payment->amount->toDecimal(),
-                    'currency' => $payment->currency,
-                    'expires_at' => $payment->expires_at?->toIso8601String(),
-                    'cod_otp_required' => $payment->awaitingCodOtp(),
-                ],
-            ] + $extra,
-        ], $status);
+        return $this->ok([
+            'payment' => [
+                'method' => $payment->method,
+                'status' => $payment->status,
+                'amount' => $payment->amount->toDecimal(),
+                'currency' => $payment->currency,
+                'expires_at' => $payment->expires_at?->toIso8601String(),
+                'cod_otp_required' => $payment->awaitingCodOtp(),
+            ],
+        ] + $extra, message: $message, status: $status);
     }
 
     protected function error(string $message, string $reason, int $status): JsonResponse
     {
-        return response()->json(['success' => false, 'code' => (string) $status, 'message' => $message, 'errors' => ['reason' => $reason]], $status);
+        return $reason === 'retry_later' || $status === 429
+            ? $this->fail(ApiCodes::OTP_RATE_LIMITED, $message, ['reason' => $reason], 429)
+            : $this->fail($status, $message, ['reason' => $reason]);
     }
 }

@@ -18,14 +18,14 @@ if ($apiVersions = config('core.api_versions')) {
     foreach ($apiVersions as $version) {
         $upperCaseVersion = strtoupper($version);
 
-        Route::prefix($version)->group(function () use ($upperCaseVersion) {
+        Route::prefix($version)->middleware('api.envelope')->group(function () use ($upperCaseVersion) {
             Route::get('/products/{id}/reviews', [
                 'as' => 'review_api.index',
                 'uses' => $upperCaseVersion.'\ReviewController@index',
-                'middleware' => 'throttle:60,1',
+                'middleware' => 'throttle:api',
             ])->where('id', '[0-9]+');
 
-            Route::middleware(['auth:api', CheckToken::using(CustomerAuthService::API_SCOPE), 'throttle:60,1'])->group(function () use ($upperCaseVersion) {
+            Route::middleware(['auth:api', CheckToken::using(CustomerAuthService::API_SCOPE), 'throttle:api'])->group(function () use ($upperCaseVersion) {
                 Route::get('/reviews/mine', [
                     'as' => 'review_api.mine',
                     'uses' => $upperCaseVersion.'\ReviewController@mine',

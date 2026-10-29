@@ -16,7 +16,7 @@ if ($apiVersions = config('core.api_versions')) {
         $upperCaseVersion = strtoupper($version);
 
         Route::prefix($version.'/cart')
-            ->middleware('throttle:60,1')
+            ->middleware(['throttle:api', 'api.envelope'])
             ->group(function () use ($upperCaseVersion) {
                 Route::post('/coupon', [
                     'as' => 'cart_api.coupon.apply',

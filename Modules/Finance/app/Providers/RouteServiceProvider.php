@@ -13,6 +13,7 @@ use Modules\Core\Providers\Concerns\MapsSellerRoutes;
  * Finance routes:
  * - backend.php  the admin finance console (/backend/finance/...)
  * - front.php    the reseller's earnings page (/customer/earnings)
+ * - api.php      the same for the mobile apps (/api/v1/customer/earnings)
  * - seller.php   supplier payments: overview, statement, payouts, invoices (/supplier/payments...)
  * RazorpayX payout webhooks arrive on the Seller module's /webhooks/razorpayx.
  */
@@ -29,6 +30,12 @@ class RouteServiceProvider extends ServiceProvider
 
     public function map(): void
     {
+        if (config('core.translation_api')) {
+            Route::prefix('{locale}')->middleware(['locale'])->group(fn () => $this->mapApiRoutes());
+        } else {
+            $this->mapApiRoutes();
+        }
+
         if (config('core.translation')) {
             $route = Route::prefix('{locale}')->middleware(['web', 'locale']);
         } else {
@@ -53,5 +60,13 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         $this->mapSellerRoutes();
+    }
+
+    protected function mapApiRoutes(): void
+    {
+        Route::prefix('api')
+            ->middleware('api')
+            ->namespace($this->namespace.'\Api')
+            ->group(__DIR__.'/../../routes/api.php');
     }
 }

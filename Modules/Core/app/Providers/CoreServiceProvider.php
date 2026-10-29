@@ -6,6 +6,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use Modules\Core\Cache\FileStore;
@@ -63,6 +64,7 @@ class CoreServiceProvider extends ServiceProvider
             'can' => 'Authorization',
             'locale' => 'Localization',
             'auth' => 'Authenticate',
+            'api.envelope' => 'ApiEnvelope',
         ],
     ];
 
@@ -81,6 +83,7 @@ class CoreServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         IntegrationHttp::register();
         $this->registerRateLimiters();
+        $this->registerApiRoutes();
         $this->commands([
             PruneOtpCodesCommand::class,
             CronMakeCommand::class,
@@ -185,9 +188,39 @@ class CoreServiceProvider extends ServiceProvider
     }
 
     /**
-     * "throttle:otp" for the OTP request endpoints (M03, M08): 5 a minute and 20 an hour per IP.
+     * api/{version}/app/config (plan M20). Registered here rather than in Core's RouteServiceProvider,
+     * which maps its routes before this provider has merged config('core.*').
+     */
+    protected function registerApiRoutes(): void
+    {
+        if ($this->app->routesAreCached()) {
+            return;
+        }
+
+        $register = fn () => Route::prefix('api')
+            ->middleware('api')
+            ->namespace('Modules\\Core\\Http\\Controllers\\Api')
+            ->group(__DIR__.'/../../routes/api.php');
+
+        if (config('core.translation_api')) {
+            Route::prefix('{locale}')->middleware(['locale'])->group($register);
+        } else {
+            $register();
+        }
+    }
+
+    /**
+     * Named throttles.
      *
-     * OtpService enforces its own per-number caps; this stops a single client hammering the route.
+     * "otp" (M03, M08, web forms): 5 a minute and 20 an hour per IP. OtpService enforces its own
+     * per-number caps; this stops a single client hammering the route.
+     *
+     * The REST API limiters (plan M20 §3.4, numbers in config('core.api_limits')):
+     *  - api-auth         OTP send: 5/min per phone or email + 20/min per IP
+     *  - api-auth-verify  OTP verify: 10/min per phone or email + 20/min per IP
+     *  - api              60/min per user, or per IP when anonymous
+     *  - api-search       120/min per user or IP
+     *  - api-checkout     10/min per user (place order, start payment)
      */
     protected function registerRateLimiters(): void
     {
@@ -195,6 +228,43 @@ class CoreServiceProvider extends ServiceProvider
             Limit::perMinute(5)->by('otp-minute:'.$request->ip()),
             Limit::perHour((int) config('core.otp.max_sends_per_ip_per_hour', 20))->by('otp-hour:'.$request->ip()),
         ]);
+
+        RateLimiter::for('api-auth', fn (Request $request): array => $this->otpLimits($request, (int) config('core.api_limits.auth_phone', 5)));
+
+        RateLimiter::for('api-auth-verify', fn (Request $request): array => $this->otpLimits($request, (int) config('core.api_limits.auth_verify_phone', 10)));
+
+        RateLimiter::for('api', fn (Request $request): Limit => Limit::perMinute((int) config('core.api_limits.api', 60))->by($this->apiKey($request)));
+
+        RateLimiter::for('api-search', fn (Request $request): Limit => Limit::perMinute((int) config('core.api_limits.search', 120))->by($this->apiKey($request)));
+
+        RateLimiter::for('api-checkout', fn (Request $request): Limit => Limit::perMinute((int) config('core.api_limits.checkout', 10))->by($this->apiKey($request)));
+    }
+
+    /**
+     * Per phone/email and per IP limits for the OTP endpoints.
+     *
+     * @return array<int, Limit>
+     */
+    protected function otpLimits(Request $request, int $perIdentifier): array
+    {
+        $limits = [Limit::perMinute((int) config('core.api_limits.auth_ip', 20))->by('ip:'.$request->ip())];
+
+        $identifier = filled($request->input('email'))
+            ? strtolower(trim((string) $request->input('email')))
+            : substr((string) preg_replace('/\D+/', '', (string) $request->input('phone')), -10);
+
+        if ($identifier !== '') {
+            $limits[] = Limit::perMinute($perIdentifier)->by('id:'.sha1($identifier));
+        }
+
+        return $limits;
+    }
+
+    protected function apiKey(Request $request): string
+    {
+        $user = $request->user('api');
+
+        return $user !== null ? 'user:'.$user->getAuthIdentifier() : 'ip:'.$request->ip();
     }
 
     /**
@@ -271,6 +341,11 @@ class CoreServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(
             __DIR__.'/../../config/translatable.php',
             'translatable'
+        );
+
+        $this->mergeConfigFrom(
+            __DIR__.'/../../config/api_codes.php',
+            'api_codes'
         );
     }
 

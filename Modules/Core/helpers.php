@@ -729,6 +729,20 @@ if (! function_exists('isBackendRequest')) {
     }
 }
 
+if (! function_exists('isApiRequest')) {
+    /**
+     * Whether the request targets the REST API (/api/..., optionally behind a locale segment
+     * when core.translation_api is on). The API answers every error as JSON, never as an HTML page.
+     */
+    function isApiRequest(Request $request): bool
+    {
+        $segments = $request->segments();
+
+        return ($segments[0] ?? null) === 'api'
+            || (config('core.translation_api') && ($segments[1] ?? null) === 'api');
+    }
+}
+
 if (! function_exists('sellerLoginUrl')) {
     /**
      * Where a guest of the supplier panel ("auth:seller") is sent. Falls back to

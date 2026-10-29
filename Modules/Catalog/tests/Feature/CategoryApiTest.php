@@ -62,7 +62,7 @@ test('unknown or hidden categories are a 404', function () {
     foreach (['does-not-exist', 'switched-off', 'under-switched-off'] as $slug) {
         $this->getJson(route('catalog_api.categories.show', [$slug]))
             ->assertNotFound()
-            ->assertExactJson(['success' => false, 'message' => trans('catalog::catalog.errors.not_found'), 'code' => '404']);
+            ->assertExactJson(['success' => false, 'code' => 404, 'message' => trans('catalog::catalog.errors.not_found')]);
     }
 });
 

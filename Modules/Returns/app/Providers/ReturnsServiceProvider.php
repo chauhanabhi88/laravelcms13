@@ -7,6 +7,7 @@ namespace Modules\Returns\Providers;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Modules\Core\Contracts\ProvidesAppConfig;
 use Modules\Customer\Contracts\AccountDeletionGuard;
 use Modules\Logistics\Events\ShipmentRtoDelivered;
 use Modules\Logistics\Events\ShipmentStatusChanged;
@@ -27,6 +28,7 @@ use Modules\Returns\Repositories\Eloquent\EloquentReturnRequestRepository;
 use Modules\Returns\Repositories\ReturnClaimRepository;
 use Modules\Returns\Repositories\ReturnRequestRepository;
 use Modules\Returns\Support\ReturnsAccountDeletionGuard;
+use Modules\Returns\Support\ReturnsAppConfig;
 use Modules\Returns\Support\ReturnsForOrders;
 use Modules\Seller\Policies\SellerOwnedPolicy;
 
@@ -52,6 +54,7 @@ class ReturnsServiceProvider extends ServiceProvider
         $this->app->register(RouteServiceProvider::class);
         $this->registerBindings();
 
+        $this->app->tag([ReturnsAppConfig::class], ProvidesAppConfig::TAG);
         // The Order module binds a null OrderReturns with bindIf; returns replace it.
         $this->app->bind(OrderReturns::class, ReturnsForOrders::class);
 

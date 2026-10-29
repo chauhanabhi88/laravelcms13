@@ -18,11 +18,12 @@ if ($apiVersions = config('core.api_versions')) {
         $upperCaseVersion = strtoupper($version);
 
         Route::prefix($version.'/orders/{orderNo}')
-            ->middleware(['auth:api', CheckToken::using(CustomerAuthService::API_SCOPE), 'throttle:30,1'])
+            ->middleware(['auth:api', CheckToken::using(CustomerAuthService::API_SCOPE), 'throttle:api', 'api.envelope'])
             ->group(function () use ($upperCaseVersion) {
                 Route::post('/payment', [
                     'as' => 'payment_api.initiate',
                     'uses' => $upperCaseVersion.'\PaymentController@initiate',
+                    'middleware' => 'throttle:api-checkout',
                 ]);
                 Route::post('/payment/verify', [
                     'as' => 'payment_api.verify',
