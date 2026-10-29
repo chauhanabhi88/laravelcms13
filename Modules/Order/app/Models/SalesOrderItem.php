@@ -33,6 +33,9 @@ use Modules\Product\Models\ProductVariant;
  * @property Money $mrp
  * @property Money $price
  * @property Money $discount_allocated
+ * @property string|null $discount_funded_by platform | seller | mixed (M18)
+ * @property Money $seller_discount the seller-funded part of discount_allocated
+ * @property int|null $flash_deal_item_id sold at this flash-deal price (M18)
  * @property Money $taxable_value
  * @property string $gst_percent
  * @property Money $cgst
@@ -65,6 +68,16 @@ class SalesOrderItem extends MarketplaceModel
 
     public const STATUS_EXCHANGED = 'exchanged';
 
+    /**
+     * Who pays for the item's coupon share (M18): the platform keeps crediting the seller at the
+     * full price; a seller-funded share lowers the seller's sale credit.
+     */
+    public const FUNDED_BY_PLATFORM = 'platform';
+
+    public const FUNDED_BY_SELLER = 'seller';
+
+    public const FUNDED_BY_MIXED = 'mixed';
+
     protected $table = 'sales_order_item';
 
     protected $fillable = [
@@ -82,6 +95,9 @@ class SalesOrderItem extends MarketplaceModel
         'mrp',
         'price',
         'discount_allocated',
+        'discount_funded_by',
+        'seller_discount',
+        'flash_deal_item_id',
         'taxable_value',
         'gst_percent',
         'cgst',
@@ -112,6 +128,8 @@ class SalesOrderItem extends MarketplaceModel
             'mrp' => MoneyCast::class,
             'price' => MoneyCast::class,
             'discount_allocated' => MoneyCast::class,
+            'seller_discount' => MoneyCast::class,
+            'flash_deal_item_id' => 'integer',
             'taxable_value' => MoneyCast::class,
             'cgst' => MoneyCast::class,
             'sgst' => MoneyCast::class,

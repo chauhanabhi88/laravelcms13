@@ -8,7 +8,12 @@ use Modules\Core\Support\Money;
 
 /**
  * One row the adjustment pipeline adds to the price summary: a charge (delivery, COD fee) is
- * positive, a discount (coupon, M18) negative.
+ * positive, a discount (coupon, automatic offer, M18) negative.
+ *
+ * A discount may carry $lineShares (cart item id => its positive share, summing to −amount)
+ * so place-order stores each line's share on the order item; without them the discount is
+ * spread over every line by value. $meta holds what the step's owner needs later (e.g. the
+ * coupon id and who funds it).
  */
 final readonly class TotalsAdjustment
 {
@@ -18,10 +23,23 @@ final readonly class TotalsAdjustment
 
     public const COUPON = 'coupon';
 
+    public const OFFER = 'offer';
+
+    /**
+     * Codes whose (negative) amounts are order discounts allocated to the items.
+     */
+    public const DISCOUNT_CODES = [self::COUPON, self::OFFER];
+
+    /**
+     * @param  array<int, Money>  $lineShares
+     * @param  array<string, mixed>  $meta
+     */
     public function __construct(
         public string $code,
         public string $label,
         public Money $amount,
+        public array $lineShares = [],
+        public array $meta = [],
     ) {}
 
     public function isDiscount(): bool

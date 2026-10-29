@@ -50,6 +50,7 @@ return [
         'products_for_you' => 'Picked for You (product grid)',
         'html_block' => 'Content block',
         'blog_posts' => 'Blog articles',
+        'flash_deal' => 'Flash deal (countdown)',
     ],
     'columns' => [
         'id' => 'ID',

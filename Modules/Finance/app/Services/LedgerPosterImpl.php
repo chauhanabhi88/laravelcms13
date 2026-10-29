@@ -114,7 +114,10 @@ class LedgerPosterImpl implements LedgerPoster
                     'status' => $status,
                 ];
                 $label = ['item' => $item->name, 'qty' => $qty, 'order' => $sellerOrder->sub_order_no];
-                $sale = $item->price->times($qty);
+                // Platform-funded coupon shares are paid by the platform (the sale is credited at
+                // the full price); a seller-funded share (M18) lowers the seller's credit.
+                $sellerDiscount = self::prorate($item->seller_discount, $qty, $item->quantity);
+                $sale = $item->price->times($qty)->minus($sellerDiscount);
                 $taxable = self::prorate($item->taxable_value, $qty, $item->quantity);
                 $commission = self::prorate($item->commission_amount, $qty, $item->quantity);
                 $platformFee = $this->feeRules->sellerCharge(FeeRule::CODE_FIXED_CLOSING_FEE, $seller, $item->price)->times($qty)
@@ -126,7 +129,7 @@ class LedgerPosterImpl implements LedgerPoster
                     'amount' => $sale,
                     'base_amount' => $taxable,
                     'description' => trans('finance::ledger.descriptions.sale', $label),
-                    'meta' => ['qty' => $qty],
+                    'meta' => $sellerDiscount->isPositive() ? ['qty' => $qty, 'seller_discount' => $sellerDiscount->toDecimal()] : ['qty' => $qty],
                     'idempotency_key' => 'sale:item:'.$item->id,
                 ]);
 

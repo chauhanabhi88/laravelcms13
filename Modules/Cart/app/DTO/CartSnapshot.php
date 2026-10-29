@@ -23,6 +23,7 @@ final readonly class CartSnapshot
         public array $savedForLater,
         public ?string $deliveryPincode,
         public ?string $couponCode = null,
+        public ?int $customerId = null,
     ) {}
 
     /**

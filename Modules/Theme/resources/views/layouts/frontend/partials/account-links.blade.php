@@ -6,6 +6,7 @@
         ['route' => 'customer.reviews.index', 'icon' => 'star', 'label' => trans('theme::frontend.account.my_reviews')],
         ['route' => config('theme.header.wishlist_route'), 'icon' => 'heart', 'label' => trans('theme::frontend.account.wishlist')],
         ['route' => 'customer.notifications.index', 'icon' => 'bell', 'label' => trans('theme::frontend.account.notifications')],
+        ['route' => 'customer.referral.index', 'icon' => 'share', 'label' => trans('theme::frontend.account.refer_earn')],
         ['route' => 'customer.profile.edit', 'icon' => 'pencil', 'label' => trans('theme::frontend.account.edit_profile')],
         ['route' => 'customer.addresses.index', 'icon' => 'map-pin', 'label' => trans('theme::frontend.account.addresses')],
         ['route' => 'customer.reseller.edit', 'icon' => 'store', 'label' => trans('theme::frontend.account.reseller')],

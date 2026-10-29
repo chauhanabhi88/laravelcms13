@@ -31,5 +31,6 @@
     "Logistics": true,
     "Returns": true,
     "Review": true,
-    "Finance": true
+    "Finance": true,
+    "Promotion": true
 }

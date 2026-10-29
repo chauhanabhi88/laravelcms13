@@ -20,7 +20,9 @@
                 @yield('checkout')
             </div>
 
-            <aside class="lg:sticky lg:top-28">
+            <aside class="flex flex-col gap-4 lg:sticky lg:top-28">
+                {{-- Coupon input and available offers (Promotion module, M18). --}}
+                @includeIf('promotion::frontend.partials.coupon-box', ['couponContext' => 'checkout', 'snapshot' => $summary->snapshot, 'totals' => $summary->totals, 'paymentMethod' => $summary->session->paymentMethod])
                 @include('order::frontend.checkout.partials.order-summary')
             </aside>
         </div>

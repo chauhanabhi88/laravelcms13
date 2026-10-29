@@ -12,6 +12,7 @@ use Modules\Catalog\Contracts\CategoryInUse;
 use Modules\Product\Composers\LowStockCardComposer;
 use Modules\Product\Console\LowStockDigestCommand;
 use Modules\Product\Contracts\FeeCalculator;
+use Modules\Product\Contracts\PriceResolver;
 use Modules\Product\Events\ProductAggregatesChanged;
 use Modules\Product\Events\ProductApproved;
 use Modules\Product\Events\ProductBlocked;
@@ -38,6 +39,7 @@ use Modules\Product\Repositories\SellerCatalogRepository;
 use Modules\Product\Services\ProductImageService;
 use Modules\Product\Support\CategoryInUseChecker;
 use Modules\Product\Support\Import\ImageFetcher;
+use Modules\Product\Support\NoPriceOverrides;
 use Modules\Product\Support\ZeroFeeCalculator;
 use Modules\Seller\Events\SellerReactivated;
 use Modules\Seller\Events\SellerSuspended;
@@ -85,6 +87,9 @@ class ProductServiceProvider extends ServiceProvider
 
         // The Finance module (M17) rebinds this to its commission engine.
         $this->app->bindIf(FeeCalculator::class, ZeroFeeCalculator::class);
+
+        // The Promotion module (M18) rebinds this to its flash-deal prices.
+        $this->app->bindIf(PriceResolver::class, NoPriceOverrides::class);
 
         // Bulk image URLs resolve hosts through DNS; tests swap in a fixed resolver.
         $this->app->bind(ImageFetcher::class, fn ($app): ImageFetcher => new ImageFetcher($app->make(ProductImageService::class)));

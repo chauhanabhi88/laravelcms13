@@ -11,12 +11,14 @@ use Illuminate\Support\Facades\DB;
 use Modules\Cart\DTO\CartGroup;
 use Modules\Cart\DTO\CartLine;
 use Modules\Cart\DTO\LineIssue;
+use Modules\Cart\DTO\Totals;
 use Modules\Cart\DTO\TotalsAdjustment;
 use Modules\Cart\Services\CartValidator;
 use Modules\Catalog\Services\CategoryDefaults;
 use Modules\Core\Services\SequenceService;
 use Modules\Core\Support\Money;
 use Modules\Customer\Models\Customer;
+use Modules\Order\Contracts\OrderPromotions;
 use Modules\Order\DTO\CheckoutSession;
 use Modules\Order\DTO\CheckoutSummary;
 use Modules\Order\DTO\PlaceOrderResult;
@@ -44,8 +46,10 @@ use Modules\Seller\Models\SellerWarehouse;
  *    price notice, or a total other than the one the buyer saw) aborts with PriceChanged.
  * 3. One transaction (deadlock retries): lock the variants in id order and revalidate status,
  *    price and stock; write the sales order (SequenceService number), its addresses, one seller
- *    order per seller with item snapshots (price, coupon share, GST split, commission, reseller
- *    price, return policy); reserve the stock. Any failure leaves nothing behind.
+ *    order per seller with item snapshots (price, coupon share and its funding, GST split on the
+ *    price after the coupon share, commission, reseller price, return policy); let promotions
+ *    re-check their limits (OrderPromotions, M18); reserve the stock. Any failure leaves
+ *    nothing behind.
  * 4. After commit: OrderPlaced (the cart is cleared), then the payment is started. Prepaid
  *    waits on the pay page; COD is confirmed at once, or waits for its OTP.
  */
@@ -62,6 +66,7 @@ class PlaceOrderService
         private readonly PaymentService $payments,
         private readonly OrderStatusService $statuses,
         private readonly OrderCancellationService $cancellations,
+        private readonly OrderPromotions $promotions,
     ) {}
 
     /**
@@ -107,8 +112,7 @@ class PlaceOrderService
         $now = Carbon::now();
         $isCod = $summary->session->isCod();
         $totals = $summary->totals;
-        $coupon = $totals->adjustment(TotalsAdjustment::COUPON);
-        $couponDiscount = $coupon !== null && $coupon->amount->isNegative() ? Money::paise(-$coupon->amount->paise) : Money::zero();
+        [$couponDiscount, $couponShares, $sellerShares, $fundedBy] = $this->discounts($totals, $lines);
         $isReseller = $summary->isResellerOrder();
 
         $order = SalesOrder::query()->create([
@@ -120,7 +124,7 @@ class PlaceOrderService
             'items_count' => $totals->itemCount,
             'total_mrp' => $totals->totalMrp,
             'total_discount' => $totals->discount,
-            'coupon_code' => $couponDiscount->isPositive() ? $summary->snapshot->couponCode : null,
+            'coupon_code' => $this->couponCode($summary),
             'coupon_discount' => $couponDiscount,
             'delivery_charge' => $totals->deliveryCharge(),
             'cod_fee' => $isCod ? $totals->codFee() : Money::zero(),
@@ -138,16 +142,16 @@ class PlaceOrderService
         $this->initialHistory($order, SalesOrder::STATUS_PLACED);
         $this->writeAddresses($order, $summary);
 
-        $couponShares = $couponDiscount->isPositive()
-            ? $couponDiscount->allocate(array_combine(array_map(fn (CartLine $line): int => $line->itemId, $lines), array_map(fn (CartLine $line): int => max(0, $line->lineTotal()->paise), $lines)))
-            : [];
         $deliveryShares = $totals->deliveryCharge()->isPositive()
             ? $totals->deliveryCharge()->allocate(array_map(fn (CartGroup $group): int => max(1, $group->subtotal()->paise), $summary->snapshot->groups))
             : [];
 
         foreach (array_values($summary->snapshot->groups) as $index => $group) {
-            $this->writeSellerOrder($order, $summary, $group, $index, $variants, $couponShares, $deliveryShares[$index] ?? Money::zero(), $now);
+            $this->writeSellerOrder($order, $summary, $group, $index, $variants, $couponShares, $deliveryShares[$index] ?? Money::zero(), $now, $sellerShares, $fundedBy);
         }
+
+        // Coupon usage limits and flash-deal caps, re-checked under row locks (M18).
+        $this->promotions->onPlacing($order, $summary);
 
         $this->inventory->reserve(
             array_map(fn (CartLine $line): array => ['variant_id' => $line->variantId, 'qty' => $line->quantity], $lines),
@@ -184,6 +188,8 @@ class PlaceOrderService
             ->load(['product.seller', 'product.category'])
             ->keyBy('id');
 
+        $prices = $this->validator->livePrices($variants);
+
         foreach ($lines as $line) {
             $variant = $variants->get($line->variantId);
 
@@ -191,7 +197,7 @@ class PlaceOrderService
                 throw CheckoutException::cartNotReady();
             }
 
-            if (! $variant->price->equals($line->unitPrice)) {
+            if (! ($prices[$variant->id] ?? $variant->price)->equals($line->unitPrice)) {
                 throw new PriceChanged;
             }
 
@@ -230,8 +236,10 @@ class PlaceOrderService
     /**
      * @param  Collection<int, ProductVariant>  $variants
      * @param  array<int, Money>  $couponShares  cart item id => coupon share
+     * @param  array<int, Money>  $sellerShares  cart item id => the seller-funded part of it
+     * @param  array<int, string>  $fundedBy  cart item id => platform | seller | mixed
      */
-    protected function writeSellerOrder(SalesOrder $order, CheckoutSummary $summary, CartGroup $group, int $index, Collection $variants, array $couponShares, Money $deliveryShare, Carbon $now): SellerOrder
+    protected function writeSellerOrder(SalesOrder $order, CheckoutSummary $summary, CartGroup $group, int $index, Collection $variants, array $couponShares, Money $deliveryShare, Carbon $now, array $sellerShares = [], array $fundedBy = []): SellerOrder
     {
         $seller = $variants->get($group->lines[0]->variantId)->product->seller;
         $warehouse = SellerWarehouse::query()
@@ -291,6 +299,8 @@ class PlaceOrderService
                 'mrp' => $line->unitMrp->compare($line->unitPrice) > 0 ? $line->unitMrp : $line->unitPrice,
                 'price' => $line->unitPrice,
                 'discount_allocated' => $discount,
+                'discount_funded_by' => $discount->isPositive() ? ($fundedBy[$line->itemId] ?? SalesOrderItem::FUNDED_BY_PLATFORM) : null,
+                'seller_discount' => $sellerShares[$line->itemId] ?? Money::zero(),
                 'taxable_value' => $tax['taxable'],
                 'gst_percent' => $gstPercent,
                 'cgst' => $tax['cgst'],
@@ -384,6 +394,66 @@ class PlaceOrderService
         }
 
         return new PlaceOrderResult($order, $this->payments->latestPayment($order->id), true);
+    }
+
+    /**
+     * The order discount (coupon + automatic offer, M18) and each line's share of it: the
+     * adjustment's own line shares, else spread over every line by value. A share funded by a
+     * seller-funded promotion is also kept apart (it lowers that seller's sale credit, M17).
+     *
+     * @param  list<CartLine>  $lines
+     * @return array{0: Money, 1: array<int, Money>, 2: array<int, Money>, 3: array<int, string>}
+     */
+    protected function discounts(Totals $totals, array $lines): array
+    {
+        $discount = Money::zero();
+        $shares = [];
+        $sellerShares = [];
+        $sources = [];
+
+        foreach ($totals->adjustments as $adjustment) {
+            if (! in_array($adjustment->code, TotalsAdjustment::DISCOUNT_CODES, true) || ! $adjustment->amount->isNegative()) {
+                continue;
+            }
+
+            $amount = Money::paise(-$adjustment->amount->paise);
+            $discount = $discount->plus($amount);
+            $sellerFunded = ($adjustment->meta['funded_by'] ?? SalesOrderItem::FUNDED_BY_PLATFORM) === SalesOrderItem::FUNDED_BY_SELLER;
+            $lineShares = $adjustment->lineShares !== []
+                ? $adjustment->lineShares
+                : $amount->allocate(array_combine(array_map(fn (CartLine $line): int => $line->itemId, $lines), array_map(fn (CartLine $line): int => max(0, $line->lineTotal()->paise), $lines)));
+
+            foreach ($lineShares as $itemId => $share) {
+                if (! $share->isPositive()) {
+                    continue;
+                }
+
+                $shares[$itemId] = ($shares[$itemId] ?? Money::zero())->plus($share);
+                $sources[$itemId][$sellerFunded ? SalesOrderItem::FUNDED_BY_SELLER : SalesOrderItem::FUNDED_BY_PLATFORM] = true;
+
+                if ($sellerFunded) {
+                    $sellerShares[$itemId] = ($sellerShares[$itemId] ?? Money::zero())->plus($share);
+                }
+            }
+        }
+
+        $fundedBy = array_map(fn (array $kinds): string => count($kinds) > 1 ? SalesOrderItem::FUNDED_BY_MIXED : (string) array_key_first($kinds), $sources);
+
+        return [$discount, $shares, $sellerShares, $fundedBy];
+    }
+
+    /**
+     * The applied coupon code (also a free-delivery one that discounts no item), else the
+     * automatic offer's code.
+     */
+    protected function couponCode(CheckoutSummary $summary): ?string
+    {
+        $totals = $summary->totals;
+        $code = $totals->adjustment(TotalsAdjustment::COUPON) !== null
+            ? $summary->snapshot->couponCode
+            : ($totals->adjustment(TotalsAdjustment::OFFER)?->meta['code'] ?? null);
+
+        return is_string($code) && $code !== '' ? mb_substr($code, 0, 40) : null;
     }
 
     protected function hasPriceNotice(CheckoutSummary $summary): bool

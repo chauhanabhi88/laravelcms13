@@ -1,0 +1,23 @@
+{
+    "name": "abhishek/promotion",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Promotion\\": "app/",
+            "Modules\\Promotion\\Database\\Factories\\": "database/factories/",
+            "Modules\\Promotion\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

@@ -20,6 +20,9 @@
     <p class="mt-0.5 text-xs text-muted">{{ trans('storefront::product.price.inclusive_taxes') }}</p>
 
     <div class="mt-3 flex flex-wrap items-center gap-2">
+        @if ($dealEndsAt = $page->dealEndsAt())
+            <x-theme::chip variant="deal" icon="clock" data-flash-deal>{{ trans('storefront::product.price.deal_ends', ['time' => $dealEndsAt->format('d M, g:i a')]) }}</x-theme::chip>
+        @endif
         @if (\Modules\Storefront\Support\StorefrontSettings::freeDeliveryBadge())
             <x-theme::chip icon="truck">{{ trans('theme::frontend.commerce.free_delivery') }}</x-theme::chip>
         @endif
