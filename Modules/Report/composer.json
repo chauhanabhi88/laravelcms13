@@ -1,0 +1,23 @@
+{
+    "name": "abhishek/report",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Report\\": "app/",
+            "Modules\\Report\\Database\\Factories\\": "database/factories/",
+            "Modules\\Report\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

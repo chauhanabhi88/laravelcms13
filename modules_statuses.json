@@ -32,5 +32,6 @@
     "Returns": true,
     "Review": true,
     "Finance": true,
-    "Promotion": true
+    "Promotion": true,
+    "Report": true
 }

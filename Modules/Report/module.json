@@ -1,0 +1,26 @@
+{
+    "name": "Report",
+    "alias": "report",
+    "description": "Admin analytics and reports: nightly and hourly aggregates of sales, fulfilment, RTO, returns and payment mix (daily_sales_stat, daily_product_stat), the KPI service with date-range comparison and a live today, leaderboards of sellers, products, categories, states and pincodes, report pages with charts and table views, CSV/Excel exports (streamed or queued), the backend dashboard widget and the supplier analytics page.",
+    "keywords": [],
+    "priority": 40,
+    "providers": [
+        "Modules\\Report\\Providers\\ReportServiceProvider"
+    ],
+    "files": [],
+    "cache": false,
+    "depends": [
+        "core",
+        "dashboard",
+        "seller",
+        "catalog",
+        "product",
+        "storefront",
+        "order",
+        "logistics",
+        "returns",
+        "review",
+        "finance",
+        "theme"
+    ]
+}
