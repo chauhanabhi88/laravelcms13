@@ -9,6 +9,7 @@
         ['route' => 'customer.profile.edit', 'icon' => 'pencil', 'label' => trans('theme::frontend.account.edit_profile')],
         ['route' => 'customer.addresses.index', 'icon' => 'map-pin', 'label' => trans('theme::frontend.account.addresses')],
         ['route' => 'customer.reseller.edit', 'icon' => 'store', 'label' => trans('theme::frontend.account.reseller')],
+        ['route' => (fn ($customer): bool => $customer !== null && method_exists($customer, 'isReseller') && $customer->isReseller())(auth('customer')->user()) ? 'customer.earnings.index' : null, 'icon' => 'wallet', 'label' => trans('theme::frontend.account.earnings')],
         ['route' => 'customer.change-password', 'icon' => 'lock', 'label' => trans('theme::frontend.account.change_password')],
     ], fn ($link) => $link['route'] && \Illuminate\Support\Facades\Route::has($link['route']));
 @endphp

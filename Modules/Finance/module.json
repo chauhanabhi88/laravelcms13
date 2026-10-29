@@ -1,0 +1,25 @@
+{
+    "name": "Finance",
+    "alias": "finance",
+    "description": "Commission engine and platform fee rules, the append-only seller ledger (sale, commission, fees, logistics, returns, penalties, claims, TCS/TDS, payouts), payout eligibility and holds, weekly payout batches through RazorpayX or manual bank transfers, GST tax invoices, credit notes and monthly fee invoices, the TCS (GSTR-8) report, COD remittance reconciliation, the reseller margin wallet, the supplier payments screens and the admin finance console.",
+    "keywords": [],
+    "priority": 38,
+    "providers": [
+        "Modules\\Finance\\Providers\\FinanceServiceProvider"
+    ],
+    "files": [],
+    "cache": false,
+    "depends": [
+        "core",
+        "customer",
+        "seller",
+        "catalog",
+        "product",
+        "payment",
+        "order",
+        "logistics",
+        "returns",
+        "notification",
+        "theme"
+    ]
+}

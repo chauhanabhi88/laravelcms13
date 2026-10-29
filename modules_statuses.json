@@ -30,5 +30,6 @@
     "Order": true,
     "Logistics": true,
     "Returns": true,
-    "Review": true
+    "Review": true,
+    "Finance": true
 }

@@ -43,7 +43,9 @@
                 :href="isset($orderKpis) && Route::has('seller.order.index') ? frontRoute('seller.order.index', [['tab' => 'ready']]) : null" />
             <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.returns')" :value="$orderKpis['returns'] ?? $placeholder" icon="rotate-ccw"
                 :href="isset($orderKpis) && Route::has('seller.order.index') ? frontRoute('seller.order.index', [['tab' => 'returns']]) : null" />
-            <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.next_payout')" :value="$placeholder" icon="wallet" />
+            {{-- The next payout comes from the Finance module (M17, $financeKpis). --}}
+            <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.next_payout')" :value="$financeKpis['next_payout'] ?? $placeholder" icon="wallet"
+                :href="isset($financeKpis) && Route::has('seller.payments.overview') && $user->canAccessArea('finance') ? frontRoute('seller.payments.overview') : null" />
             <x-theme::stat-card :label="trans('seller::panel.dashboard.kpis.rating')"
                 :value="$seller->rating_count > 0 ? number_format((float) $seller->rating_avg, 1).' ★' : $placeholder" icon="star" />
         </div>
