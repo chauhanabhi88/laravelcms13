@@ -7,8 +7,11 @@ namespace Modules\Seller\Http\Controllers\Webhook;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use Modules\Seller\Events\RazorpayXWebhookReceived;
 use Modules\Seller\Services\BankAccountService;
+use Throwable;
 
 /**
  * RazorpayX webhooks: fund_account.validation.completed / .failed settle a penny drop.
@@ -35,7 +38,7 @@ class RazorpayXController extends Controller
         $event = (string) $request->json('event');
 
         if (! in_array($event, self::EVENTS, true)) {
-            return response()->json(['success' => true, 'message' => 'Ignored.']);
+            return $this->forward($request, $event);
         }
 
         // The payload key is literally "fund_account.validation", so no dot-notation lookup.
@@ -49,6 +52,34 @@ class RazorpayXController extends Controller
             'bank_account_id' => $account?->id,
             'status' => $account?->verification_status,
         ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Other signed events (payout.* for Finance, M17) go to whichever module listens; with no
+     * listener they are acknowledged and ignored. A listener failure answers 500 so RazorpayX
+     * delivers the event again.
+     */
+    private function forward(Request $request, string $event): JsonResponse
+    {
+        $prefix = explode('.', $event, 2)[0];
+        $payload = (array) $request->json('payload', []);
+        $entity = (array) ($payload[$prefix]['entity'] ?? []);
+
+        if ($event === '' || $entity === [] || ! Event::hasListeners(RazorpayXWebhookReceived::class)) {
+            return response()->json(['success' => true, 'message' => 'Ignored.']);
+        }
+
+        try {
+            RazorpayXWebhookReceived::dispatch($event, $entity, $request->header('X-Razorpay-Event-Id'));
+        } catch (Throwable $e) {
+            report($e);
+
+            return response()->json(['success' => false, 'message' => 'Processing failed.'], 500);
+        }
+
+        Log::channel('integrations')->info('razorpayx webhook '.$event, ['event_id' => $request->header('X-Razorpay-Event-Id'), 'entity_id' => $entity['id'] ?? null]);
 
         return response()->json(['success' => true]);
     }

@@ -47,6 +47,7 @@ return [
         'profile' => 'Profile',
         'open_profile_menu' => 'Open profile menu',
         'reseller' => 'Reseller mode',
+        'earnings' => 'My earnings',
         'notifications' => 'Notifications',
     ],
     'bell' => [
