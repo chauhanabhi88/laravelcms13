@@ -1,0 +1,23 @@
+{
+    "name": "abhishek/review",
+    "description": "",
+    "authors": [
+        {
+            "name": "Abhishek Chauhan",
+            "email": "abhishek@server.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {}
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Review\\": "app/",
+            "Modules\\Review\\Database\\Factories\\": "database/factories/",
+            "Modules\\Review\\Database\\Seeders\\": "database/seeders/"
+        }
+    }
+}

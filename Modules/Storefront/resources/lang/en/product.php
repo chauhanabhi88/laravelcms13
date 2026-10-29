@@ -111,6 +111,14 @@ return [
         'stars' => ':count★',
         'photos' => 'Photos from buyers',
         'view_all' => 'View all reviews',
+        'view_all_count' => 'View all :count reviews',
+        'filter_stars' => 'Show :count-star reviews',
+        'verified' => 'Verified Buyer',
+        'helpful' => '{1} 1 person found this helpful|[2,*] :count people found this helpful',
+        'seller_reply' => 'Seller’s reply',
+        'close_photo' => 'Close photo',
+        'previous_photo' => 'Previous photo',
+        'next_photo' => 'Next photo',
     ],
 
     'similar' => [

@@ -8,6 +8,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Modules\Customer\Contracts\AccountDeletionGuard;
+use Modules\Customer\Events\CustomerAnonymised;
 use Modules\Customer\Models\Customer;
 use Modules\Customer\Models\CustomerDataRequest;
 use Modules\Customer\Support\CustomerSettings;
@@ -139,6 +140,8 @@ class AccountDeletionService
                 'processed_at' => Carbon::now(),
                 'notes' => null,
             ])->save();
+
+            event(new CustomerAnonymised((int) $customer->getKey()));
         });
 
         return true;

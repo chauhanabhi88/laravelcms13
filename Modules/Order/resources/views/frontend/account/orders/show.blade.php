@@ -98,6 +98,9 @@
                 </header>
                 <ul class="divide-y divide-line">
                     @foreach ($sellerOrder->items as $item)
+                        @php
+                            $reviewState = $reviewStates[$item->id] ?? null;
+                        @endphp
                         <li class="flex gap-3 px-4 py-3 sm:px-5">
                             <div class="size-16 shrink-0 overflow-hidden rounded-lg bg-surface-alt">
                                 @if ($image = \Modules\Storefront\Support\StorefrontUrls::productImage($item->image, 'thumb'))
@@ -115,6 +118,30 @@
                                         · {{ trans('order::front.item_statuses.'.$item->status) }}
                                     @endif
                                 </p>
+                                @if ($reviewState?->isReviewed())
+                                    <p class="mt-1.5 flex flex-wrap items-center gap-2 text-xs" data-review-state="{{ $item->id }}">
+                                        <span class="text-muted">{{ trans('order::front.orders.your_rating') }}</span>
+                                        <x-theme::rating-badge :value="$reviewState->rating" />
+                                        @if ($reviewState->statusLabel)
+                                            <span class="text-muted">· {{ $reviewState->statusLabel }}</span>
+                                        @endif
+                                        @if ($reviewState->editUrl)
+                                            <a href="{{ $reviewState->editUrl }}" class="font-medium text-accent hover:underline">{{ trans('order::front.orders.edit_review') }}</a>
+                                        @endif
+                                    </p>
+                                @elseif ($reviewState?->canReview())
+                                    <div class="mt-1.5 flex flex-wrap items-center gap-2" data-rate-product="{{ $item->id }}">
+                                        <span class="text-xs font-medium text-ink-soft">{{ trans('order::front.orders.rate_product') }}</span>
+                                        <span class="flex items-center" role="group" aria-label="{{ trans('order::front.orders.rate_product') }}">
+                                            @for ($star = 1; $star <= 5; $star++)
+                                                <a href="{{ $reviewState->createUrlFor($star) }}" class="rounded-md p-0.5 text-line-strong transition hover:text-deal focus-visible:text-deal"
+                                                    aria-label="{{ trans('order::front.orders.rate_stars', ['count' => $star]) }}">
+                                                    <x-theme::icon name="star-filled" size="size-5" />
+                                                </a>
+                                            @endfor
+                                        </span>
+                                    </div>
+                                @endif
                             </div>
                             <p class="tabular text-sm font-semibold text-ink">{{ $item->lineTotal()->format() }}</p>
                         </li>

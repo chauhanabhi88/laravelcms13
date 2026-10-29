@@ -105,6 +105,12 @@ class NotificationTemplateSeeder extends Seeder
             'subject' => 'How was your ##product_name##?',
             'mail' => '<p>Hi ##recipient_name##,</p><p>We hope you are enjoying your <strong>##product_name##</strong>. Share a quick rating to help other shoppers.</p><p><a href="##url##">Rate now</a></p>',
         ],
+        'review.rejected' => [
+            'title' => 'Your review was not published',
+            'text' => 'Your review of {{product_name}} could not be published: {{reason}}. You can edit it and submit again.',
+            'subject' => 'Your review of ##product_name## was not published',
+            'mail' => '<p>Hi ##recipient_name##,</p><p>Your review of <strong>##product_name##</strong> could not be published.</p><p>Reason: ##reason##</p><p>You can edit it and submit it again. <a href="##url##">Open my reviews</a></p>',
+        ],
         'cart.abandoned' => [
             'title' => 'Your picks are waiting',
             'text' => 'You left {{item_count}} item(s) in your cart. Complete your order before they sell out.',
@@ -215,6 +221,10 @@ class NotificationTemplateSeeder extends Seeder
         'admin.return.review' => [
             'title' => 'Return to review: {{return_no}}',
             'text' => 'Return {{return_no}} for {{order_no}} ({{reason}}) needs a decision.',
+        ],
+        'admin.review.reported' => [
+            'title' => 'Review reported: {{product_name}}',
+            'text' => 'A review of {{product_name}} has {{reports}} abuse reports and waits in the moderation queue.',
         ],
         'admin.return.claim' => [
             'title' => 'Seller claim: {{order_no}}',

@@ -29,5 +29,6 @@
     "Payment": true,
     "Order": true,
     "Logistics": true,
-    "Returns": true
+    "Returns": true,
+    "Review": true
 }

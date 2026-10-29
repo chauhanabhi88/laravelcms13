@@ -1,0 +1,22 @@
+{
+    "name": "Review",
+    "alias": "review",
+    "description": "Ratings and reviews from verified buyers: one review per delivered order item with up to five photos, automatic checks (profanity, links, phone numbers, duplicates) and the admin moderation queue, product and seller rating aggregates, the product page summary and full reviews page with filters, helpful votes, abuse reports, seller replies, the post-delivery review prompt and the reviews API.",
+    "keywords": [],
+    "priority": 37,
+    "providers": [
+        "Modules\\Review\\Providers\\ReviewServiceProvider"
+    ],
+    "files": [],
+    "cache": false,
+    "depends": [
+        "core",
+        "customer",
+        "seller",
+        "product",
+        "storefront",
+        "order",
+        "notification",
+        "theme"
+    ]
+}
