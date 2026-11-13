@@ -29,7 +29,7 @@
         <main id="main" class="flex items-center justify-center p-4 sm:p-8">
             <div class="w-full max-w-md">
                 <a href="{{ frontRoute('homepage') }}" class="mb-8 inline-flex lg:hidden">
-                    <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-8 w-auto">
+                    <x-theme::brand-logo :url="$logoUrl" :name="$siteName" class="h-8" />
                 </a>
                 @hasSection('title')
                     <h1 class="text-2xl font-semibold text-ink">@yield('title')</h1>

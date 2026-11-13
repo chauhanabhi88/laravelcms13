@@ -14,7 +14,7 @@
     <header class="border-b border-line bg-surface">
         <div class="mx-auto flex h-16 max-w-3xl items-center justify-between gap-4 px-4">
             <a href="{{ frontRoute('homepage') }}" class="flex items-center">
-                <img src="{{ \Modules\Theme\Support\ThemeSettings::logoUrl() }}" alt="{{ config('app.name') }}" class="h-7 w-auto">
+                <x-theme::brand-logo class="h-7" />
             </a>
             <form method="POST" action="{{ frontRoute('seller.logout') }}">
                 @csrf

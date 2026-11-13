@@ -170,6 +170,9 @@
                     </div>
                 @endif
 
+                {{-- Failed delivery attempt: re-attempt / new address / cancel (Logistics, FR-LOG-008). --}}
+                @includeIf('logistics::frontend.partials.delivery-issue', ['sellerOrder' => $sellerOrder, 'order' => $order])
+
                 @if ($isRto && ! $order->isCod())
                     <p class="border-t border-line px-4 py-3 text-xs text-muted sm:px-5">{{ trans('order::front.orders.rto_refund_note') }}</p>
                 @endif

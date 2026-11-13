@@ -2,7 +2,7 @@
     <div class="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-6">
         <div class="sm:col-span-2">
             <a href="{{ frontRoute('homepage') }}" class="inline-flex">
-                <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-8 w-auto" loading="lazy">
+                <x-theme::brand-logo :url="$logoUrl" :name="$siteName" class="h-8" loading="lazy" />
             </a>
             @if ($footerAbout)
                 <div class="prose-content mt-4 max-w-md text-sm! leading-6!">{!! $footerAbout !!}</div>
@@ -55,7 +55,10 @@
 
     <div class="border-t border-line">
         <div class="container-page flex flex-col gap-4 py-6 text-xs text-muted md:flex-row md:items-center md:justify-between">
-            <p>&copy; {{ now()->year }} {{ $siteName }}. {{ trans('theme::frontend.footer.rights') }}</p>
+            <div class="space-y-1">
+                <p>&copy; {{ now()->year }} {{ $siteName }}. {{ trans('theme::frontend.footer.rights') }}</p>
+                @include('theme::layouts.frontend.partials.grievance-officer', ['officer' => $grievanceOfficer ?? null, 'compact' => true])
+            </div>
 
             @if ($socialLinks)
                 <ul class="flex flex-wrap gap-4" aria-label="{{ trans('theme::frontend.footer.follow_us') }}">

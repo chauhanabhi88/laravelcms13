@@ -53,9 +53,13 @@ class CatalogSettings
      */
     public static function contentLocales(): array
     {
-        $locales = array_keys((array) getLanguageOptions());
+        // Memoised: getLanguageOptions() queries the uncached language table on every call, and
+        // listings, product pages and the search index ask several times per request (M21 P10).
+        return once(function (): array {
+            $locales = array_keys((array) getLanguageOptions());
 
-        return $locales !== [] ? array_values(array_map('strval', $locales)) : [(string) config('app.locale', 'en')];
+            return $locales !== [] ? array_values(array_map('strval', $locales)) : [(string) config('app.locale', 'en')];
+        });
     }
 
     protected static function integer(string $key): int

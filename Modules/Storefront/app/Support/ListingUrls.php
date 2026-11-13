@@ -72,6 +72,16 @@ final class ListingUrls
         return $this->build($this->query->urlParams(false));
     }
 
+    /**
+     * Search results and listings with more than config('storefront.seo.noindex_filter_threshold')
+     * filter values are kept out of the index (plan M21 E3); their links are still followed.
+     */
+    public function isIndexable(): bool
+    {
+        return ! $this->page->isSearch()
+            && $this->query->filterCount() <= (int) config('storefront.seo.noindex_filter_threshold', 1);
+    }
+
     public function sort(string $sort): string
     {
         return $this->with(['sort' => $sort === 'relevance' ? null : $sort]);
@@ -124,6 +134,11 @@ final class ListingUrls
         return $this->with(['cod' => $this->query->codOnly ? null : 1]);
     }
 
+    public function delivery(int $days): string
+    {
+        return $this->with(['delivery' => $this->query->deliveryDays === $days ? null : $days]);
+    }
+
     /**
      * A child category: its own page on category listings (keeping the generic filters), a
      * filter elsewhere.
@@ -133,7 +148,7 @@ final class ListingUrls
     public function category(array $category): string
     {
         if ($this->page->linksCategoriesToPages()) {
-            $keep = array_intersect_key($this->query->urlParams(), array_flip(['price', 'rating', 'discount', 'cod', 'brand', 'sort']));
+            $keep = array_intersect_key($this->query->urlParams(), array_flip(['price', 'rating', 'discount', 'cod', 'delivery', 'brand', 'sort']));
 
             return StorefrontUrls::category($category['slug']).($keep !== [] ? '?'.http_build_query($keep) : '');
         }
@@ -180,6 +195,9 @@ final class ListingUrls
         }
         if ($this->query->codOnly) {
             $chips[] = ['label' => trans('storefront::storefront.filters.cod'), 'url' => $this->with(['cod' => null])];
+        }
+        if ($this->query->deliveryDays !== null) {
+            $chips[] = ['label' => trans('storefront::storefront.filters.delivery_value', ['days' => $this->query->deliveryDays]), 'url' => $this->with(['delivery' => null])];
         }
 
         return $chips;

@@ -37,15 +37,50 @@ class FacetService
     ) {}
 
     /**
-     * @return array{categories: array{node: array<string, mixed>|null, parent: array<string, mixed>|null, children: list<array{id: int, name: string, slug: string, count: int}>}, attributes: list<AttributeFacet>, brands: list<array{id: int, name: string, count: int}>, price: array{min: int, max: int, presets: list<array{from: int|null, to: int|null, count: int}>}, rating: list<array{value: int, count: int}>, discount: list<array{value: int, count: int}>, cod: int}
+     * @return array{categories: array{node: array<string, mixed>|null, parent: array<string, mixed>|null, children: list<array{id: int, name: string, slug: string, count: int}>}, attributes: list<AttributeFacet>, brands: list<array{id: int, name: string, count: int}>, price: array{min: int, max: int, presets: list<array{from: int|null, to: int|null, count: int}>}, rating: list<array{value: int, count: int}>, discount: list<array{value: int, count: int}>, cod: int, delivery: list<array{value: int, count: int}>}
      */
     public function facets(ListingQuery $query): array
     {
-        return $this->cache->remember(
+        $facets = $this->cache->remember(
             'listing',
             'facets.'.$query->cacheKey(),
             (int) config('storefront.facet_cache_ttl', 120),
             fn (): array => $this->build($query),
+        );
+
+        return $facets + ['delivery' => $this->delivery($query)];
+    }
+
+    /**
+     * Products per delivery window for the shopper's pincode (empty while it is unknown),
+     * counted without the delivery filter itself. Cached apart from the other facets so the
+     * pincode does not split their cache.
+     *
+     * @return list<array{value: int, count: int}>
+     */
+    protected function delivery(ListingQuery $query): array
+    {
+        $pincode = $query->deliveryPincode;
+
+        if ($pincode === null) {
+            return [];
+        }
+
+        return $this->cache->remember(
+            'listing',
+            'facets.delivery.'.$pincode.'.'.$query->with(['deliveryDays' => null])->cacheKey(),
+            (int) config('storefront.facet_cache_ttl', 120),
+            function () use ($query, $pincode): array {
+                $mode = $this->search->textMode($query->q);
+                $filter = app(DeliveryTimeFilter::class);
+
+                return array_map(function ($days) use ($query, $mode, $filter, $pincode): array {
+                    $builder = $this->search->filtered($query, ['delivery'], $mode);
+                    $filter->apply($builder, $pincode, (int) $days);
+
+                    return ['value' => (int) $days, 'count' => $builder->count()];
+                }, array_values((array) config('storefront.delivery_buckets')));
+            },
         );
     }
 

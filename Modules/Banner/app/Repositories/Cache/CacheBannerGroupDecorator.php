@@ -10,7 +10,7 @@ class CacheBannerGroupDecorator extends BaseCacheDecorator implements BannerGrou
     public function __construct(BannerGroupRepository $bannerGroup)
     {
         parent::__construct();
-        $this->entityName = config("banner.cache.banner_group_name");
+        $this->entityName = config('banner.cache.banner_group_name');
         $this->repository = $bannerGroup;
     }
 
@@ -26,35 +26,33 @@ class CacheBannerGroupDecorator extends BaseCacheDecorator implements BannerGrou
 
     public function pagination($request)
     {
-        return $this->remember(function() use ($request) {
-            return $this->repository->pagination($request);
-        });
+        // Paginators are not on Core's CacheClassPolicy list and admin grids must be live.
+        return $this->repository->pagination($request);
     }
 
     public function filter($request)
     {
-        return $this->remember(function() use ($request) {
-            return $this->repository->filter($request);
-        });
+        // Returns an unresolved Builder - never cached (see BaseCacheDecorator::allWithBuilder()).
+        return $this->repository->filter($request);
     }
 
     /**
      * Get Banners By Group
-     * 
-     * @param $code Banner Group Code
-     * @param $locale
-     * return $slides
+     *
+     * @param  $code  Banner Group Code
+     * @param  $locale
+     *                 return $slides
      */
     public function getBannersByGroup($code, $locale)
     {
-        return $this->remember(function() use ($code, $locale) {
+        return $this->remember(function () use ($code, $locale) {
             return $this->repository->getBannersByGroup($code, $locale);
         });
     }
 
     public function getBannerGroups($flag = false)
     {
-        return $this->remember(function() use ($flag) {
+        return $this->remember(function () use ($flag) {
             return $this->repository->getBannerGroups($flag);
         });
     }

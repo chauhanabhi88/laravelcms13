@@ -18,8 +18,10 @@ use Modules\Storefront\Transformers\ProductCardResource;
 
 /**
  * GET /api/v1/products — the listing engine for apps: the web listing parameters (q, sort,
- * page, price, rating, discount, cod, brand, attribute codes) plus an optional context:
- * category (slug), store (store slug) or collection (slug). An unknown context is a 404.
+ * page, price, rating, discount, cod, delivery, brand, attribute codes) plus an optional
+ * context: category (slug), store (store slug) or collection (slug). An unknown context is a
+ * 404. "delivery" (days) needs the delivery "pincode" parameter, which also adds the
+ * delivery-window counts to the facets.
  */
 class SearchController extends ApiController
 {

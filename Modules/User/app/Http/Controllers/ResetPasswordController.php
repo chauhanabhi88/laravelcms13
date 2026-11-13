@@ -88,7 +88,7 @@ class ResetPasswordController extends Controller
             'email' => 'required|email',
             'password' => [
                 'required',
-                'min:8',
+                'min:'.config('user.password_min_length', 10),
                 'confirmed',
                 'regex:/[a-z]/',      // must contain at least one lowercase letter
                 'regex:/[A-Z]/',      // must contain at least one uppercase letter

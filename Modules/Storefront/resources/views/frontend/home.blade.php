@@ -7,6 +7,8 @@
     @if ($listing && ($nextUrl = $listing['urls']->next($listing['result'])))
         <link rel="next" href="{{ $nextUrl }}">
     @endif
+    <script type="application/ld+json">{!! \Modules\Storefront\Support\JsonLd\ProductJsonLd::encode(\Modules\Storefront\Support\JsonLd\SiteJsonLd::organization()) !!}</script>
+    <script type="application/ld+json">{!! \Modules\Storefront\Support\JsonLd\ProductJsonLd::encode(\Modules\Storefront\Support\JsonLd\SiteJsonLd::website()) !!}</script>
 @endsection
 
 @section('content')

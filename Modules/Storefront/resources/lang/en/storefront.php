@@ -101,6 +101,9 @@ return [
         'brand' => 'Brand',
         'cod' => 'Pay on Delivery',
         'cod_label' => 'Pay on Delivery available',
+        'delivery' => 'Delivery Time',
+        'delivery_value' => 'Delivery within :days days',
+        'delivery_to' => 'To pincode :pincode',
         'search_options' => 'Search :name',
         'show_more' => 'Show :count more',
         'show_less' => 'Show less',
@@ -141,5 +144,14 @@ return [
 
     'collection' => [
         'breadcrumb' => 'Collections',
+    ],
+
+    // Meta description templates for listings without their own (plan M21 E5).
+    'seo' => [
+        'category' => 'Shop :name online at :site. Honest prices, Pay on Delivery and easy returns.',
+        'search' => 'Results for :name at :site.',
+        'collection' => ':name at :site. Handpicked products with Pay on Delivery and easy returns.',
+        'store' => 'Shop :name on :site. Browse the full catalogue with Pay on Delivery and easy returns.',
+        'home' => ':name at :site.',
     ],
 ];

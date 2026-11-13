@@ -11,6 +11,16 @@
     $packages = $order->sellerOrders->reject->isCancelled()->values();
 @endphp
 
+@unless ($cancelled)
+    @push('js-stack')
+        @include('theme::layouts.frontend.partials.analytics-event', ['event' => 'purchase', 'once' => 'purchase_'.$order->order_no, 'params' => [
+            'transaction_id' => $order->order_no,
+            'currency' => 'INR',
+            'value' => (float) $order->grand_total->toDecimal(),
+        ]])
+    @endpush
+@endunless
+
 @section('content')
     {{-- Order confirmation (FR-ORD-006, plan M12 §7). --}}
     <div class="container-page max-w-xl py-10 lg:py-14">

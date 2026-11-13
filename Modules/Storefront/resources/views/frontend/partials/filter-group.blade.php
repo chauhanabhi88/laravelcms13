@@ -1,4 +1,4 @@
-{{-- One facet's options. $group['type']: category, price, attribute, brand, rating, discount or cod. --}}
+{{-- One facet's options. $group['type']: category, price, attribute, brand, rating, discount, cod or delivery. --}}
 @php
     $optionRow = 'flex cursor-pointer items-center gap-2.5 rounded-md px-1 py-1.5 text-sm text-ink-soft hover:text-ink';
     $checkbox = 'size-4 shrink-0 rounded border-line-strong text-accent focus:ring-accent/30';
@@ -163,5 +163,31 @@
             <span class="flex-1">{{ trans('storefront::storefront.filters.cod_label') }}</span>
             <span class="tabular text-xs text-muted">{{ number_format($facets['cod']) }}</span>
         </label>
+        @break
+
+    @case('delivery')
+        <p class="mb-1.5 px-1 text-xs text-muted">{{ trans('storefront::storefront.filters.delivery_to', ['pincode' => $query->deliveryPincode]) }}</p>
+        <ul class="space-y-0.5">
+            @foreach ($facets['delivery'] ?? [] as $bucket)
+                @php $isSelected = $query->deliveryDays === $bucket['value']; @endphp
+                @if ($bucket['count'] > 0 || $isSelected)
+                    <li>
+                        <a href="{{ $urls->delivery($bucket['value']) }}" data-listing-link
+                            @class([$linkRow, 'font-semibold text-accent' => $isSelected, 'text-ink-soft hover:text-ink' => ! $isSelected])
+                            @if ($isSelected) aria-current="true" @endif>
+                            <span class="flex items-center gap-2">
+                                <span @class(['flex size-4 items-center justify-center rounded-full border', 'border-accent' => $isSelected, 'border-line-strong' => ! $isSelected]) aria-hidden="true">
+                                    @if ($isSelected)
+                                        <span class="size-2 rounded-full bg-accent"></span>
+                                    @endif
+                                </span>
+                                {{ trans('storefront::storefront.filters.delivery_value', ['days' => $bucket['value']]) }}
+                            </span>
+                            <span class="tabular text-xs text-muted">{{ number_format($bucket['count']) }}</span>
+                        </a>
+                    </li>
+                @endif
+            @endforeach
+        </ul>
         @break
 @endswitch

@@ -66,5 +66,13 @@ return [
         'instagram_url' => ['label' => 'Instagram URL', 'comment' => ''],
         'youtube_url' => ['label' => 'YouTube URL', 'comment' => ''],
         'x_url' => ['label' => 'X URL', 'comment' => ''],
+        'og_image_url' => ['label' => 'Default share image URL', 'comment' => 'Image used when a shared page has none of its own (1200 x 630 px recommended).'],
+        'gtm_container_id' => ['label' => 'Google Tag Manager container ID', 'comment' => 'For example GTM-ABC1234. Tags load only after the visitor accepts analytics cookies. Leave empty to disable.'],
+        'ga4_measurement_id' => ['label' => 'Google Analytics 4 measurement ID', 'comment' => 'For example G-ABC123XYZ. Used only when no Tag Manager container is set. Leave empty to disable.'],
+        'grievance_officer_name' => ['label' => 'Grievance officer name', 'comment' => 'Shown in the storefront footer and on the Grievance Officer page, as the e-commerce rules require.'],
+        'grievance_officer_designation' => ['label' => 'Grievance officer designation', 'comment' => ''],
+        'grievance_officer_email' => ['label' => 'Grievance officer email', 'comment' => 'Complaints are acknowledged within 48 hours and resolved within one month.'],
+        'grievance_officer_phone' => ['label' => 'Grievance officer phone', 'comment' => ''],
+        'grievance_officer_address' => ['label' => 'Grievance officer address', 'comment' => 'Postal address for written complaints.'],
     ],
 ];

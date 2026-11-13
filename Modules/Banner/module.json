@@ -10,7 +10,7 @@
     "files": [
         "helper.php"
     ],
-    "cache": false,
+    "cache": true,
     "depends": [
         "attribute",
         "core",

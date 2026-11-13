@@ -47,7 +47,7 @@
          $("#base_currency").html(option);
          $("#display_currency").html(option);
       });
-      var options = $("#allowed_currencies").val();
+      var options = $("#allowed_currencies").val() || [];
       var option = '';
       var baseCurrencyOption = '<?php echo $baseCurrencyLabel ?>';
       var displayCurrencyLabel = '<?php echo $displayCurrencyLabel ?>';

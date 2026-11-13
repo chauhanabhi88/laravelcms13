@@ -729,6 +729,18 @@ if (! function_exists('isBackendRequest')) {
     }
 }
 
+if (! function_exists('isAdminRequest')) {
+    /**
+     * isBackendRequest() plus every "admin.*" route. The User, Role, Menu, Column and Core
+     * modules map their admin routes before config('core.admin-prefix') is merged, so those
+     * URLs (/user, /role, /module…) have no backend prefix; use this for security checks.
+     */
+    function isAdminRequest(Request $request): bool
+    {
+        return isBackendRequest($request) || $request->routeIs('admin.*');
+    }
+}
+
 if (! function_exists('isApiRequest')) {
     /**
      * Whether the request targets the REST API (/api/..., optionally behind a locale segment

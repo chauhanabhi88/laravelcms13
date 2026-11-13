@@ -10,14 +10,14 @@ class CacheBannerDecorator extends BaseCacheDecorator implements BannerRepositor
     public function __construct(BannerRepository $banner)
     {
         parent::__construct();
-        $this->entityName = config("banner.cache.name");
+        $this->entityName = config('banner.cache.name');
         $this->repository = $banner;
     }
 
     public function sortColumns($request)
     {
         return $this->repository->sortColumns($request);
-        
+
     }
 
     public function getFilters($request, $statusOptions, $bannerGroups)
@@ -27,21 +27,19 @@ class CacheBannerDecorator extends BaseCacheDecorator implements BannerRepositor
 
     public function pagination($request)
     {
-        return $this->remember(function() use ($request) {
-            return $this->repository->pagination($request);
-        });
+        // Paginators are not on Core's CacheClassPolicy list and admin grids must be live.
+        return $this->repository->pagination($request);
     }
 
     public function filter($request)
     {
-        return $this->remember(function() use ($request) {
-            return $this->repository->filter($request);
-        });
+        // Returns an unresolved Builder - never cached (see BaseCacheDecorator::allWithBuilder()).
+        return $this->repository->filter($request);
     }
 
     public function getBannerByCode($code)
     {
-        return $this->remember(function() use ($code) {
+        return $this->remember(function () use ($code) {
             return $this->repository->getBannerByCode($code);
         });
     }

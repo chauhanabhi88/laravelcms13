@@ -19,8 +19,8 @@ use Modules\Storefront\Support\StorefrontSettings;
  * few minutes, so filters, counts and facets of one query all use the same strategy.
  *
  * Filters: category subtree (path prefix), seller, brands, price range, rating, discount,
- * COD, attribute options (OR within an attribute, AND across attributes), plus collection
- * constraints. In-stock products always sort first.
+ * COD, delivery time (DeliveryTimeFilter), attribute options (OR within an attribute, AND
+ * across attributes), plus collection constraints. In-stock products always sort first.
  */
 class ProductSearch implements ProductSearchEngine
 {
@@ -74,7 +74,7 @@ class ProductSearch implements ProductSearchEngine
 
     /**
      * The filtered result set as an unsorted query on "psi", without some of the shopper's
-     * filters: "category", "brand", "price", "rating", "discount", "cod" or "attr:{id}".
+     * filters: "category", "brand", "price", "rating", "discount", "cod", "delivery" or "attr:{id}".
      * Facet counts use this to leave out the facet's own filter.
      *
      * @param  list<string>  $except
@@ -126,6 +126,10 @@ class ProductSearch implements ProductSearchEngine
 
         if ($query->codOnly && ! in_array('cod', $except, true)) {
             $builder->where('psi.is_cod_allowed', $yes);
+        }
+
+        if ($query->deliveryDays !== null && $query->deliveryPincode !== null && ! in_array('delivery', $except, true)) {
+            app(DeliveryTimeFilter::class)->apply($builder, $query->deliveryPincode, $query->deliveryDays);
         }
 
         foreach ($query->attributes as $attributeId => $optionIds) {

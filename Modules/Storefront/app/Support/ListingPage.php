@@ -38,6 +38,18 @@ final readonly class ListingPage
         public array $extra = [],
     ) {}
 
+    /**
+     * The page's own meta description, else the template for its kind (plan M21 E5).
+     */
+    public function description(): string
+    {
+        $description = trim(strip_tags((string) $this->metaDescription));
+
+        return $description !== ''
+            ? $description
+            : trans('storefront::storefront.seo.'.$this->kind, ['name' => $this->title, 'site' => config('app.name')]);
+    }
+
     public function isSearch(): bool
     {
         return $this->kind === self::SEARCH;

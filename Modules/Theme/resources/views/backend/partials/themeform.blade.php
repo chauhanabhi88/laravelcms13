@@ -49,7 +49,7 @@
                                 <td>
                                     <div class="form-group">
                                         <div class="custom-control custom-switch">
-                                            {{  normalCheckbox('sidebar-collapse', '',,$errors,null, ['class'=>'custom-control-input', 'id'=>'sidebar_collapse', 'checked' => isset($theme['.sidebar-mini']) ? (strpos($theme['.sidebar-mini'],'sidebar-collapse') !== false) : false]) }}
+                                            {{  normalCheckbox('sidebar-collapse', '', $errors, null, ['class'=>'custom-control-input', 'id'=>'sidebar_collapse', 'checked' => isset($theme['.sidebar-mini']) ? (strpos($theme['.sidebar-mini'],'sidebar-collapse') !== false) : false]) }}
                                             <label class="custom-control-label" for="sidebar_collapse"></label>
                                         </div>
                                     </div>

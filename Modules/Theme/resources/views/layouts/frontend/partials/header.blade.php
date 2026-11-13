@@ -7,13 +7,13 @@
         </button>
 
         <a href="{{ frontRoute('homepage') }}" class="flex shrink-0 items-center">
-            @if ($logoDarkUrl)
+            @if ($logoDarkUrl && $logoUrl)
                 <picture>
                     <source srcset="{{ $logoDarkUrl }}" media="(prefers-color-scheme: dark)">
                     <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-8 w-auto">
                 </picture>
             @else
-                <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-8 w-auto">
+                <x-theme::brand-logo :url="$logoUrl" :name="$siteName" class="h-8" />
             @endif
         </a>
 

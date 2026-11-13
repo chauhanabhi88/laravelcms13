@@ -228,4 +228,73 @@ return [
         'maintenance' => (bool) env('MOBILE_MAINTENANCE', false),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Security hardening (plan M21 §2)
+    |--------------------------------------------------------------------------
+    |
+    | Response headers added to every web response by Core's SecurityHeaders middleware.
+    | "camera_routes" are route-name patterns where the page may use the camera (return and
+    | review photo capture); everywhere else camera, microphone and geolocation are denied.
+    |
+    | The CSP starts in "report-only" mode (violations are logged to the "security" channel via
+    | POST /csp-report); switch CSP_MODE=enforce once two weeks pass without violations.
+    | The admin backend is skipped: its legacy theme relies on inline scripts and handlers.
+    |
+    | "backend_ip_allowlist" (comma separated IPs/CIDRs) restricts the admin backend when set;
+    | "admin_idle_minutes" logs an idle admin out (0 disables it).
+    |
+    */
+    'security' => [
+        'headers' => (bool) env('SECURITY_HEADERS', true),
+        'hsts' => [
+            'enabled' => (bool) env('SECURITY_HSTS', true),
+            'max_age' => 31536000,
+            'include_subdomains' => true,
+        ],
+        'frame_options' => 'SAMEORIGIN',
+        'referrer_policy' => 'strict-origin-when-cross-origin',
+        'permissions_policy' => [
+            'camera' => '()',
+            'microphone' => '()',
+            'geolocation' => '()',
+            'usb' => '()',
+        ],
+        'camera_routes' => ['customer.returns.*', 'customer.reviews.*', 'seller.return*'],
+        'csp' => [
+            'mode' => env('CSP_MODE', 'report-only'),
+            'skip_backend' => true,
+            // Extra hosts allowed for images, scripts, styles and XHR, e.g. an image CDN.
+            'cdn_hosts' => array_filter(array_map('trim', explode(',', (string) env('CSP_CDN_HOSTS', '')))),
+            'directives' => [
+                'default-src' => ["'self'"],
+                'script-src' => ["'self'", "'unsafe-eval'", 'https://checkout.razorpay.com', 'https://www.googletagmanager.com', 'https://www.google-analytics.com'],
+                'style-src' => ["'self'", "'unsafe-inline'", 'https://fonts.bunny.net'],
+                'font-src' => ["'self'", 'data:', 'https://fonts.bunny.net'],
+                'img-src' => ["'self'", 'data:', 'blob:', 'https://*.razorpay.com', 'https://www.googletagmanager.com', 'https://*.google-analytics.com'],
+                'connect-src' => ["'self'", 'https://api.razorpay.com', 'https://lumberjack.razorpay.com', 'https://*.google-analytics.com', 'https://*.analytics.google.com', 'https://www.googletagmanager.com', 'https://fcm.googleapis.com', 'https://firebaseinstallations.googleapis.com'],
+                'frame-src' => ['https://api.razorpay.com', 'https://checkout.razorpay.com', 'https://www.googletagmanager.com'],
+                'form-action' => ["'self'", 'https://api.razorpay.com'],
+                'frame-ancestors' => ["'self'"],
+                'base-uri' => ["'self'"],
+                'object-src' => ["'none'"],
+            ],
+        ],
+        'backend_ip_allowlist' => array_filter(array_map('trim', explode(',', (string) env('BACKEND_IP_ALLOWLIST', '')))),
+        'admin_idle_minutes' => (int) env('ADMIN_IDLE_TIMEOUT', 30),
+    ],
+
+    /*
+    | Queue alerts raised by `php artisan core:monitor` (cron, every 5 minutes; plan M21 §4).
+    | Send the alert channel to Slack in production (LOG_STACK=daily,slack + LOG_SLACK_WEBHOOK_URL).
+    */
+    'monitor' => [
+        'queues' => ['webhooks', 'notifications', 'default'],
+        'alert_on_failure' => ['webhooks'],
+        'backlog_threshold' => (int) env('MONITOR_BACKLOG_THRESHOLD', 1000),
+        'failed_window_hours' => 24,
+        'repeat_minutes' => 60,
+        'alert_channel' => env('MONITOR_ALERT_CHANNEL', 'stack'),
+    ],
+
 ];

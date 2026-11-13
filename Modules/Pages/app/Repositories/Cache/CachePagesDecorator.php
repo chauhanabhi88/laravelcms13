@@ -27,9 +27,8 @@ class CachePagesDecorator extends BaseCacheDecorator implements PagesRepository
 
     public function pagination($request)
     {
-        return $this->remember(function () use ($request) {
-            return $this->repository->pagination($request);
-        });
+        // Paginators are not on Core's CacheClassPolicy list and admin grids must be live.
+        return $this->repository->pagination($request);
     }
 
     public function filter($request)

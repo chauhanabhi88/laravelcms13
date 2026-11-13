@@ -14,6 +14,7 @@
 Route::get('/reset_filter/{module_name}/{session_key?}', [
     'as' => 'admin.reset_filter',
     'uses' => 'ModuleController@resetFilter',
+    'middleware' => 'backend',
 ]);
 
 Route::prefix('module')->group(function () {
@@ -193,5 +194,7 @@ Route::prefix('summernote')->group(function () {
     Route::post('/image_upload_temp', [
         'as' => 'admin.summernote.image_upload_temp',
         'uses' => 'SummernoteController@imageUpload',
+        // Admin editors only (plan M21 S6): this wrote anonymous uploads to public storage.
+        'middleware' => ['backend', 'throttle:60,1'],
     ]);
 });

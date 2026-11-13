@@ -53,6 +53,7 @@ class FrontendLayoutComposer
             'supportPhone' => ThemeSettings::supportPhone(),
             'supportEmail' => ThemeSettings::supportEmail(),
             'socialLinks' => ThemeSettings::socialLinks(),
+            'grievanceOfficer' => ThemeSettings::grievanceOfficer(),
             'appLinks' => ThemeSettings::showDownloadApp() ? array_filter([
                 'play_store' => ThemeSettings::playStoreUrl(),
                 'app_store' => ThemeSettings::appStoreUrl(),

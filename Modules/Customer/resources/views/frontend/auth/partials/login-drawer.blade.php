@@ -62,6 +62,6 @@
         </div>
     </div>
 </x-theme::drawer>
-<script>
+<script @cspNonce>
     window.__customerLoginDrawer = true;
 </script>

@@ -436,8 +436,15 @@ paths:
         - { name: category, in: query, schema: { type: string }, description: Category slug }
         - { name: store, in: query, schema: { type: string }, description: Seller store slug }
         - { name: collection, in: query, schema: { type: string } }
-        - { name: sort, in: query, schema: { type: string, enum: [relevance, newest, price_asc, price_desc, rating, discount] } }
+        - { name: sort, in: query, schema: { type: string, enum: [relevance, new, price_asc, price_desc, rating, discount] } }
         - { name: page, in: query, schema: { type: integer, minimum: 1 } }
+        - { name: price, in: query, schema: { type: string, example: '199-499' }, description: 'Rupee range "from-to"; either end may be empty' }
+        - { name: rating, in: query, schema: { type: integer, enum: [4, 3] }, description: Minimum average rating }
+        - { name: discount, in: query, schema: { type: integer, enum: [10, 30, 50, 70] }, description: Minimum % off }
+        - { name: cod, in: query, schema: { type: boolean }, description: Pay on Delivery only }
+        - { name: brand, in: query, schema: { type: string, example: '3,7' }, description: Brand ids }
+        - { name: pincode, in: query, schema: { type: string, pattern: '^[1-9][0-9]{5}$' }, description: Delivery pincode; enables `delivery` and the `facets.delivery` counts }
+        - { name: delivery, in: query, schema: { type: integer, enum: [3, 5] }, description: Delivered within this many days to `pincode` (ignored without one) }
         - { name: facets, in: query, schema: { type: boolean, default: true } }
       responses:
         '200':

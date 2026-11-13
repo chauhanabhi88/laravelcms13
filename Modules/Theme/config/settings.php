@@ -34,5 +34,14 @@ return [
         'instagram_url' => $textSetting('instagram_url', 'https://'),
         'youtube_url' => $textSetting('youtube_url', 'https://'),
         'x_url' => $textSetting('x_url', 'https://'),
+        // Plan M21: default share image (E5), analytics (E7) and the grievance officer (NFR-CMP-01).
+        'og_image_url' => $textSetting('og_image_url', 'https://'),
+        'gtm_container_id' => $textSetting('gtm_container_id', 'GTM-XXXXXXX'),
+        'ga4_measurement_id' => $textSetting('ga4_measurement_id', 'G-XXXXXXXXXX'),
+        'grievance_officer_name' => $textSetting('grievance_officer_name'),
+        'grievance_officer_designation' => $textSetting('grievance_officer_designation'),
+        'grievance_officer_email' => $textSetting('grievance_officer_email'),
+        'grievance_officer_phone' => $textSetting('grievance_officer_phone'),
+        'grievance_officer_address' => $textSetting('grievance_officer_address'),
     ],
 ];

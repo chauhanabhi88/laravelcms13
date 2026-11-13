@@ -7,6 +7,13 @@
     $groups = $summary->snapshot->groups;
 @endphp
 
+@push('js-stack')
+    @include('theme::layouts.frontend.partials.analytics-event', ['event' => 'begin_checkout', 'params' => [
+        'currency' => 'INR',
+        'value' => (float) $summary->grandTotal()->toDecimal(),
+    ]])
+@endpush
+
 @section('summary-action')
     <x-theme::button form="checkout-address-form" size="lg" class="w-full">{{ trans('order::front.address.continue') }}</x-theme::button>
 @endsection
