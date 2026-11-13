@@ -178,11 +178,13 @@ Route::prefix('address')->group(function () {
     Route::get('/', [
         'as' => 'admin.address.get_address',
         'uses' => 'CustomerController@getAddress',
+        'middleware' => 'can:admin.address.get_address',
     ]);
 
     Route::delete('/delete/{id}', [
         'as' => 'admin.address.delete',
         'uses' => 'CustomerController@deleteAddress',
+        'middleware' => 'can:admin.address.delete',
     ]);
 });
 

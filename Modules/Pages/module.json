@@ -7,7 +7,7 @@
     "providers": [
         "Modules\\Pages\\Providers\\PagesServiceProvider"
     ],
-    "cache": false,
+    "cache": true,
     "depends": [
         "core"
     ]

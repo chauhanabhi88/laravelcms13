@@ -7,16 +7,21 @@ namespace Modules\Storefront\Services\Search;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\Catalog\Services\CategoryTreeService;
+use Modules\Storefront\Support\DeliveryPincode;
 
 /**
  * Everything that shapes a listing: the text query, the page context (category, seller,
  * collection constraints), the shopper's filters, sort and page. Parsed from whitelisted
  * request parameters (FR-DSC-009):
  *
- *   /c/women-kurtis?size=12,13&colour=40&price=199-499&rating=4&discount=30&cod=1&brand=3&sort=price_asc&page=2
+ *   /c/women-kurtis?size=12,13&colour=40&price=199-499&rating=4&discount=30&cod=1&brand=3&delivery=3&sort=price_asc&page=2
  *
  * Attribute filters use attribute.code as the parameter name; values may also arrive as
  * arrays (size[]=12&size[]=13) from the no-JS filter form.
+ *
+ * "delivery" (days) applies only when the shopper's pincode is known: the remembered or
+ * default-address pincode (DeliveryPincode), or an explicit "pincode" parameter (apps). The
+ * pincode is never part of the URL parameters.
  *
  * @phpstan-type Constraints array{category_paths?: list<string>, max_price?: int|float|null, min_discount?: int|null, min_rating?: int|float|null, brand_ids?: list<int>, seller_ids?: list<int>, product_ids?: list<int>}
  */
@@ -25,7 +30,7 @@ final readonly class ListingQuery
     /**
      * Parameters that are never attribute codes.
      */
-    public const RESERVED = ['q', 'sort', 'page', 'price', 'price_from', 'price_to', 'rating', 'discount', 'cod', 'brand', 'category', 'partial', 'locale', 'sq'];
+    public const RESERVED = ['q', 'sort', 'page', 'price', 'price_from', 'price_to', 'rating', 'discount', 'cod', 'brand', 'category', 'partial', 'locale', 'sq', 'delivery', 'pincode'];
 
     protected const MAX_VALUES = 50;
 
@@ -47,6 +52,8 @@ final readonly class ListingQuery
         public ?int $rating = null,
         public ?int $discount = null,
         public bool $codOnly = false,
+        public ?int $deliveryDays = null,
+        public ?string $deliveryPincode = null,
         public array $attributes = [],
         public array $attributeCodes = [],
         public array $constraints = [],
@@ -65,6 +72,7 @@ final readonly class ListingQuery
         $q = $q === '' ? null : mb_substr($q, 0, 120);
 
         [$priceFrom, $priceTo] = self::priceRange($input);
+        $pincode = self::pincode($request, $input);
 
         $values = [
             'q' => $q,
@@ -74,6 +82,8 @@ final readonly class ListingQuery
             'rating' => self::bucket($input['rating'] ?? null, (array) config('storefront.rating_buckets')),
             'discount' => self::bucket($input['discount'] ?? null, (array) config('storefront.discount_buckets')),
             'codOnly' => filter_var($input['cod'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'deliveryDays' => $pincode !== null ? self::bucket($input['delivery'] ?? null, (array) config('storefront.delivery_buckets')) : null,
+            'deliveryPincode' => $pincode,
             'sort' => self::sortValue($input['sort'] ?? null, $fixed['sort'] ?? 'relevance'),
             'page' => max(1, (int) (is_numeric($input['page'] ?? null) ? $input['page'] : 1)),
             'perPage' => (int) config('storefront.per_page', 40),
@@ -147,6 +157,9 @@ final readonly class ListingQuery
         if ($this->codOnly) {
             $params['cod'] = '1';
         }
+        if ($this->deliveryDays !== null) {
+            $params['delivery'] = (string) $this->deliveryDays;
+        }
         if ($withSort && $this->sort !== 'relevance') {
             $params['sort'] = $this->sort;
         }
@@ -163,12 +176,28 @@ final readonly class ListingQuery
     }
 
     /**
+     * Applied filter values: "colour=3,7&cod=1" counts 3.
+     */
+    public function filterCount(): int
+    {
+        return array_sum(array_map(
+            fn (string $value): int => count(explode(',', $value)),
+            array_diff_key($this->urlParams(false), ['q' => true]),
+        ));
+    }
+
+    /**
      * Stable cache key of the result set (page and sort optional).
      */
     public function cacheKey(bool $withSort = false, bool $withPage = false): string
     {
         $values = $this->toArray();
         unset($values['attributeCodes']);
+
+        // The pincode only shapes the results through the delivery filter.
+        if ($values['deliveryDays'] === null) {
+            unset($values['deliveryPincode']);
+        }
 
         if (! $withSort) {
             unset($values['sort']);
@@ -202,6 +231,22 @@ final readonly class ListingQuery
         }
 
         return [$from ?: null, $to];
+    }
+
+    /**
+     * The delivery pincode: a valid "pincode" parameter, else the remembered one.
+     *
+     * @param  array<string, mixed>  $input
+     */
+    protected static function pincode(Request $request, array $input): ?string
+    {
+        $explicit = is_string($input['pincode'] ?? null) ? trim($input['pincode']) : '';
+
+        if ($explicit !== '') {
+            return DeliveryPincode::isValid($explicit) ? $explicit : null;
+        }
+
+        return app(DeliveryPincode::class)->current($request);
     }
 
     /**

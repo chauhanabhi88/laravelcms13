@@ -18,7 +18,9 @@ use Modules\Seller\Events\SellerReactivated;
 use Modules\Seller\Events\SellerSuspended;
 use Modules\Storefront\Console\AggregateSearchTermsCommand;
 use Modules\Storefront\Console\FlushProductViewsCommand;
+use Modules\Storefront\Console\GenerateSitemapCommand;
 use Modules\Storefront\Console\ReindexProductsCommand;
+use Modules\Storefront\Console\SeedDemoCommand;
 use Modules\Storefront\Contracts\CartEntryPoint;
 use Modules\Storefront\Contracts\DeliveryEstimator;
 use Modules\Storefront\Contracts\ProductSearchEngine;
@@ -63,7 +65,7 @@ class StorefrontServiceProvider extends ServiceProvider
         RateLimiter::for('storefront-delivery-check', fn (Request $request): Limit => Limit::perMinute(20)->by($request->ip()));
 
         if ($this->app->runningInConsole()) {
-            $this->commands([ReindexProductsCommand::class, AggregateSearchTermsCommand::class, FlushProductViewsCommand::class]);
+            $this->commands([ReindexProductsCommand::class, AggregateSearchTermsCommand::class, FlushProductViewsCommand::class, GenerateSitemapCommand::class, SeedDemoCommand::class]);
         }
     }
 

@@ -24,6 +24,9 @@
                 @if (session('success'))
                     <x-theme::alert type="success">{{ session('success') }}</x-theme::alert>
                 @endif
+                @if (! ($codeSent ?? true) && ! session('error'))
+                    <x-theme::alert type="warning">{{ trans('payment::front.cod_otp.not_sent') }}</x-theme::alert>
+                @endif
             </div>
 
             <form method="POST" action="{{ frontRoute('payment.cod_otp.verify', ['orderNo' => $orderNo]) }}" class="mt-5 space-y-5" novalidate

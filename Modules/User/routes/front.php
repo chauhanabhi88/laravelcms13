@@ -49,5 +49,5 @@ Route::get('/admin_reset/{token}/{email}', [
 Route::post('/resetPassword', [
     'as' => 'reset.complete.post',
     'uses' => 'ResetPasswordController@reset',
-    'middleware' => 'auth.guest',
+    'middleware' => ['auth.guest', 'throttle:adminpasswordreset'],
 ]);

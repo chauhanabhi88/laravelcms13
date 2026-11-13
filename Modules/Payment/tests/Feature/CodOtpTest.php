@@ -137,6 +137,32 @@ test('a customer without a phone gets the code by email', function () {
     $this->sms->assertNothingSent();
 });
 
+test('the page says so when the confirmation code could not be sent', function () {
+    config(['core.otp.max_sends_per_identifier_per_hour' => 0]);
+    $order = paymentOrder(['amount' => Money::of('2500')]);
+    $payment = app(PaymentService::class)->initiate($order, Payment::METHOD_COD);
+
+    expect($payment->awaitingCodOtp())->toBeTrue()
+        ->and(app(PaymentService::class)->codOtpWasSent($payment))->toBeFalse();
+    $this->sms->assertNothingSent();
+
+    $this->actingAs($order->customer, 'customer')
+        ->get(frontRoute('payment.cod_otp.show', ['orderNo' => $order->orderNo]))
+        ->assertSuccessful()
+        ->assertSee(trans('payment::front.cod_otp.not_sent'));
+});
+
+test('the page does not warn once the code went out', function () {
+    $order = paymentOrder(['amount' => Money::of('2500')]);
+    $payment = app(PaymentService::class)->initiate($order, Payment::METHOD_COD);
+
+    expect(app(PaymentService::class)->codOtpWasSent($payment))->toBeTrue();
+
+    $this->actingAs($order->customer, 'customer')
+        ->get(frontRoute('payment.cod_otp.show', ['orderNo' => $order->orderNo]))
+        ->assertDontSee(trans('payment::front.cod_otp.not_sent'));
+});
+
 test('only the order owner sees the COD OTP page', function () {
     $order = paymentOrder(['amount' => Money::of('2500')]);
     app(PaymentService::class)->initiate($order, Payment::METHOD_COD);

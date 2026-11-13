@@ -9,6 +9,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Modules\Core\Models\OtpCode;
 use Modules\Core\Services\Otp\OtpSendResult;
 use Modules\Core\Services\Otp\OtpService;
 use Modules\Customer\Models\Customer;
@@ -624,6 +625,22 @@ class PaymentService
     /**
      * One OTP purpose per payment, so two COD orders never share a code.
      */
+    /**
+     * A COD confirmation code is waiting to be used (false when the send was refused, e.g. by the
+     * per-number hourly limit, so the page must not claim a code was sent).
+     */
+    public function codOtpWasSent(Payment $payment): bool
+    {
+        [, $identifier] = $this->codOtpDestination($payment);
+
+        return OtpCode::query()
+            ->where('identifier', $identifier)
+            ->where('purpose', $this->codOtpPurpose($payment))
+            ->whereNull('consumed_at')
+            ->where('expires_at', '>', Carbon::now())
+            ->exists();
+    }
+
     protected function codOtpPurpose(Payment $payment): string
     {
         return config('payment.cod_otp_purpose', 'cod_confirm').':'.$payment->id;

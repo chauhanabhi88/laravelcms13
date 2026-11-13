@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Route;
  * - backend.php  home sections, collections and the search report (/backend)
  * - front.php    "/" (homepage), /c/{slug}, /search, /s/{store}, /collection/{slug},
  *                /p/{slug}-{id} (+ /similar, /availability), /delivery-check, /recently-viewed
+ * - seo.php      /robots.txt, /sitemap.xml, /sitemaps/{file} (M21): always at the site root,
+ *                without the {locale} prefix or a session
  */
 class RouteServiceProvider extends ServiceProvider
 {
@@ -52,6 +54,8 @@ class RouteServiceProvider extends ServiceProvider
         } else {
             $frontRoute = Route::middleware(['web']);
         }
+
+        Route::namespace($this->namespace)->group(__DIR__.'/../../routes/seo.php');
 
         $frontRoute->group(function (): void {
             Route::namespace($this->namespace)->group(__DIR__.'/../../routes/front.php');

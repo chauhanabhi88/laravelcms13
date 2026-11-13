@@ -47,6 +47,7 @@ return [
         'invalid' => 'That code is not right or has expired. Try again or ask for a new one.',
         'wait' => 'Please wait :seconds seconds before asking for another code.',
         'send_failed' => 'We could not send the code. Please try again.',
+        'not_sent' => 'We could not send a code just now (too many codes were requested for this number). Tap "Resend code" in a little while, or pay online instead.',
         'switch_online' => 'Pay online instead',
     ],
 

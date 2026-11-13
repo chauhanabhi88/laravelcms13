@@ -23,7 +23,7 @@
         <aside class="sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-line bg-surface transition-[width] duration-200 lg:flex"
             x-bind:class="collapsed ? 'w-16' : 'w-64'" aria-label="{{ trans('theme::seller.navigation') }}">
             <a href="{{ $sellerDashboardUrl ?? frontRoute('homepage') }}" class="flex h-16 shrink-0 items-center gap-2 border-b border-line px-4">
-                <img src="{{ $logoUrl }}" alt="{{ $siteName }}" class="h-7 w-auto" x-show="! collapsed">
+                <x-theme::brand-logo :url="$logoUrl" :name="$siteName" class="h-7" x-show="! collapsed" />
                 <span class="flex size-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-accent-ink" x-show="collapsed" x-cloak aria-hidden="true">
                     {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($siteName, 0, 1)) }}
                 </span>

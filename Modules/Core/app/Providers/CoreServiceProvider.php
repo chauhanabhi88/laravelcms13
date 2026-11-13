@@ -5,9 +5,12 @@ namespace Modules\Core\Providers;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\ViewErrorBag;
 use InvalidArgumentException;
 use Modules\Core\Cache\FileStore;
 use Modules\Core\Commands\Database\SeedCommand;
@@ -43,6 +46,8 @@ use Modules\Core\Console\CustomTranslatableCreateRequestCommand;
 use Modules\Core\Console\CustomTranslatableEntityCommand;
 use Modules\Core\Console\CustomTranslatableUpdateRequestCommand;
 use Modules\Core\Console\CustomUpdateRequestCommand;
+use Modules\Core\Console\LaunchCheckCommand;
+use Modules\Core\Console\MonitorCommand;
 use Modules\Core\Console\PruneOtpCodesCommand;
 use Modules\Core\Contracts\SmsDriver;
 use Modules\Core\Drivers\Sms\FakeSmsDriver;
@@ -77,15 +82,17 @@ class CoreServiceProvider extends ServiceProvider
     {
         $this->registerMiddleware($this->app['router']);
         $this->registerTranslations();
-        $this->registerConfig();
         $this->registerViews();
         $this->warnOnUnflushableCacheStore();
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
         IntegrationHttp::register();
         $this->registerRateLimiters();
         $this->registerApiRoutes();
+        $this->registerBladeDirectives();
         $this->commands([
             PruneOtpCodesCommand::class,
+            LaunchCheckCommand::class,
+            MonitorCommand::class,
             CronMakeCommand::class,
             CustomEntityCommand::class,
             CustomRepositoryCommand::class,
@@ -156,6 +163,10 @@ class CoreServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        // core.* (admin-prefix, translation flags…) must exist before any module boots and maps
+        // its routes: User, Role, Menu and Column boot before Core, so merging in boot() gave
+        // them no /backend prefix unless the config was cached (php artisan optimize).
+        $this->registerConfig();
         $this->app->register(AuthServiceProvider::class);
         $this->app->singleton(AssetsManagerInterFace::class, function () {
             return new AssetsManager;
@@ -207,6 +218,19 @@ class CoreServiceProvider extends ServiceProvider
         } else {
             $register();
         }
+    }
+
+    /**
+     * `<script @cspNonce>` prints the per-request CSP nonce (plan M21 S2) on inline scripts;
+     * nothing when no nonce was minted (CSP off, console, mail views).
+     */
+    protected function registerBladeDirectives(): void
+    {
+        Blade::directive('cspNonce', fn (): string => '<?php if ($__cspNonce = \Illuminate\Support\Facades\Vite::cspNonce()) { echo \'nonce="\'.e($__cspNonce).\'"\'; } ?>');
+
+        // Error pages for unmatched URLs render outside the web group, where
+        // ShareErrorsFromSession never ran; the layout's forms still read $errors.
+        View::share('errors', new ViewErrorBag);
     }
 
     /**

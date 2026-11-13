@@ -10,9 +10,16 @@ namespace Modules\Theme\Support;
  */
 class ThemeSettings
 {
-    public static function logoUrl(): string
+    /**
+     * The configured logo, else the theme's default file when it was published; null means
+     * "no logo image" (<x-theme::brand-logo> then shows the site name as a wordmark).
+     */
+    public static function logoUrl(): ?string
     {
-        return self::url(self::get('logo_url')) ?? asset((string) config('theme.frontend_logo'));
+        $default = (string) config('theme.frontend_logo');
+
+        return self::url(self::get('logo_url'))
+            ?? ($default !== '' && is_file(public_path($default)) ? asset($default) : null);
     }
 
     public static function logoDarkUrl(): ?string
@@ -76,6 +83,62 @@ class ThemeSettings
         }
 
         return $links;
+    }
+
+    /**
+     * Share image for pages without their own (plan M21 E5).
+     */
+    public static function defaultOgImageUrl(): ?string
+    {
+        return self::url(self::get('og_image_url'));
+    }
+
+    /**
+     * Google Tag Manager container, only when it looks like one (plan M21 E7).
+     */
+    public static function gtmContainerId(): ?string
+    {
+        $id = strtoupper((string) self::text(self::get('gtm_container_id')));
+
+        return preg_match('/^GTM-[A-Z0-9]{4,12}$/', $id) ? $id : null;
+    }
+
+    /**
+     * GA4 measurement ID, used only without a Tag Manager container.
+     */
+    public static function ga4MeasurementId(): ?string
+    {
+        $id = strtoupper((string) self::text(self::get('ga4_measurement_id')));
+
+        return self::gtmContainerId() === null && preg_match('/^G-[A-Z0-9]{4,15}$/', $id) ? $id : null;
+    }
+
+    public static function analyticsEnabled(): bool
+    {
+        return self::gtmContainerId() !== null || self::ga4MeasurementId() !== null;
+    }
+
+    /**
+     * Grievance officer contact (Consumer Protection (E-Commerce) Rules 2020), null until a
+     * name and at least one way to reach them are set.
+     *
+     * @return array{name: string, designation: ?string, email: ?string, phone: ?string, address: ?string}|null
+     */
+    public static function grievanceOfficer(): ?array
+    {
+        $officer = [
+            'name' => self::text(self::get('grievance_officer_name')),
+            'designation' => self::text(self::get('grievance_officer_designation')),
+            'email' => self::text(self::get('grievance_officer_email')),
+            'phone' => self::text(self::get('grievance_officer_phone')),
+            'address' => self::text(self::get('grievance_officer_address')),
+        ];
+
+        if ($officer['name'] === null || ($officer['email'] === null && $officer['phone'] === null && $officer['address'] === null)) {
+            return null;
+        }
+
+        return $officer;
     }
 
     protected static function get(string $key, mixed $default = null): mixed

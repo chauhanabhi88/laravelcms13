@@ -1,12 +1,17 @@
 <?php
 
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Routing\Middleware\SubstituteBindings;
+use Modules\Core\Http\Middleware\AdminIdleTimeout;
+use Modules\Core\Http\Middleware\BackendIpAllowlist;
+use Modules\Core\Http\Middleware\SecurityHeaders;
+use Modules\Core\Http\Middleware\ThrottleRequestsPerRoute;
 use Modules\Core\Support\Api\ApiExceptionRenderer;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
@@ -30,9 +35,20 @@ return Application::configure(basePath: dirname(__DIR__))
             SubstituteBindings::class,
         ]);
 
+        // One rate-limit bucket per route for "throttle:N,M" (the framework shares one per user/IP).
+        $middleware->alias(['throttle' => ThrottleRequestsPerRoute::class]);
+
         // Provider callbacks (/webhooks/{provider}) carry no session or CSRF token; they are
-        // verified by signature in their controllers.
-        $middleware->preventRequestForgery(except: ['webhooks/*']);
+        // verified by signature in their controllers. Browsers post CSP violation reports
+        // (/csp-report) without one either.
+        $middleware->preventRequestForgery(except: ['webhooks/*', 'csp-report']);
+
+        // Plan M21: secure headers + CSP on every response; admin IP allowlist and idle logout.
+        $middleware->append(SecurityHeaders::class);
+        $middleware->appendToGroup('web', [BackendIpAllowlist::class, AdminIdleTimeout::class]);
+        // Route "auth" is sorted ahead of group middleware by priority; the IP check must still
+        // run first, so a blocked network gets 403 rather than the login redirect.
+        $middleware->prependToPriorityList(AuthenticatesRequests::class, BackendIpAllowlist::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // REST API (plan M20): every failure under /api/* is the JSON error envelope, whatever the

@@ -3,6 +3,7 @@
 @php
     $description = $description ? \Illuminate\Support\Str::limit(trim(strip_tags($description)), 160) : null;
     $canonical ??= url()->current();
+    $image = $image ?: \Modules\Theme\Support\ThemeSettings::defaultOgImageUrl();
 @endphp
 @if ($description)
     <meta name="description" content="{{ $description }}">

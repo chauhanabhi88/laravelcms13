@@ -50,6 +50,8 @@ return [
     'messages' => [
         'user_disable' => 'Account is disabled please contact admin',
         'wrong_credentials' => 'The email or password are incorrect.',
+        'session_timed_out' => 'You were logged out after :minutes minutes of inactivity. Please log in again.',
+        'ip_not_allowed' => 'The admin panel is not available from this network.',
         'throttled' => 'Too many login attempts. Please try again in :seconds seconds.',
         'attempts_remaining' => 'You have :attempts login attempt(s) remaining.',
         'login_success' => 'Login Successfully!',

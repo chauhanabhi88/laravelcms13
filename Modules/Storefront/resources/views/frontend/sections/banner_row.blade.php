@@ -8,12 +8,16 @@
             @php
                 $tag = $banner['url'] ? 'a' : 'div';
             @endphp
-            <{{ $tag }} @if ($banner['url']) href="{{ $banner['url'] }}" @endif class="group relative block overflow-hidden rounded-card bg-surface-alt">
+            {{-- Banner art keeps its right two thirds for imagery (see DemoPhotos::banner), so the title
+                 sits in the left third, sized against the tile's own width (cqw) at every grid size. --}}
+            <{{ $tag }} @if ($banner['url']) href="{{ $banner['url'] }}" @endif class="@container group relative block overflow-hidden rounded-card bg-surface-alt">
                 @if ($banner['image'])
                     <img src="{{ $banner['image'] }}" alt="{{ $banner['title'] ?? '' }}" loading="lazy" decoding="async" class="aspect-[2/1] w-full object-cover transition duration-150 group-hover:scale-[1.02]">
                 @endif
                 @if ($banner['title'])
-                    <span class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/70 to-transparent p-4 text-base font-semibold text-white">{{ $banner['title'] }}</span>
+                    <span class="absolute inset-y-0 left-0 flex w-[32cqw] items-center bg-gradient-to-r from-black/50 to-transparent px-[4cqw]">
+                        <span class="text-[clamp(0.875rem,4cqw,1.5rem)] leading-tight font-semibold text-balance break-words text-white">{{ $banner['title'] }}</span>
+                    </span>
                 @endif
             </{{ $tag }}>
         @endforeach

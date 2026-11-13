@@ -40,6 +40,7 @@ class CodOtpController extends Controller
             'order' => $order,
             'payment' => $payment,
             'destination' => $this->payments->codOtpMaskedDestination($payment),
+            'codeSent' => $this->payments->codOtpWasSent($payment),
             'secondsLeft' => max(0, (int) Carbon::now()->diffInSeconds($payment->expires_at ?? Carbon::now(), false)),
             'resendIn' => (int) config('core.otp.resend_cooldown_seconds', 30),
             'codeLength' => (int) config('core.otp.length', 6),

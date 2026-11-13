@@ -18,6 +18,15 @@ export default (pdp) => ({
         if (initial) {
             this.selection = { ...initial.options };
         }
+
+        // An axis every variant shares (one colour, several sizes) needs no choice.
+        this.axes.forEach((axis) => {
+            const key = String(axis.attributeId);
+            const values = new Set(this.variants.map((variant) => variant.options[key]).filter(Boolean));
+            if (!this.selection[key] && values.size === 1) {
+                this.selection = { ...this.selection, [key]: [...values][0] };
+            }
+        });
     },
 
     get selectedVariant() {

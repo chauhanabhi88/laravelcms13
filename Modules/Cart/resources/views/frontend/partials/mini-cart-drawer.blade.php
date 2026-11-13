@@ -11,7 +11,7 @@
     </div>
 </x-theme::drawer>
 
-<script>
+<script @cspNonce>
     window.__cart = @js([
         'drawerUrl' => frontRoute('cart.drawer'),
         'countUrl' => frontRoute('cart.count'),

@@ -28,6 +28,19 @@
     ];
 @endphp
 
+@php
+    $analyticsItem = [
+        'currency' => 'INR',
+        'value' => (float) $page->displayPrice()->toDecimal(),
+        'items' => [['item_id' => (string) $product->id, 'item_name' => $page->name(), 'price' => (float) $page->displayPrice()->toDecimal()]],
+    ];
+@endphp
+
+@push('js-stack')
+    @include('theme::layouts.frontend.partials.analytics-event', ['event' => 'view_item', 'params' => $analyticsItem])
+    @include('theme::layouts.frontend.partials.analytics-event', ['event' => 'add_to_cart', 'params' => $analyticsItem, 'on' => 'mini-cart:show'])
+@endpush
+
 @section('title', $page->metaTitle())
 
 @section('meta')
@@ -54,7 +67,7 @@
         </div>
     @endif
 
-    <script>
+    <script @cspNonce>
         window.__pdp = @js($page->payload());
     </script>
 
@@ -109,7 +122,7 @@
 
 @push('js-stack')
     @unless ($page->preview)
-        <script>
+        <script @cspNonce>
             document.addEventListener('DOMContentLoaded', () => window.rememberRecentlyViewed?.(@js($product->id)));
         </script>
     @endunless

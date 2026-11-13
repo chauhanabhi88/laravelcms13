@@ -2,8 +2,8 @@
 
 namespace Modules\User\Http\Requests;
 
-use Modules\User\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Modules\User\Models\User;
 
 class CreateRequest extends FormRequest
 {
@@ -14,14 +14,15 @@ class CreateRequest extends FormRequest
      */
     public function rules()
     {
-        $user = new User();
+        $user = new User;
+
         return [
             'user.name' => 'required',
             'user.email' => 'required|email|unique:'.$user->getTable().',email,NULL,id,deleted_at,NULL',
             'password' => [
                 'required',
                 'confirmed',
-                'min:6',             // must be at least 10 characters in length
+                'min:'.config('user.password_min_length', 10),
                 'regex:/[a-z]/',      // must contain at least one lowercase letter
                 'regex:/[A-Z]/',      // must contain at least one uppercase letter
                 'regex:/[0-9]/',      // must contain at least one digit
@@ -45,13 +46,13 @@ class CreateRequest extends FormRequest
     public function messages()
     {
         return [
-            'user.*.required' => trans("user::user.messages.required"),
-            'user.email.email' => trans("user::user.messages.invalid_email"),
-            'user.email.unique' => "Email address is already in use.",
-            'user.status.integer' => trans("user::user.messages.status_invalid"),
-            'user.role_id.integer' => trans("user::user.messages.role_invalid"),
-            'user.password.min' => trans("user::user.messages.password_length"),
-            'user.password.regex' =>  trans("user::user.messages.password_regex"),
+            'user.*.required' => trans('user::user.messages.required'),
+            'user.email.email' => trans('user::user.messages.invalid_email'),
+            'user.email.unique' => 'Email address is already in use.',
+            'user.status.integer' => trans('user::user.messages.status_invalid'),
+            'user.role_id.integer' => trans('user::user.messages.role_invalid'),
+            'user.password.min' => trans('user::user.messages.password_length'),
+            'user.password.regex' => trans('user::user.messages.password_regex'),
         ];
     }
 }

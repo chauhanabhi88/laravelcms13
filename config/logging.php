@@ -1,5 +1,6 @@
 <?php
 
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -73,12 +74,24 @@ return [
             'replace_placeholders' => true,
         ],
 
-        // Outbound third-party API calls made through Http::integration() (secrets redacted).
+        // Outbound third-party API calls made through Http::integration() (secrets redacted), plus
+        // payment, refund, payout and webhook events. One JSON object per line (plan M21 §4).
         'integrations' => [
             'driver' => 'daily',
             'path' => storage_path('logs/integrations.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'days' => 14,
+            'days' => (int) env('LOG_INTEGRATIONS_DAYS', 30),
+            'formatter' => JsonFormatter::class,
+            'replace_placeholders' => true,
+        ],
+
+        // CSP violation reports, admin IP denials and ops alerts (core:monitor), as JSON lines.
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => 'info',
+            'days' => (int) env('LOG_SECURITY_DAYS', 30),
+            'formatter' => JsonFormatter::class,
             'replace_placeholders' => true,
         ],
 

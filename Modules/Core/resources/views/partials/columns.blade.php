@@ -96,8 +96,7 @@
         jQuery("#columns-count").text(selected + ' / ' + total);
     }
 
-    jQuery(function () {
-        updateColumnsCount();
-    });
+    // This partial renders mid-page, before the layout loads jQuery at the bottom.
+    document.addEventListener('DOMContentLoaded', updateColumnsCount);
 </script>
 @endif

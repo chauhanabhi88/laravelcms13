@@ -61,6 +61,22 @@ return [
         'failed' => 'Could not load notifications. Try again.',
         'unread' => 'Unread',
     ],
+    'grievance' => [
+        'heading' => 'Grievance officer',
+        'footer' => 'Grievance officer: :name',
+        'name' => 'Name',
+        'email' => 'Email',
+        'phone' => 'Phone',
+        'address' => 'Address',
+        'timelines' => 'We acknowledge every complaint within 48 hours and resolve it within one month of receipt.',
+    ],
+    'consent' => [
+        'title' => 'Cookies and analytics',
+        'text' => 'We use essential cookies to run the store. With your permission we also use analytics cookies to understand how the site is used and improve it.',
+        'accept' => 'Accept analytics',
+        'reject' => 'Essential only',
+        'policy' => 'Privacy policy',
+    ],
     'footer' => [
         'pages' => 'Company',
         'explore' => 'Explore',

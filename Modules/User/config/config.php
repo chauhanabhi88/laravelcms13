@@ -34,6 +34,11 @@ return [
         'max_attempts' => 10,
         'decay_seconds' => 300,
     ],
+    /*
+    | Admin password policy (plan M21 S10): minimum length; the create, edit and reset forms
+    | also require a lowercase and uppercase letter, a digit and a special character.
+    */
+    'password_min_length' => (int) env('ADMIN_PASSWORD_MIN_LENGTH', 10),
     'master_admin_slug' => 'master_admin',
     'cache' => [
         'deleted_user_name' => 'DeletedUser',

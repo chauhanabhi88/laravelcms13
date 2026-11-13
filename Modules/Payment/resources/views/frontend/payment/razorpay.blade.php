@@ -110,7 +110,7 @@
 @endsection
 
 @push('js-stack')
-    <script>
+    <script @cspNonce>
         (function () {
             var countdown = document.getElementById('payment-countdown');
             if (countdown) {
@@ -129,8 +129,8 @@
     </script>
 
     @if ($options !== [] && ! $isFake)
-        <script src="{{ $checkoutJs }}" defer></script>
-        <script>
+        <script src="{{ $checkoutJs }}" defer @cspNonce></script>
+        <script @cspNonce>
             (function () {
                 var options = @json($options);
                 var button = document.getElementById('razorpay-pay-button');

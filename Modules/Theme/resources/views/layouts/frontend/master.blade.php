@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="color-scheme" content="light dark">
-    <title>{{ trim($__env->yieldContent('title')) ? trim($__env->yieldContent('title')).' · '.config('app.name') : config('app.name') }}</title>
+    {{-- Section content is already escaped (@section('title', $value) escapes; block sections hold rendered HTML). --}}
+    <title>{!! trim($__env->yieldContent('title')) ? trim($__env->yieldContent('title')).' · '.e(config('app.name')) : e(config('app.name')) !!}</title>
     @yield('meta')
+    @include('theme::layouts.frontend.partials.analytics')
 
     <meta name="theme-color" content="{{ config('theme.brand_color') }}">
     <link rel="icon" href="{{ \Modules\Theme\Support\ThemeSettings::faviconUrl() }}">
@@ -33,6 +35,7 @@
     @include('theme::layouts.frontend.partials.bottom-nav')
     @include('theme::layouts.frontend.partials.mobile-drawer')
     @include('theme::layouts.frontend.partials.notifications')
+    @include('theme::layouts.frontend.partials.consent-banner')
 
     {{-- Guests: in-page OTP login opened by the wishlist heart and other "login to continue" actions (Customer M08). --}}
     @if (! auth('customer')->check() && view()->exists('customer::frontend.auth.partials.login-drawer'))
@@ -45,7 +48,7 @@
     @endif
 
     {{-- Seeds for the Alpine cart / wishlist stores (resources/js/components/stores.js, customer-account.js). --}}
-    <script>
+    <script @cspNonce>
         window.__cartCount = @js($cartCount ?? 0);
         window.__wishlistIds = @js($wishlistIds ?? []);
         window.__wishlistToggleUrl = @js($wishlistToggleUrl ?? null);
@@ -54,7 +57,7 @@
     </script>
 
     @if (config('customer.show_customer_online_offline_grid') && auth('customer')->check())
-        <script>
+        <script @cspNonce>
             window.customerPresence = {
                 url: @js(frontRoute('customer.customer_online_offline_log')),
                 interval: 60000,
@@ -63,7 +66,7 @@
     @endif
 
     @foreach ($jsFiles ?? [] as $js)
-        <script src="{{ asset($js) }}" type="text/javascript"></script>
+        <script src="{{ asset($js) }}" type="text/javascript" @cspNonce></script>
     @endforeach
     @yield('scripts')
     @stack('js-stack')

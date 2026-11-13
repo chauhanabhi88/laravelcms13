@@ -49,4 +49,27 @@ return [
             'lost' => 'Shipment issue',
         ],
     ],
+    'delivery_issue' => [
+        'title' => 'We could not deliver this package',
+        'intro' => '{1} The courier made :count delivery attempt.|[2,*] The courier made :count delivery attempts.',
+        'reason' => 'Reason: :reason.',
+        'choose' => 'What should the courier do?',
+        'actions' => [
+            'reattempt' => 'Try delivering again',
+            'change_address' => 'Deliver to a corrected address or phone',
+            'cancel' => 'Cancel and return the package to the seller',
+        ],
+        'address1' => 'Address (house, street, area)',
+        'address2' => 'Landmark (optional)',
+        'phone' => 'Phone number (optional)',
+        'comments' => 'Note for the courier (optional)',
+        'submit' => 'Send to courier',
+        'answered' => 'You asked the courier to: :action. We will update the tracking as soon as they act.',
+        'done' => [
+            'reattempt' => 'Thanks, the courier will try again.',
+            'change_address' => 'Thanks, the courier will deliver to the details you gave.',
+            'cancel' => 'The package will be returned to the seller.',
+        ],
+        'failed' => 'We could not reach the courier right now. Please try again in a few minutes.',
+    ],
 ];

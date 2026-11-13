@@ -69,6 +69,14 @@ return [
     'discount_buckets' => [10, 30, 50, 70],
 
     /*
+    | "Delivery time" filter (FR-DSC-005): delivery-day windows offered once the shopper's
+    | pincode is known (product page check or default address), and how long the per-pincode
+    | seller plan stays cached (warehouse changes show after this many seconds).
+    */
+    'delivery_buckets' => [3, 5],
+    'delivery_filter_cache_ttl' => 600,
+
+    /*
     | Facet sizes: brands listed (selected ones always show), attributes offered on a search
     | without a category, and options shown before "Show more" / the option search box.
     */
@@ -193,5 +201,33 @@ return [
         'similar_price_band_percent' => 30,
         // Until the Order module's settings('order', 'cod_max_value') exists (M12).
         'cod_max_value' => '5000',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | SEO (plan M21 §5)
+    |--------------------------------------------------------------------------
+    |
+    | Sitemaps are written by `php artisan storefront:sitemap` (nightly cron) to the local disk
+    | under "sitemap_path" and served at /sitemap.xml + /sitemaps/{file}. "sitemap_chunk" is the
+    | URL limit per file (the protocol allows 50,000).
+    |
+    | robots.txt is generated at /robots.txt. Outside production every crawler is turned away
+    | ("robots_block_all"), so a staging site never gets indexed. "robots_disallow" keeps
+    | crawlers out of private and duplicate pages; "robots_allow" re-opens the supplier landing.
+    |
+    | Listings with more than "noindex_filter_threshold" applied filters get noindex.
+    |
+    */
+    'seo' => [
+        'sitemap_path' => 'sitemaps',
+        'sitemap_chunk' => 50000,
+        'robots_block_all' => (bool) env('ROBOTS_BLOCK_ALL', env('APP_ENV', 'production') !== 'production'),
+        'robots_disallow' => [
+            '/cart', '/checkout', '/customer/', '/supplier/', '/backend', '/api/', '/webhooks/',
+            '/search?*&', '/*?*sort=', '/*?*partial=', '/recently-viewed', '/track',
+        ],
+        'robots_allow' => ['/supplier$'],
+        'noindex_filter_threshold' => 1,
     ],
 ];

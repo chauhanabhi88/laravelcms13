@@ -28,6 +28,9 @@
     if ($query->codOnly || $facets['cod'] > 0) {
         $groups[] = ['key' => 'cod', 'type' => 'cod', 'label' => trans('storefront::storefront.filters.cod'), 'active' => $query->codOnly ? 1 : 0];
     }
+    if ($query->deliveryPincode !== null && ($query->deliveryDays !== null || collect($facets['delivery'] ?? [])->sum('count') > 0)) {
+        $groups[] = ['key' => 'delivery', 'type' => 'delivery', 'label' => trans('storefront::storefront.filters.delivery'), 'active' => $query->deliveryDays !== null ? 1 : 0];
+    }
 
     $firstKey = $groups[0]['key'] ?? '';
 @endphp
@@ -49,6 +52,9 @@
     @endif
     @if ($query->discount !== null)
         <input type="hidden" name="discount" value="{{ $query->discount }}">
+    @endif
+    @if ($query->deliveryDays !== null)
+        <input type="hidden" name="delivery" value="{{ $query->deliveryDays }}">
     @endif
     @if (($query->priceFrom !== null || $query->priceTo !== null) && $facets['price']['max'] <= $facets['price']['min'])
         <input type="hidden" name="price" value="{{ ($query->priceFrom ?? '').'-'.($query->priceTo ?? '') }}">

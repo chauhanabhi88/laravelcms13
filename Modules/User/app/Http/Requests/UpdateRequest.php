@@ -26,7 +26,7 @@ class UpdateRequest extends FormRequest
         if ($this->input('password')) {
             $rules['password'] = [
                 'confirmed',
-                'min:6',
+                'min:'.config('user.password_min_length', 10),
                 'regex:/[a-z]/',      // must contain at least one lowercase letter
                 'regex:/[A-Z]/',      // must contain at least one uppercase letter
                 'regex:/[0-9]/',      // must contain at least one digit
@@ -36,7 +36,7 @@ class UpdateRequest extends FormRequest
         if ($this->input('user.password')) {
             $rules['user.password'] = [
                 'confirmed',
-                'min:6',             // must be at least 8 characters in length
+                'min:'.config('user.password_min_length', 10),
                 'regex:/[a-z]/',      // must contain at least one lowercase letter
                 'regex:/[A-Z]/',      // must contain at least one uppercase letter
                 'regex:/[0-9]/',      // must contain at least one digit

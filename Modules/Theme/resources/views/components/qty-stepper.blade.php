@@ -13,7 +13,7 @@
     <label for="{{ $id }}" class="sr-only">{{ trans('theme::frontend.commerce.quantity') }}</label>
     <input x-ref="input" type="number" inputmode="numeric" id="{{ $id }}" name="{{ $name }}" value="{{ (int) $value }}"
         min="{{ (int) $min }}" max="{{ (int) $max }}" x-on:change.self="set($event.target.value)"
-        class="tabular h-full w-10 appearance-none border-x border-line bg-transparent text-center text-sm font-semibold text-ink focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
+        class="tabular h-full w-14 px-2 appearance-none border-x border-line bg-transparent text-center text-sm font-semibold text-ink focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
     <button type="button" x-on:click="step(1)" x-bind:disabled="value >= max" @disabled((int) $value >= (int) $max)
         class="flex size-10 items-center justify-center text-ink-soft hover:text-ink disabled:opacity-40"
         aria-label="{{ trans('theme::frontend.commerce.increase') }}" aria-controls="{{ $id }}">

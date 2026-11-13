@@ -31,5 +31,9 @@
 
     <div class="container-page max-w-4xl py-12 sm:py-16">
         <div class="prose-content sm:text-lg sm:leading-8 {{ $page->slug }}">{!! $page->getPageBody() !!}</div>
+
+        @if ($page->slug === 'grievance-officer')
+            @include('theme::layouts.frontend.partials.grievance-officer', ['officer' => \Modules\Theme\Support\ThemeSettings::grievanceOfficer()])
+        @endif
     </div>
 @endsection
